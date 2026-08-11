@@ -64,7 +64,27 @@ export const DICAS=[
  {id:'chuva',icon:'🌧️',titulo:'Proteja primeiro eletrônicos e roupa seca',texto:'Sacos internos independentes funcionam como segunda barreira contra chuva e condensação.'},
  {id:'rota',icon:'🗺️',titulo:'Tenha rota offline',texto:'Baixe mapas e anote pontos importantes antes de ficar sem sinal.'},
 ];
-export const CHANGELOG=[{versao:'1.0.1',data:'2026',mudancas:['IndexedDB com Dexie e migração automática','Backup completo e versionado','Versão do app sincronizada com package.json','Componentes visuais básicos e checagens estruturais']},{versao:'1.0.0',data:'2026',mudancas:['Checklist de equipamentos e verificações rápidas','Planejamento de autonomia','Manual da bicicleta e diário de campo','Funcionamento offline no navegador']}];
+export const CHANGELOG=[
+ {versao:'1.0.2',data:'11/08/2026',mudancas:[
+  'Identidade visual e nome padronizados como Nomade Raiz em todo o app',
+  'Página Sobre renovada com versão atual, tecnologias e histórico de mudanças',
+  'Ícones em marca-d’água restaurados nos quadros de verificações da tela inicial',
+  'README, .gitignore e metadados do GitHub adicionados e padronizados',
+  'Checagem automática garante que versão, README e changelogs permaneçam sincronizados',
+ ]},
+ {versao:'1.0.1',data:'11/08/2026',mudancas:[
+  'IndexedDB com Dexie e migração automática',
+  'Backup completo e versionado',
+  'Versão do app sincronizada com package.json',
+  'Componentes visuais básicos e checagens estruturais',
+ ]},
+ {versao:'1.0.0',data:'11/08/2026',mudancas:[
+  'Checklist de equipamentos e verificações rápidas',
+  'Planejamento de autonomia',
+  'Manual da bicicleta e diário de campo',
+  'Funcionamento offline no navegador',
+ ]},
+];
 
 export const AREAS_BIKE=[{id:'rodas',icone:'🛞',label:'Rodas e pneus'},{id:'transmissao',icone:'⛓️',label:'Transmissão'},{id:'freios',icone:'🛑',label:'Freios'},{id:'estrutura',icone:'🚲',label:'Estrutura'}];
 const peca=(id,area,icone,nome,nivel,funcao,problemasComuns,manutencao,comoResolver)=>({id,area,icone,nome,nivel,funcao,problemasComuns,manutencao,comoResolver});

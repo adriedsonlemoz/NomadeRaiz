@@ -1,7 +1,7 @@
 {
-  "name": "nomade-checklist",
+  "name": "nomade-raiz",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -35,5 +35,28 @@
     "tailwindcss": "^3.4.7",
     "typescript": "^5.5.3",
     "vite": "^5.3.4"
+  },
+  "description": "Aplicativo offline-first para cicloviagem, autonomia, planejamento, equipamentos e vida na estrada.",
+  "keywords": [
+    "cicloviagem",
+    "bikepacking",
+    "cicloturismo",
+    "offline-first",
+    "checklist",
+    "planejamento",
+    "autonomia",
+    "capacitor",
+    "react"
+  ],
+  "homepage": "https://github.com/adriedsonlemoz/NomadeRaiz#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adriedsonlemoz/NomadeRaiz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adriedsonlemoz/NomadeRaiz/issues"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

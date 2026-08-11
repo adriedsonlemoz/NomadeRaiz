@@ -1,5 +1,19 @@
 # Changelog
 
+Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
+
+## 1.0.2 — Identidade e apresentação
+
+- Nome visível padronizado para **Nomade Raiz** no app, splash, Capacitor, navegador e telas internas.
+- Título, metadados HTML e manifesto web atualizados para a identidade Nomade Raiz.
+- Página **Sobre o App** renovada para destacar a versão atual, propósito, tecnologias e últimas mudanças.
+- Ícones em formato de marca-d’água restaurados nos quadros de verificações da tela inicial.
+- `README.md` criado com descrição, funcionalidades, stack, dados, scripts e versionamento.
+- `.gitignore` criado para impedir envio acidental de dependências, builds, arquivos locais e segredos.
+- `package.json` recebeu descrição, palavras-chave, repositório, homepage, issues e requisito de Node.
+- `npm run lint` agora exige sincronização da versão entre `package.json`, lockfile, README e changelogs.
+- Identificador nativo do Capacitor foi preservado para evitar quebra desnecessária de compatibilidade; apenas o nome exibido foi alterado.
+
 ## 1.0.1 — Fundação
 
 - Persistência migrada de `localStorage` para IndexedDB usando Dexie.
@@ -14,6 +28,9 @@
 - Removido uso destrutivo de `localStorage.clear()`.
 - Inventário vazio agora permanece vazio após reiniciar o aplicativo.
 
-## 1.0.0
+## 1.0.0 — Base inicial
 
-- Base inicial do Nômade.
+- Checklist de equipamentos e verificações rápidas.
+- Planejamento de autonomia.
+- Manual da bicicleta e diário de campo.
+- Funcionamento offline no navegador.

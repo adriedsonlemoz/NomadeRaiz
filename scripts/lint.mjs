@@ -44,12 +44,39 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 if (!/^\d+\.\d+\.\d+$/.test(pkg.version)) errors.push('package.json: version deve seguir X.Y.Z.');
 const lock = JSON.parse(fs.readFileSync(path.join(root,'package-lock.json'),'utf8'));
 if (lock.version !== pkg.version || lock.packages?.['']?.version !== pkg.version) errors.push('package-lock.json: versão deve acompanhar package.json.');
+if (pkg.name !== 'nomade-raiz') errors.push('package.json: name deve permanecer nomade-raiz.');
+
+const readmePath = path.join(root,'README.md');
+if (!fs.existsSync(readmePath)) errors.push('README.md: arquivo obrigatório para apresentação do projeto no GitHub.');
+else {
+  const readme = fs.readFileSync(readmePath,'utf8');
+  if (!readme.includes(`Versão atual: **${pkg.version}**`)) errors.push(`README.md: versão atual deve ser ${pkg.version}.`);
+  if (!readme.includes('# Nomade Raiz')) errors.push('README.md: título principal deve ser Nomade Raiz.');
+}
+
+const changelogPath = path.join(root,'CHANGELOG.md');
+if (!fs.existsSync(changelogPath)) errors.push('CHANGELOG.md: arquivo obrigatório.');
+else {
+  const changelogMd = fs.readFileSync(changelogPath,'utf8');
+  if (!changelogMd.includes(`## ${pkg.version}`)) errors.push(`CHANGELOG.md: deve conter a versão ${pkg.version}.`);
+}
+
+const appConfig = fs.readFileSync(path.join(src,'config/app.ts'),'utf8');
+if (!appConfig.includes("APP_NAME = 'Nomade Raiz'")) errors.push('config/app.ts: APP_NAME deve ser Nomade Raiz.');
+
+const manifestPath = path.join(root,'public/manifest.webmanifest');
+if (!fs.existsSync(manifestPath)) errors.push('public/manifest.webmanifest: manifesto do app é obrigatório.');
+else {
+  const manifest = JSON.parse(fs.readFileSync(manifestPath,'utf8'));
+  if (manifest.name !== 'Nomade Raiz' || manifest.short_name !== 'Nomade Raiz') errors.push('manifest.webmanifest: name e short_name devem ser Nomade Raiz.');
+}
 
 const configPage = fs.readFileSync(path.join(src,'pages/Configuracoes/ConfiguracoesPage.jsx'),'utf8');
 if (/v\d+\.\d+\.\d+/.test(configPage)) errors.push('ConfiguracoesPage: versão não pode ser hardcoded; use APP_VERSION.');
 
 const constants = fs.readFileSync(path.join(src,'constants/index.js'),'utf8');
 if (!constants.includes('APP_VERSAO=APP_VERSION')) errors.push('constants/index.js: APP_VERSAO deve derivar de APP_VERSION.');
+if (!constants.includes(`versao:'${pkg.version}'`)) errors.push(`constants/index.js: CHANGELOG exibido no app deve conter a versão ${pkg.version}.`);
 
 const storage = fs.readFileSync(path.join(src,'services/storage.service.ts'),'utf8');
 if (!storage.includes("from '../database/db'")) errors.push('storage.service.ts: persistência deve usar a camada IndexedDB/Dexie.');

@@ -1,117 +1,183 @@
 import { useState } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
-import { CHANGELOG, APP_VERSAO, APP_ANO } from "../../constants";
+import { APP_ANO, CHANGELOG } from "../../constants";
+import {
+  APP_DESCRIPTION,
+  APP_NAME,
+  APP_REPOSITORY_URL,
+  APP_TAGLINE,
+  APP_VERSION,
+} from "../../config/app";
+import { AppButton, BicycleIcon, Card, PageHeader, SectionLabel } from "../../components/common";
 import { ApoioModal } from "./ApoioModal";
 import { ContatoModal } from "./ContatoModal";
 
 export default function SobrePage() {
   const { setPage } = useStore();
   const { theme: T } = useTheme();
-  const [apoioAberto, setApoioAberto]     = useState(false);
+  const [apoioAberto, setApoioAberto] = useState(false);
   const [contatoAberto, setContatoAberto] = useState(false);
 
+  const releaseAtual = CHANGELOG.find(v => v.versao === APP_VERSION) || CHANGELOG[0];
+  const historico = CHANGELOG.filter(v => v.versao !== releaseAtual?.versao);
+
   const funcionalidades = [
-    "Checklist de equipamentos", "Controle de orçamento", "Calculadora de autonomia",
-    "Dicas de sobrevivência", "Tutoriais", "Biblioteca de consulta",
-    "Organização da viagem", "Conteúdo totalmente offline",
+    { icon:"📋", label:"Equipamentos e checklists" },
+    { icon:"🧭", label:"Planejamento de viagem" },
+    { icon:"🧮", label:"Calculadoras de autonomia" },
+    { icon:"📓", label:"Diário de campo" },
+    { icon:"📍", label:"Pontos de apoio" },
+    { icon:"🚲", label:"Manual da bicicleta" },
+    { icon:"🔔", label:"Alertas de reposição" },
+    { icon:"💾", label:"Backup completo" },
   ];
 
-  const cardStyle = { background:T.white, border:`1px solid ${T.border}`, borderRadius:16,
-    padding:"16px", boxShadow:"0 1px 5px rgba(15,39,68,.06)", boxSizing:"border-box" };
-  const kickerStyle = { color:T.textMuted, fontSize:10.5, fontWeight:800, letterSpacing:"0.12em",
-    textTransform:"uppercase", margin:"0 0 10px" };
+  const tecnologias = ["Offline-first", "IndexedDB", "Backup JSON", "React + Capacitor"];
 
   return (
-    <div style={{ flex:1, overflowY:"auto", background:T.pageBg }}>
-      {apoioAberto   && <ApoioModal T={T} onClose={()=>setApoioAberto(false)}/>}
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:T.pageBg }}>
+      {apoioAberto && <ApoioModal T={T} onClose={()=>setApoioAberto(false)}/>}
       {contatoAberto && <ContatoModal T={T} onClose={()=>setContatoAberto(false)}/>}
 
-      {/* Cabeçalho */}
-      <div style={{ background:T.navy, padding:"18px 16px 22px" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-          <button onClick={()=>setPage("extras")} style={{ width:34, height:34, borderRadius:9, border:"none",
-            background:T.navyLight, color:"#fff", fontSize:17, cursor:"pointer",
-            display:"flex", alignItems:"center", justifyContent:"center" }}>←</button>
-          <p style={{ color:"#7ea3d4", fontSize:9, fontWeight:800, letterSpacing:"0.2em",
-            textTransform:"uppercase", margin:0 }}>Sobre</p>
-        </div>
-        <h1 style={{ color:"#fff", fontSize:21, fontWeight:900, margin:"0 0 6px", lineHeight:1.25 }}>
-          CicloViagem Nômade Raiz</h1>
-        <p style={{ color:"#7ea3d4", fontSize:13, margin:0, lineHeight:1.5, fontWeight:300 }}>
-          Planeje sua cicloviagem, monte seu equipamento e viaje gastando o mínimo possível.</p>
-      </div>
+      <PageHeader
+        eyebrow={APP_NAME}
+        title="Sobre o App"
+        onBack={()=>setPage("extras")}
+        right={(
+          <span style={{ color:"#fff", background:"rgba(255,255,255,.12)", border:"1px solid rgba(255,255,255,.12)",
+            borderRadius:99, padding:"4px 8px", fontSize:10, fontWeight:800 }}>v{APP_VERSION}</span>
+        )}
+      />
 
-      <div style={{ padding:"16px 14px 32px", display:"flex", flexDirection:"column", gap:14 }}>
+      <div style={{ flex:1, overflowY:"auto", padding:"14px 14px 32px" }}>
+        <Card style={{ padding:"18px 16px", position:"relative", overflow:"hidden",
+          background:`linear-gradient(145deg,${T.navy} 0%,${T.navyMid} 100%)`, border:"none" }}>
+          <div aria-hidden="true" style={{ position:"absolute", right:-18, bottom:-22, opacity:.07,
+            transform:"rotate(-10deg)", pointerEvents:"none" }}>
+            <BicycleIcon size={132} color="#fff"/>
+          </div>
+          <div style={{ position:"relative", zIndex:1, display:"flex", gap:13, alignItems:"center" }}>
+            <div style={{ width:58, height:58, borderRadius:17, flexShrink:0,
+              background:"rgba(255,255,255,.1)", border:"1px solid rgba(255,255,255,.12)",
+              display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <BicycleIcon size={38} color="#fff"/>
+            </div>
+            <div style={{ minWidth:0 }}>
+              <h1 style={{ color:"#fff", fontSize:21, fontWeight:900, margin:"0 0 3px" }}>{APP_NAME}</h1>
+              <p style={{ color:"#8fb0da", fontSize:11.5, fontWeight:700, margin:"0 0 7px" }}>{APP_TAGLINE}</p>
+              <p style={{ color:"rgba(255,255,255,.72)", fontSize:11.5, lineHeight:1.5, margin:0 }}>{APP_DESCRIPTION}</p>
+            </div>
+          </div>
+        </Card>
 
-        {/* Sobre o aplicativo */}
-        <div style={cardStyle}>
-          <p style={kickerStyle}>Sobre o aplicativo</p>
+        <SectionLabel>Feito para a estrada</SectionLabel>
+        <Card style={{ padding:"15px 16px" }}>
           <p style={{ color:T.textSub, fontSize:12.5, lineHeight:1.65, margin:"0 0 10px" }}>
-            O CicloViagem Nômade Raiz foi criado para ajudar cicloviajantes, campistas e aventureiros
-            que desejam viajar de forma simples, econômica e autônoma.</p>
-          <p style={{ color:T.textSub, fontSize:12.5, lineHeight:1.65, margin:"0 0 10px" }}>
-            O aplicativo reúne checklist de equipamentos, planejamento de orçamento, calculadoras,
-            dicas de sobrevivência, tutoriais e conteúdos úteis para quem quer explorar novos lugares
-            sem depender de muito dinheiro.</p>
+            O {APP_NAME} foi criado para reunir em um único lugar o que costuma ficar espalhado entre
+            anotações, planilhas e vários aplicativos: o que levar, quanto custa, quanto dura e o que
+            fazer quando alguma coisa dá errado durante a viagem.
+          </p>
           <p style={{ color:T.textSub, fontSize:12.5, lineHeight:1.65, margin:0 }}>
-            O objetivo é incentivar a autonomia, a organização e o contato com a natureza,
-            tornando a cicloviagem mais acessível para todos.</p>
+            A proposta é simples: funcionar bem no celular, depender pouco de internet e ajudar na
+            organização de cicloviagens, camping e deslocamentos mais autônomos.
+          </p>
+        </Card>
+
+        <SectionLabel>Recursos</SectionLabel>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+          {funcionalidades.map(item => (
+            <Card key={item.label} style={{ padding:"11px 10px", display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:17, flexShrink:0 }}>{item.icon}</span>
+              <span style={{ color:T.textMain, fontSize:11.5, lineHeight:1.25, fontWeight:650 }}>{item.label}</span>
+            </Card>
+          ))}
         </div>
 
-        {/* Funcionalidades */}
-        <div style={cardStyle}>
-          <p style={kickerStyle}>Funcionalidades</p>
-          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-            {funcionalidades.map(f => (
-              <div key={f} style={{ display:"flex", alignItems:"center", gap:9 }}>
-                <span style={{ color:T.doneCheck, fontSize:13, flexShrink:0 }}>✅</span>
-                <span style={{ color:T.textMain, fontSize:12.5 }}>{f}</span>
-              </div>
+        <SectionLabel>Como ele funciona</SectionLabel>
+        <Card style={{ padding:"14px" }}>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+            {tecnologias.map(item => (
+              <span key={item} style={{ color:T.blue, background:T.blueLight, border:`1px solid ${T.blueSoft}`,
+                borderRadius:99, padding:"5px 9px", fontSize:10.5, fontWeight:800 }}>{item}</span>
             ))}
           </div>
-        </div>
+          <p style={{ color:T.textMuted, fontSize:11.5, lineHeight:1.55, margin:"12px 0 0" }}>
+            Os dados ficam no próprio dispositivo usando IndexedDB. O backup JSON permite levar ou
+            restaurar suas informações quando necessário.
+          </p>
+        </Card>
 
-        {/* Novidades / Changelog */}
-        <div style={cardStyle}>
-          <p style={kickerStyle}>Novidades</p>
-          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-            {CHANGELOG.map(v => (
-              <div key={v.versao}>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                  <span style={{ background:T.blueLight, color:T.blue, fontWeight:800, fontSize:10.5,
-                    padding:"3px 9px", borderRadius:99, flexShrink:0 }}>Versão {v.versao}</span>
-                  {v.data && <span style={{ color:T.textMuted, fontSize:10.5 }}>{v.data}</span>}
+        <SectionLabel>Últimas mudanças</SectionLabel>
+        {releaseAtual && (
+          <Card style={{ overflow:"hidden" }}>
+            <div style={{ padding:"12px 14px", background:T.blueLight, borderBottom:`1px solid ${T.border}`,
+              display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+              <div>
+                <p style={{ color:T.blue, fontWeight:900, fontSize:13, margin:0 }}>Versão {releaseAtual.versao}</p>
+                <p style={{ color:T.textMuted, fontSize:10.5, margin:"2px 0 0" }}>Versão instalada atualmente</p>
+              </div>
+              <span style={{ color:T.textMuted, fontSize:10.5, flexShrink:0 }}>{releaseAtual.data}</span>
+            </div>
+            <div style={{ padding:"13px 14px", display:"flex", flexDirection:"column", gap:9 }}>
+              {releaseAtual.mudancas.map((mudanca, index) => (
+                <div key={index} style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
+                  <span style={{ color:T.doneCheck, fontSize:12, lineHeight:1.5 }}>✓</span>
+                  <span style={{ color:T.textSub, fontSize:11.8, lineHeight:1.5 }}>{mudanca}</span>
                 </div>
-                <ul style={{ margin:0, paddingLeft:18 }}>
-                  {v.mudancas.map((m,i) => (
-                    <li key={i} style={{ color:T.textSub, fontSize:12, lineHeight:1.6 }}>{m}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {historico.length > 0 && (
+          <>
+            <SectionLabel>Histórico recente</SectionLabel>
+            <Card style={{ padding:"2px 14px" }}>
+              {historico.map((release, releaseIndex) => (
+                <div key={release.versao} style={{ padding:"12px 0",
+                  borderBottom:releaseIndex<historico.length-1?`1px solid ${T.border}`:"none" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", gap:8, marginBottom:5 }}>
+                    <strong style={{ color:T.textMain, fontSize:11.5 }}>Versão {release.versao}</strong>
+                    <span style={{ color:T.textMuted, fontSize:10 }}>{release.data}</span>
+                  </div>
+                  <p style={{ color:T.textMuted, fontSize:10.8, lineHeight:1.45, margin:0 }}>
+                    {release.mudancas.slice(0,2).join(" · ")}
+                  </p>
+                </div>
+              ))}
+            </Card>
+          </>
+        )}
+
+        <SectionLabel>Projeto</SectionLabel>
+        <Card style={{ padding:"14px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:11 }}>
+            <div style={{ width:38, height:38, borderRadius:11, background:T.blueLight,
+              display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>⌨️</div>
+            <div style={{ minWidth:0 }}>
+              <p style={{ color:T.textMain, fontSize:12.5, fontWeight:800, margin:0 }}>Código e histórico no GitHub</p>
+              <p style={{ color:T.textMuted, fontSize:10.5, margin:"2px 0 0", overflow:"hidden",
+                textOverflow:"ellipsis", whiteSpace:"nowrap" }}>adriedsonlemoz/NomadeRaiz</p>
+            </div>
           </div>
+          <AppButton variant="secondary" fullWidth onClick={()=>window.open(APP_REPOSITORY_URL,"_blank","noopener,noreferrer")}>
+            Abrir projeto no GitHub ↗
+          </AppButton>
+        </Card>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:14 }}>
+          <AppButton variant="danger" onClick={()=>setApoioAberto(true)}>❤️ Apoiar</AppButton>
+          <AppButton variant="secondary" onClick={()=>setContatoAberto(true)}>📩 Contato</AppButton>
         </div>
 
-        {/* Apoiar o projeto */}
-        <button onClick={()=>setApoioAberto(true)} style={{ background:"#fef2f2",
-          border:"1.5px solid #fecaca", borderRadius:16, padding:"14px 16px",
-          display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-          cursor:"pointer", fontWeight:800, fontSize:14, color:"#dc2626", boxSizing:"border-box" }}>
-          ❤️ Apoiar o Projeto</button>
-
-        {/* Contato */}
-        <button onClick={()=>setContatoAberto(true)} style={{ ...cardStyle,
-          display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-          cursor:"pointer", fontWeight:700, fontSize:14, color:T.textMain, width:"100%" }}>
-          📩 Entrar em Contato</button>
-
-        {/* Informações */}
-        <div style={{ textAlign:"center", padding:"6px 0 0" }}>
-          <p style={{ color:T.textMuted, fontSize:11.5, margin:"0 0 3px" }}>
-            Versão {APP_VERSAO} · {APP_ANO}</p>
-          <p style={{ color:T.textMuted, fontSize:11.5, margin:0, fontWeight:600 }}>
-            Desenvolvido no Brasil 🇧🇷</p>
+        <div style={{ textAlign:"center", padding:"20px 0 2px" }}>
+          <p style={{ color:T.textMuted, fontSize:11, margin:"0 0 3px" }}>
+            {APP_NAME} · v{APP_VERSION} · {APP_ANO}
+          </p>
+          <p style={{ color:T.textMuted, fontSize:10.5, margin:0, fontWeight:600 }}>
+            Desenvolvido no Brasil 🇧🇷
+          </p>
         </div>
       </div>
     </div>

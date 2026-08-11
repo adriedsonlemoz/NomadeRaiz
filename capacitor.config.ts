@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.nomade.checklist',
-  appName: 'Nômade',
+  appName: 'Nomade Raiz',
   webDir: 'dist',
   server: { androidScheme: 'https' },
   android: { backgroundColor: '#0f2744' },

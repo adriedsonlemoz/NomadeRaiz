@@ -7,6 +7,7 @@ import { Ring, Bar } from "../../components/common";
 import { MODOS, VERIFICACOES } from "../../constants";
 import { ChecklistVerificacao } from "./ChecklistVerificacao";
 import { NotaRapidaModal } from "./NotaRapidaModal";
+import { APP_NAME } from "../../config/app";
 
 export default function HomePage() {
   const { state, setPage, setModo } = useStore();
@@ -33,7 +34,7 @@ export default function HomePage() {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
           <div style={{ minWidth:0 }}>
             <p style={{ color:"#7ea3d4", fontSize:9, fontWeight:800,
-              letterSpacing:"0.2em", textTransform:"uppercase", margin:"0 0 2px" }}>Vida Nômade</p>
+              letterSpacing:"0.2em", textTransform:"uppercase", margin:"0 0 2px" }}>{APP_NAME}</p>
             <h1 style={{ color:"#fff", fontSize:19, fontWeight:900, margin:0, lineHeight:1.2 }}>
               Qual é a missão?</h1>
           </div>
@@ -92,12 +93,14 @@ export default function HomePage() {
             <button key={modo.id}
               onClick={()=>{ setModo(modo.id); setVerificando(modo.id); }}
               style={{ background:T.white, border:`1.5px solid ${isAtivo?modo.cor:T.border}`,
-                borderRadius:14, padding:"10px 11px", minHeight:0, overflow:"hidden",
+                borderRadius:14, padding:"10px 11px", minHeight:0, overflow:"hidden", position:"relative",
                 display:"flex", flexDirection:"column", justifyContent:"space-between",
                 cursor:"pointer", textAlign:"left", boxSizing:"border-box",
                 boxShadow:isAtivo?`0 2px 14px ${modo.cor}33`:"0 1px 4px rgba(15,39,68,.07)",
                 transition:"all .2s" }}>
-              <div style={{ display:"flex", justifyContent:"space-between",
+              <span aria-hidden="true" style={{ position:"absolute", right:-5, bottom:-12, fontSize:52,
+                opacity:.055, filter:"grayscale(1)", transform:"rotate(-10deg)", pointerEvents:"none", userSelect:"none" }}>{modo.icon}</span>
+              <div style={{ display:"flex", position:"relative", zIndex:1, justifyContent:"space-between",
                 alignItems:"flex-start", width:"100%" }}>
                 <div style={{ width:32, height:32, borderRadius:9, flexShrink:0,
                   background:`${modo.cor}18`,
@@ -108,7 +111,7 @@ export default function HomePage() {
                   background:`${modo.cor}12`, border:`1px solid ${modo.cor}30`,
                   padding:"2px 5px", borderRadius:99 }}>{v?.itens.length}</span>
               </div>
-              <div style={{ minWidth:0 }}>
+              <div style={{ minWidth:0, position:"relative", zIndex:1 }}>
                 <p style={{ color:T.textMain, fontWeight:800, fontSize:12, margin:"0 0 1px", lineHeight:1.2,
                   overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                   {modo.label}</p>
@@ -122,10 +125,12 @@ export default function HomePage() {
 
         {/* Atalho Equipamentos — completa a grade */}
         <button onClick={()=>setPage("lista")} style={{ background:T.navy, border:"none",
-          borderRadius:14, padding:"10px 11px", minHeight:0, overflow:"hidden",
+          borderRadius:14, padding:"10px 11px", minHeight:0, overflow:"hidden", position:"relative",
           display:"flex", flexDirection:"column", justifyContent:"space-between",
           cursor:"pointer", textAlign:"left", boxSizing:"border-box" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", width:"100%" }}>
+          <span aria-hidden="true" style={{ position:"absolute", right:-6, bottom:-13, fontSize:54, opacity:.09,
+            filter:"grayscale(1)", transform:"rotate(-10deg)", pointerEvents:"none", userSelect:"none" }}>📋</span>
+          <div style={{ display:"flex", position:"relative", zIndex:1, justifyContent:"space-between", alignItems:"flex-start", width:"100%" }}>
             <div style={{ width:32, height:32, borderRadius:9, flexShrink:0,
               background:"rgba(255,255,255,.12)",
               display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>📋</div>
@@ -134,7 +139,7 @@ export default function HomePage() {
                 background:"rgba(255,255,255,.15)", padding:"2px 5px", borderRadius:99 }}>{stats.pendentes}</span>
             )}
           </div>
-          <div style={{ minWidth:0 }}>
+          <div style={{ minWidth:0, position:"relative", zIndex:1 }}>
             <p style={{ color:"#fff", fontWeight:800, fontSize:12, margin:"0 0 1px", lineHeight:1.2 }}>
               Equipamentos</p>
             <p style={{ color:"#7ea3d4", fontSize:9.5, margin:0, lineHeight:1.25 }}>Ver lista completa</p>

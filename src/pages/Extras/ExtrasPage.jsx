@@ -1,5 +1,6 @@
 import { useStore } from "../../contexts";
 import { useTheme, useAlertCount } from "../../hooks";
+import { APP_NAME } from "../../config/app";
 
 export default function ExtrasPage() {
   const { state, setPage } = useStore();
@@ -20,7 +21,7 @@ export default function ExtrasPage() {
     <div style={{ flex:1, overflowY:"auto", background:T.pageBg }}>
       <div style={{ background:T.navy, padding:"20px 16px 24px" }}>
         <p style={{ color:"#7ea3d4", fontSize:10, fontWeight:800, letterSpacing:"0.2em",
-          textTransform:"uppercase", margin:"0 0 3px" }}>Nômade</p>
+          textTransform:"uppercase", margin:"0 0 3px" }}>{APP_NAME}</p>
         <h1 style={{ color:"#fff", fontSize:20, fontWeight:900, margin:0 }}>Ferramentas</h1>
       </div>
       <div style={{ padding:"14px 14px 32px", display:"flex", flexDirection:"column", gap:8 }}>

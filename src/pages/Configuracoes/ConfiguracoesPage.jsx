@@ -1,7 +1,7 @@
 import { useStore } from "../../contexts";
 import { useTheme, useDiasNaEstrada } from "../../hooks";
 import { StorageService } from "../../services/storage.service";
-import { APP_VERSION } from "../../config/app";
+import { APP_NAME, APP_TAGLINE, APP_VERSION } from "../../config/app";
 import { AppButton, BicycleIcon, Card, PageHeader, SectionLabel } from "../../components/common";
 
 export default function ConfiguracoesPage() {
@@ -100,8 +100,8 @@ export default function ConfiguracoesPage() {
         <SectionLabel>Sobre</SectionLabel>
         <Card style={{ padding:14, textAlign:"center" }}>
           <BicycleIcon size={40} color={T.blue}/>
-          <p style={{ color:T.textMain, fontWeight:900, fontSize:18, margin:"8px 0 2px" }}>Nômade</p>
-          <p style={{ color:T.textMuted, fontSize:12, margin:0 }}>Autonomia & Sobrevivência</p>
+          <p style={{ color:T.textMain, fontWeight:900, fontSize:18, margin:"8px 0 2px" }}>{APP_NAME}</p>
+          <p style={{ color:T.textMuted, fontSize:12, margin:0 }}>{APP_TAGLINE}</p>
           <p style={{ color:T.textMuted, fontSize:10, margin:"8px 0 0" }}>
             v{APP_VERSION} · Offline-first · React + Capacitor
           </p>

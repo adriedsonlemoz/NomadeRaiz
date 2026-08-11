@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PIX_CHAVE } from "../../constants";
+import { APP_NAME } from "../../config/app";
 
 export function ContatoModal({ onClose, T }) {
   const [nome, setNome]         = useState("");
@@ -15,7 +16,7 @@ export function ContatoModal({ onClose, T }) {
 
   const enviar = () => {
     if (!podeEnviar) return;
-    const assuntoFinal = assunto.trim() || "Contato — CicloViagem Nômade Raiz";
+    const assuntoFinal = assunto.trim() || `Contato — ${APP_NAME}`;
     const corpo = `Nome: ${nome || "—"}\nE-mail: ${email || "—"}\n\n${mensagem}`;
     window.location.href =
       `mailto:${PIX_CHAVE}?subject=${encodeURIComponent(assuntoFinal)}&body=${encodeURIComponent(corpo)}`;

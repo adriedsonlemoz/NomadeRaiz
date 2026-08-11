@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { T as BASE_T } from "../styles/theme";
 import { BicycleIcon } from "../components/common";
+import { APP_NAME, APP_TAGLINE } from "../config/app";
 
 const SPLASH_CONFIG = {
-  appName:    "Nômade",
-  appTagline: "Autonomia & Sobrevivência",
+  appName:    APP_NAME,
+  appTagline: APP_TAGLINE,
   duracao:    2200,
   fadeOut:    400,
 };
