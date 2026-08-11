@@ -24,11 +24,18 @@ export default function ExportarPage() {
   };
 
   const handleImport = () => {
-    const items = importQRData(importTxt.trim());
-    if (!items) { setImportErr("JSON inválido — cole o conteúdo exportado pelo app"); return; }
-    items.forEach(i => addItem(i));
-    setImportando(false); setImportTxt(""); setImportErr("");
-    alert(`✅ ${items.length} itens importados com sucesso!`);
+    try {
+      const items = importQRData(importTxt.trim());
+      if (!items?.length) { setImportErr("JSON inválido ou sem itens."); return; }
+      items.forEach(i => {
+        const { id, createdAt, updatedAt, ...novo } = i;
+        addItem(novo);
+      });
+      setImportando(false); setImportTxt(""); setImportErr("");
+      alert(`✅ ${items.length} itens importados com sucesso!`);
+    } catch {
+      setImportErr("JSON inválido — cole o conteúdo exportado pelo app");
+    }
   };
 
   const tabS = id => ({ flex:1, padding:"9px 6px", borderRadius:9, border:"none", cursor:"pointer",

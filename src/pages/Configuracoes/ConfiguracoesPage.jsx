@@ -1,6 +1,7 @@
 import { useStore } from "../../contexts";
 import { useTheme, useDiasNaEstrada } from "../../hooks";
 import { StorageService } from "../../services/storage.service";
+import { BicycleIcon } from "../../components/common";
 
 export default function ConfiguracoesPage() {
   const { state, setPage, setSettings } = useStore();
