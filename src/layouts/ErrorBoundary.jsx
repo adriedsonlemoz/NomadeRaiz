@@ -23,7 +23,7 @@ export default class ErrorBoundary extends React.Component {
         <h2 style={{ color:T.textMain, fontSize:18, fontWeight:800, margin:"0 0 8px", textAlign:"center" }}>
           Algo deu errado</h2>
         <p style={{ color:T.textSub, fontSize:13, margin:"0 0 20px", textAlign:"center", lineHeight:1.5 }}>
-          Erro capturado pelo ErrorBoundary.<br/>Seus dados estão seguros no armazenamento local.</p>
+          Erro capturado pelo ErrorBoundary.<br/>Seus dados permanecem no armazenamento offline do app.</p>
         <div style={{ width:"100%", background:T.white, border:`1.5px solid ${T.urgBorder}`,
           borderRadius:12, padding:"12px 14px", marginBottom:12 }}>
           <p style={{ color:T.textMuted, fontSize:10, fontWeight:700, textTransform:"uppercase",
@@ -42,7 +42,7 @@ export default class ErrorBoundary extends React.Component {
           <button onClick={() => this.handleReset()} style={{ flex:1, padding:"13px 0", borderRadius:12,
             border:"none", background:T.blue, color:"#fff", fontWeight:700, fontSize:14, cursor:"pointer" }}>
             🔄 Tentar novamente</button>
-          <button onClick={() => { StorageService.clearAll().finally(() => { localStorage.clear(); window.location.reload(); }); }}
+          <button onClick={() => { StorageService.clearAll().finally(() => { window.location.reload(); }); }}
             style={{ flex:1, padding:"13px 0", borderRadius:12, border:`1.5px solid ${T.border}`,
               background:T.white, color:T.textSub, fontWeight:600, fontSize:13, cursor:"pointer" }}>
             🗑️ Limpar dados</button>

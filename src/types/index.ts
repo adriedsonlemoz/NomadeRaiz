@@ -2,16 +2,78 @@ export type ModoId = 'antes-sair' | 'acampamento' | 'chuva' | 'noite' | 'manuten
 export type PageId = 'missao'|'lista'|'diario'|'extras'|'dicas'|'calculadora'|'pontos'|'alertas'|'exportar'|'configuracoes'|'sobre'|'planejamento'|'manual-bike'|string;
 export type ItemStatus = 'pendente'|'comprado';
 export type Priority = 'baixo'|'medio'|'urgente';
+export type FontScale = 'sm'|'md'|'lg';
+export type ThemeMode = 'light'|'dark';
+export type ItemFilter = 'todos'|'pendentes'|'comprados'|string;
+export type ItemSort = 'prioridade'|'preco-asc'|'preco-desc'|string;
+
 export interface Item {
-  id: string; name: string; categoryId: string; status: ItemStatus; priority: Priority;
-  quantity: number; price: number; notes?: string; createdAt: number; updatedAt: number;
+  id: string;
+  name: string;
+  categoryId: string;
+  status: ItemStatus;
+  priority: Priority;
+  quantity: number;
+  price: number;
+  notes?: string;
+  createdAt: number;
+  updatedAt: number;
 }
-export interface DiarioEntry { id:string; local:string; clima:string; km:number; nota:string; createdAt:number; }
-export interface Ponto { id:string; tipo:string; nome:string; referencia:string; obs:string; avaliacao:number; fechado:boolean; }
-export interface AppSettings { themeMode:'light'|'dark'; fontScale:'sm'|'md'|'lg'; startDate:number|null; }
-export interface AppState {
-  items: Item[]; filter:'todos'|'pendentes'|'comprados'|string; sort:'prioridade'|'preco-asc'|'preco-desc'|string;
-  page: PageId; modoAtivo: ModoId|null; checks: Record<string,Record<string,boolean>>; diario: DiarioEntry[]; pontos:Ponto[];
-  minimos:Record<string,number>; settings:AppSettings; notaRapida:string; favoritosDicas:string[]; favoritosTutoriais:string[];
-  habilidadesDominadas:string[]; manualBikeAlvo:{tipo:'peca'|'problema';id:string}|null;
+
+export interface DiarioEntry {
+  id: string;
+  local: string;
+  clima: string;
+  km: number;
+  nota: string;
+  createdAt: number;
 }
+
+export interface Ponto {
+  id: string;
+  tipo: string;
+  nome: string;
+  referencia: string;
+  obs: string;
+  avaliacao: number;
+  fechado: boolean;
+}
+
+export interface AppSettings {
+  themeMode: ThemeMode;
+  fontScale: FontScale;
+  startDate: number|null;
+}
+
+export interface PersistedState {
+  items: Item[];
+  modoAtivo: ModoId|null;
+  checks: Record<string,Record<string,boolean>>;
+  diario: DiarioEntry[];
+  pontos: Ponto[];
+  minimos: Record<string,number>;
+  settings: AppSettings;
+  notaRapida: string;
+  favoritosDicas: string[];
+  favoritosTutoriais: string[];
+  habilidadesDominadas: string[];
+}
+
+export interface AppState extends PersistedState {
+  filter: ItemFilter;
+  sort: ItemSort;
+  page: PageId;
+  manualBikeAlvo: {tipo:'peca'|'problema';id:string}|null;
+}
+
+export interface BackupEnvelope {
+  app: 'nomade-raiz';
+  schemaVersion: 1;
+  appVersion: string;
+  exportedAt: string;
+  data: PersistedState;
+}
+
+export type BackupImportResult =
+  | { kind:'full'; data:PersistedState; sourceVersion?:string }
+  | { kind:'legacy-items'; items:Item[] };

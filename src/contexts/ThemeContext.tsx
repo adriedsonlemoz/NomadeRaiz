@@ -6,7 +6,7 @@ import type { FontScale } from "../styles/theme";
 export interface ThemeCtx {
   theme:     typeof T;
   isDark:    boolean;
-  F:         typeof FONT_SCALES["md"];
+  F:         (typeof FONT_SCALES)[FontScale];
   fontScale: FontScale;
 }
 

@@ -1,11 +1,14 @@
 {
   "name": "nomade-checklist",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "lint": "node scripts/lint.mjs",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json",
+    "check": "npm run lint && npm run typecheck",
+    "build": "npm run check && vite build",
     "preview": "vite preview",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
