@@ -2,9 +2,15 @@ import { useState, useEffect } from "react";
 import QRCode from "qrcode";
 import { gerarPayloadPix } from "../../services/pix.service";
 import { PIX_CHAVE } from "../../constants";
+import type { ThemeCtx } from "../../contexts/ThemeContext";
 
-export function ApoioModal({ onClose, T }) {
-  const [qrUrl, setQrUrl] = useState(null);
+interface ApoioModalProps {
+  onClose: () => void;
+  T: ThemeCtx["theme"];
+}
+
+export function ApoioModal({ onClose, T }: ApoioModalProps) {
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {

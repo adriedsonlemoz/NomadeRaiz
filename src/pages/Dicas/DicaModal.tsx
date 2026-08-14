@@ -1,6 +1,17 @@
 import { useTheme } from "../../hooks";
 
-export function DicaModal({ item, cor, onClose }) {
+export interface DicaModalItem {
+  texto: string;
+  dica?: string;
+}
+
+interface DicaModalProps {
+  item: DicaModalItem;
+  cor: string;
+  onClose: () => void;
+}
+
+export function DicaModal({ item, cor, onClose }: DicaModalProps) {
   const { theme: T } = useTheme();
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, zIndex:60,

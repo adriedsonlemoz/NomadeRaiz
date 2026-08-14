@@ -2,6 +2,15 @@
 
 Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
 
+## 1.0.4 — Páginas auxiliares em TypeScript
+
+- Páginas **Extras**, **Dicas**, **Exportar / Importar** e **Sobre o App** migradas de JSX para TSX.
+- Modais de dica, apoio e contato agora possuem contratos explícitos de propriedades.
+- Fluxo de exportação/importação recebeu tipos para formatos de exportação e estilos compartilhados.
+- Integração do QR Code recebeu uma declaração TypeScript local mínima, evitando dependência adicional apenas para tipos.
+- O lint passa a proteger este novo conjunto contra o retorno acidental de versões `.jsx` legadas.
+- Quantidade de arquivos JSX restante caiu de 39 para 32, mantendo o comportamento existente.
+
 ## 1.0.3 — Base visual em TypeScript
 
 - Ponto de entrada `App` migrado de JSX para TSX.

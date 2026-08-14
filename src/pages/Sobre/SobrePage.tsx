@@ -13,14 +13,22 @@ import { AppButton, BicycleIcon, Card, PageHeader, SectionLabel } from "../../co
 import { ApoioModal } from "./ApoioModal";
 import { ContatoModal } from "./ContatoModal";
 
+interface ReleaseNote {
+  versao: string;
+  data: string;
+  mudancas: string[];
+}
+
+const changelog = CHANGELOG as ReleaseNote[];
+
 export default function SobrePage() {
   const { setPage } = useStore();
   const { theme: T } = useTheme();
   const [apoioAberto, setApoioAberto] = useState(false);
   const [contatoAberto, setContatoAberto] = useState(false);
 
-  const releaseAtual = CHANGELOG.find(v => v.versao === APP_VERSION) || CHANGELOG[0];
-  const historico = CHANGELOG.filter(v => v.versao !== releaseAtual?.versao);
+  const releaseAtual = changelog.find(v => v.versao === APP_VERSION) || changelog[0];
+  const historico = changelog.filter(v => v.versao !== releaseAtual?.versao);
 
   const funcionalidades = [
     { icon:"📋", label:"Equipamentos e checklists" },

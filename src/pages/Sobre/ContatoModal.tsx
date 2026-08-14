@@ -1,14 +1,21 @@
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import { PIX_CHAVE } from "../../constants";
 import { APP_NAME } from "../../config/app";
+import type { ThemeCtx } from "../../contexts/ThemeContext";
 
-export function ContatoModal({ onClose, T }) {
+interface ContatoModalProps {
+  onClose: () => void;
+  T: ThemeCtx["theme"];
+}
+
+export function ContatoModal({ onClose, T }: ContatoModalProps) {
   const [nome, setNome]         = useState("");
   const [email, setEmail]       = useState("");
   const [assunto, setAssunto]   = useState("");
   const [mensagem, setMensagem] = useState("");
 
-  const campo = { padding:"10px 12px", border:`1.5px solid ${T.border}`, borderRadius:10,
+  const campo: CSSProperties = { padding:"10px 12px", border:`1.5px solid ${T.border}`, borderRadius:10,
     fontSize:13.5, color:T.textMain, background:T.blueLight, outline:"none",
     fontFamily:"inherit", width:"100%", boxSizing:"border-box" };
 

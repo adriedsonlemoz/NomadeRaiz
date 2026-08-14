@@ -65,6 +65,12 @@ export const DICAS=[
  {id:'rota',icon:'🗺️',titulo:'Tenha rota offline',texto:'Baixe mapas e anote pontos importantes antes de ficar sem sinal.'},
 ];
 export const CHANGELOG=[
+ {versao:'1.0.4',data:'14/08/2026',mudancas:[
+  'Extras, Dicas, Exportação e Sobre migrados de JSX para TypeScript/TSX',
+  'Modais de dica, apoio e contato agora possuem contratos de propriedades explícitos',
+  'Fluxos de backup/importação e QR Code ganharam tipagem sem alterar o comportamento existente',
+  'Proteções estruturais ampliadas para impedir o retorno de páginas JSX já migradas',
+ ]},
  {versao:'1.0.3',data:'14/08/2026',mudancas:[
   'Base compartilhada da interface migrada de JSX para TypeScript/TSX',
   'App, layouts, hooks e componentes comuns agora possuem contratos de tipos explícitos',

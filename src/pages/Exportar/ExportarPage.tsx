@@ -1,11 +1,14 @@
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
 import { APP_VERSION } from "../../config/app";
 import { AppButton, Card, PageHeader } from "../../components/common";
 import { exportText, exportBackupJSON, importBackupJSON, toPersistedState } from "../../services/export.service";
 
-async function copyText(text) {
+type ExportFormat = "resumo" | "compras" | "completo";
+
+async function copyText(text: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
   } catch {
@@ -21,7 +24,7 @@ async function copyText(text) {
 export default function ExportarPage() {
   const { state, setPage, restorePersistedState } = useStore();
   const { theme: T } = useTheme();
-  const [formato, setFormato] = useState("compras");
+  const [formato, setFormato] = useState<ExportFormat>("compras");
   const [copiado, setCopiado] = useState(false);
   const [backupInfo, setBackupInfo] = useState(false);
   const [importando, setImportando] = useState(false);
@@ -75,7 +78,7 @@ export default function ExportarPage() {
     }
   };
 
-  const tabS = id => ({ flex:1, padding:"9px 6px", borderRadius:9, border:"none", cursor:"pointer",
+  const tabS = (id: ExportFormat): CSSProperties => ({ flex:1, padding:"9px 6px", borderRadius:9, border:"none", cursor:"pointer",
     fontSize:11, fontWeight:700, display:"flex", flexDirection:"column", alignItems:"center", gap:2,
     background:formato===id?T.blue:T.blueChip, color:formato===id?"#fff":T.textSub });
 

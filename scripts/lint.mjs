@@ -84,6 +84,8 @@ const migratedSharedModules = [
   'components/common/Badge', 'components/common/BicycleIcon', 'components/common/EmptyState',
   'components/common/Modal', 'components/common/ProgressBar', 'components/common/QtyControl',
   'components/common/index', 'hooks/index',
+  'pages/Extras/ExtrasPage', 'pages/Dicas/DicasPage', 'pages/Dicas/DicaModal',
+  'pages/Exportar/ExportarPage', 'pages/Sobre/SobrePage', 'pages/Sobre/ApoioModal', 'pages/Sobre/ContatoModal',
 ];
 for (const moduleName of migratedSharedModules) {
   const tsxPath = path.join(src, `${moduleName}.tsx`);

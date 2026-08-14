@@ -3,13 +3,22 @@ import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
 import { DICAS } from "../../constants";
 
+interface Dica {
+  id: string;
+  icon: string;
+  titulo: string;
+  texto: string;
+}
+
+const dicas = DICAS as Dica[];
+
 export default function DicasPage() {
   const { state, setPage, toggleFavoritoDica } = useStore();
   const { theme: T } = useTheme();
-  const [open, setOpen] = useState(null);
+  const [open, setOpen] = useState<string | null>(null);
   const [somenteFavoritas, setSomenteFavoritas] = useState(false);
   const favoritas = state.favoritosDicas;
-  const lista = somenteFavoritas ? DICAS.filter(d => favoritas.includes(d.id)) : DICAS;
+  const lista = somenteFavoritas ? dicas.filter(d => favoritas.includes(d.id)) : dicas;
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:T.pageBg }}>
       <div style={{ background:T.navy, padding:"14px 14px 16px", flexShrink:0, position:"relative" }}>
