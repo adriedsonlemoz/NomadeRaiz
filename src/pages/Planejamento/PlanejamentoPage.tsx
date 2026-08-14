@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
 import { parseNum, fmt } from "../../utils/format";
@@ -9,11 +9,35 @@ import {
 import {
   calcEnergiaAutomatica, statusBicicleta, statusPercentual, statusPorDias, statusAgua,
   statusDinheiro, piorStatus, gerarRecomendacoes,
+  type PlanningStatus,
 } from "../../services/planning.service";
 import { ALIMENTOS_CONFIG, EQUIPAMENTOS_SEGURANCA_IDS, TIPOS_VIAGEM, EQUIPAMENTO_PARA_MANUAL } from "../../constants";
 import { ComidaCard } from "../Calculadora/ComidaCard";
 import { AguaCard } from "../Calculadora/AguaCard";
 import { StatusBadge } from "./StatusBadge";
+import type { FoodFormState } from "../Calculadora/types";
+import type { TravelTypeId } from "../../types";
+
+interface TravelTypeOption {
+  id: TravelTypeId;
+  icon: string;
+  label: string;
+}
+
+interface ManualBikeLink {
+  tipo: "peca" | "problema";
+  id: string;
+}
+
+interface PlanningSummaryItem {
+  id: string;
+  icon: string;
+  label: string;
+  status: PlanningStatus;
+}
+
+const tiposViagem = TIPOS_VIAGEM as readonly TravelTypeOption[];
+const equipamentoParaManual = EQUIPAMENTO_PARA_MANUAL as Record<string, ManualBikeLink | undefined>;
 
 export default function PlanejamentoPage() {
   const { state, setPage, setManualBikeAlvo } = useStore();
@@ -25,8 +49,8 @@ export default function PlanejamentoPage() {
   const [mediaKmDia, setMediaKmDia]   = useState("");
   const [dinheiro, setDinheiro]       = useState("");
   const [pessoas, setPessoas]         = useState("1");
-  const [tipoViagem, setTipoViagem]   = useState("cicloviagem");
-  const [alimentos, setAlimentos]     = useState({});
+  const [tipoViagem, setTipoViagem]   = useState<TravelTypeId>("cicloviagem");
+  const [alimentos, setAlimentos]     = useState<FoodFormState>({});
   const [litrosAgua, setLitrosAgua]   = useState("");
   const [reabastece, setReabastece]         = useState(false);
   const [frequenciaDias, setFrequenciaDias] = useState("");
@@ -56,7 +80,7 @@ export default function PlanejamentoPage() {
     statusPercentual(segurancaComprados, itensSeguranca.length),
   );
 
-  const resumo = [
+  const resumo: PlanningSummaryItem[] = [
     { id:"bike",     icon:"🚲",  label:"Bicicleta",   status:statusBike },
     { id:"comida",   icon:"🍱",  label:"Alimentação", status:statusPorDias(rComida.valido ? rComida.dias : null, diasNum) },
     { id:"agua",     icon:"💧",  label:"Água",         status:statusAgua(rAgua, diasNum) },
@@ -79,14 +103,14 @@ export default function PlanejamentoPage() {
     itensSegurancaFaltando: segurancaFaltando,
   });
 
-  const cardStyle = { background:T.white, border:`1px solid ${T.border}`, borderRadius:16,
+  const cardStyle: CSSProperties = { background:T.white, border:`1px solid ${T.border}`, borderRadius:16,
     padding:"16px", boxShadow:"0 1px 5px rgba(15,39,68,.06)", boxSizing:"border-box" };
-  const kicker = { color:T.textMuted, fontSize:10.5, fontWeight:800, letterSpacing:"0.12em",
+  const kicker: CSSProperties = { color:T.textMuted, fontSize:10.5, fontWeight:800, letterSpacing:"0.12em",
     textTransform:"uppercase", margin:"0 0 10px" };
-  const campo = { padding:"10px 12px", border:`1.5px solid ${T.border}`, borderRadius:10,
+  const campo: CSSProperties = { padding:"10px 12px", border:`1.5px solid ${T.border}`, borderRadius:10,
     fontSize:13.5, color:T.textMain, background:T.blueLight, outline:"none",
     fontFamily:"inherit", width:"100%", boxSizing:"border-box" };
-  const labelStyle = { color:T.textSub, fontSize:11.5, fontWeight:600, margin:"0 0 4px" };
+  const labelStyle: CSSProperties = { color:T.textSub, fontSize:11.5, fontWeight:600, margin:"0 0 4px" };
 
   const podeGerar = diasNum > 0;
 
@@ -142,7 +166,7 @@ export default function PlanejamentoPage() {
             <div>
               <p style={labelStyle}>🏕️ Tipo de viagem</p>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-                {TIPOS_VIAGEM.map(t => (
+                {tiposViagem.map(t => (
                   <button key={t.id} onClick={()=>setTipoViagem(t.id)} style={{
                     display:"flex", alignItems:"center", gap:6, padding:"9px 10px", borderRadius:10,
                     border:`1.5px solid ${tipoViagem===t.id?T.blue:T.border}`,
@@ -234,7 +258,7 @@ export default function PlanejamentoPage() {
                     ⚠️ Você ainda não possui:</p>
                   <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                     {segurancaFaltando.map(it => {
-                      const vinculo = EQUIPAMENTO_PARA_MANUAL[it.id];
+                      const vinculo = equipamentoParaManual[it.id];
                       return (
                         <div key={it.id} style={{ background:T.urgBg, border:`1px solid ${T.urgBorder}`,
                           borderRadius:8, padding:"7px 10px" }}>

@@ -2,6 +2,27 @@
 
 Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
 
+## 1.0.6 — Planejamento, Diário e Pontos em TypeScript
+
+- **Planejamento**, **Diário de Campo** e **Pontos de Apoio** migrados de JSX/JavaScript para TypeScript/TSX, incluindo páginas, formulários, badge de status e barrels.
+- Formulários de diário e pontos passaram a consumir contratos compartilhados do estado persistente, evitando formatos divergentes entre UI e Store.
+- Clima, tipos de ponto, avaliações, filtros e tipos de viagem agora possuem uniões TypeScript explícitas.
+- `StatusBadge` passou a aceitar somente estados válidos produzidos por `planning.service.ts`.
+- A importação de backups agora normaliza clima, tipo de ponto e avaliação para valores válidos, preservando compatibilidade com dados antigos ou incompletos.
+- Estilos reutilizados dentro dos formulários e do Planejamento foram tipados como `CSSProperties`, eliminando inferências frouxas na migração.
+- O lint protege os módulos desta rodada contra o retorno acidental de versões `.jsx`/`.js` legadas.
+- Quantidade de arquivos JSX restante caiu de 16 para 10.
+
+## 1.0.5 — Calculadora e Equipamentos em TypeScript
+
+- Módulos de **Calculadora** e **Equipamentos** migrados de JSX/JavaScript para TypeScript/TSX, incluindo componentes, páginas e barrels.
+- Estados de formulários, propriedades, eventos e contratos visuais agora possuem tipos explícitos, reduzindo erros silenciosos na interface.
+- Totais globais e por categoria de Equipamentos foram centralizados em `equipment.service.ts`, eliminando recálculos duplicados nas páginas.
+- O card de alimentação passou a consumir valor e autonomia já calculados por `calculator.service.ts`, em vez de duplicar a mesma regra na UI.
+- `calcIndiceGeral` agora preserva o tipo do recurso que se torna gargalo, permitindo acessar seus metadados com segurança no resumo.
+- O lint protege os módulos migrados contra o retorno acidental de versões `.jsx`/`.js` legadas.
+- Quantidade de arquivos JSX restante caiu de 32 para 16.
+
 ## 1.0.4 — Páginas auxiliares em TypeScript
 
 - Páginas **Extras**, **Dicas**, **Exportar / Importar** e **Sobre o App** migradas de JSX para TSX.

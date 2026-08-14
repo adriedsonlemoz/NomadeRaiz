@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useState, type CSSProperties, type MouseEvent } from "react";
 import { useTheme } from "../../hooks";
 import { CLIMAS } from "../../constants";
+import type { ClimaIcon, DiarioEntryDraft } from "../../types";
 
-export function DiarioForm({ onSave, onClose }) {
+const climas = CLIMAS as readonly ClimaIcon[];
+
+interface DiarioFormProps {
+  onSave: (entrada: DiarioEntryDraft) => void;
+  onClose: () => void;
+}
+
+export function DiarioForm({ onSave, onClose }: DiarioFormProps) {
   const { theme: T } = useTheme();
   const [local, setLocal] = useState("");
-  const [clima, setClima] = useState("☀️");
+  const [clima, setClima] = useState<ClimaIcon>("☀️");
   const [km,    setKm]    = useState("");
   const [nota,  setNota]  = useState("");
-  const inp = { width:"100%", padding:"11px 13px", border:`1.5px solid ${T.border}`,
+  const inp: CSSProperties = { width:"100%", padding:"11px 13px", border:`1.5px solid ${T.border}`,
     borderRadius:11, fontSize:14, color:T.textMain, background:T.blueLight,
     outline:"none", boxSizing:"border-box", fontFamily:"inherit" };
+
+  const stopPropagation = (event: MouseEvent<HTMLDivElement>) => event.stopPropagation();
+  const salvar = () => onSave({ local, clima, km:Number(km)||0, nota });
+
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, zIndex:50,
       background:"rgba(0,0,0,.5)", display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:480,
+      <div onClick={stopPropagation} style={{ width:"100%", maxWidth:480,
         background:T.white, borderRadius:"22px 22px 0 0", padding:"8px 18px 34px",
         boxShadow:"0 -8px 40px rgba(15,39,68,.2)" }}>
         <div style={{ width:36, height:4, background:T.border, borderRadius:99, margin:"10px auto 14px" }}/>
@@ -29,7 +41,7 @@ export function DiarioForm({ onSave, onClose }) {
           <div>
             <p style={{ color:T.textMuted, fontSize:11, margin:"0 0 6px" }}>Clima:</p>
             <div style={{ display:"flex", gap:6 }}>
-              {CLIMAS.map(c=>(
+              {climas.map(c=>(
                 <button key={c} onClick={()=>setClima(c)} style={{ width:38, height:38, borderRadius:9,
                   border:`1.5px solid ${clima===c?T.blue:T.border}`,
                   background:clima===c?T.blueLight:T.white, fontSize:18, cursor:"pointer" }}>{c}</button>
@@ -45,7 +57,7 @@ export function DiarioForm({ onSave, onClose }) {
           <textarea style={{ ...inp, resize:"none", height:80, lineHeight:1.5 }}
             placeholder="Nota do dia (opcional)"
             value={nota} onChange={e=>setNota(e.target.value)}/>
-          <button onClick={()=>onSave({ local, clima, km:Number(km)||0, nota })}
+          <button onClick={salvar}
             style={{ width:"100%", padding:"14px 0", borderRadius:13, border:"none",
               background:T.blue, color:"#fff", fontWeight:800, fontSize:15, cursor:"pointer",
               boxShadow:`0 4px 14px rgba(37,99,235,.3)` }}>Salvar entrada</button>

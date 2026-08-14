@@ -86,6 +86,16 @@ const migratedSharedModules = [
   'components/common/index', 'hooks/index',
   'pages/Extras/ExtrasPage', 'pages/Dicas/DicasPage', 'pages/Dicas/DicaModal',
   'pages/Exportar/ExportarPage', 'pages/Sobre/SobrePage', 'pages/Sobre/ApoioModal', 'pages/Sobre/ContatoModal',
+  'pages/Calculadora/AguaCard', 'pages/Calculadora/BikeCard', 'pages/Calculadora/CalcAtoms',
+  'pages/Calculadora/CalculadoraPage', 'pages/Calculadora/ComidaCard', 'pages/Calculadora/CustoCard',
+  'pages/Calculadora/DinheiroCard', 'pages/Calculadora/EnergiaCard', 'pages/Calculadora/PesoCard',
+  'pages/Calculadora/ResumoCard', 'pages/Calculadora/index',
+  'pages/Equipamentos/CategoryItemsView', 'pages/Equipamentos/EquipamentosPage', 'pages/Equipamentos/index',
+  'components/equipment/CategoryCard', 'components/equipment/EquipmentCard',
+  'components/equipment/ItemDetailModal', 'components/equipment/ItemFormModal', 'components/equipment/index',
+  'pages/Planejamento/PlanejamentoPage', 'pages/Planejamento/StatusBadge', 'pages/Planejamento/index',
+  'pages/Diario/DiarioPage', 'pages/Diario/DiarioForm', 'pages/Diario/index',
+  'pages/Pontos/PontosPage', 'pages/Pontos/PontoForm', 'pages/Pontos/index',
 ];
 for (const moduleName of migratedSharedModules) {
   const tsxPath = path.join(src, `${moduleName}.tsx`);

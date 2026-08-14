@@ -1,4 +1,4 @@
-import type { Item, ItemSort } from '../types';
+import type { Item, ItemFilter, ItemSort, Priority } from '../types';
 import { parseNum } from '../utils/format';
 
 export interface EquipmentStats {
@@ -14,6 +14,8 @@ export interface CategoryStats {
   comprados: number;
   pendentes: number;
   valor: number;
+  valorComprado: number;
+  valorPendente: number;
 }
 
 type ItemList = readonly Item[] | null | undefined;
@@ -41,17 +43,22 @@ export const catStats = (items: ItemList, catId: string): CategoryStats => {
   const list = (items ?? []).filter((item) => item.categoryId === catId);
   const comprados = list.filter((item) => item.status === 'comprado').length;
 
+  const valor = calcTotal(list);
+  const valorComprado = calcTotal(list.filter((item) => item.status === 'comprado'));
+
   return {
     total: list.length,
     comprados,
     pendentes: list.length - comprados,
-    valor: calcTotal(list),
+    valor,
+    valorComprado,
+    valorPendente: valor - valorComprado,
   };
 };
 
 export const filterItems = (
   items: ItemList,
-  filter: string,
+  filter: ItemFilter,
   catId?: string | null,
 ): Item[] =>
   (items ?? []).filter(
@@ -64,7 +71,7 @@ export const filterItems = (
           : true),
   );
 
-const priorityRank: Record<string, number> = {
+const priorityRank: Record<Priority, number> = {
   urgente: 0,
   medio: 1,
   baixo: 2,

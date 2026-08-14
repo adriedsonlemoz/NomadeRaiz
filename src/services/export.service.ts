@@ -1,5 +1,9 @@
 import { APP_ID, APP_VERSION, BACKUP_SCHEMA_VERSION } from '../config/app';
-import type { AppState, BackupEnvelope, BackupImportResult, DiarioEntry, Item, PersistedState, Ponto } from '../types';
+import { CLIMAS, TIPOS_PONTO } from '../constants';
+import type {
+  AppState, BackupEnvelope, BackupImportResult, ClimaIcon, DiarioEntry, Item,
+  PersistedState, Ponto, PontoAvaliacao, PontoTipo,
+} from '../types';
 import { fmt } from '../utils/format';
 
 const DEFAULT_SETTINGS: PersistedState['settings'] = {
@@ -14,6 +18,20 @@ const asFiniteNumber = (value: unknown, fallback = 0) =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 const asString = (value: unknown, fallback = '') => typeof value === 'string' ? value : fallback;
 const asStringArray = (value: unknown) => Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
+
+const climasValidos = new Set<ClimaIcon>(CLIMAS as readonly ClimaIcon[]);
+const tiposPontoValidos = new Set<PontoTipo>(
+  (TIPOS_PONTO as readonly { id:PontoTipo }[]).map((tipo) => tipo.id),
+);
+
+const asClima = (value: unknown): ClimaIcon =>
+  typeof value === 'string' && climasValidos.has(value as ClimaIcon) ? value as ClimaIcon : '☀️';
+const asPontoTipo = (value: unknown): PontoTipo =>
+  typeof value === 'string' && tiposPontoValidos.has(value as PontoTipo) ? value as PontoTipo : 'outro';
+const asPontoAvaliacao = (value: unknown): PontoAvaliacao => {
+  const avaliacao = Math.round(asFiniteNumber(value, 1));
+  return avaliacao >= 3 ? 3 : avaliacao <= 1 ? 1 : 2;
+};
 
 function normalizeItem(value: unknown, index: number): Item {
   if (!isRecord(value) || typeof value.id !== 'string' || typeof value.name !== 'string' || typeof value.categoryId !== 'string') {
@@ -38,7 +56,7 @@ function normalizeDiario(value: unknown): DiarioEntry[] {
   return value.filter(isRecord).map((entry, index) => ({
     id: asString(entry.id, `diario-importado-${index}`),
     local: asString(entry.local),
-    clima: asString(entry.clima),
+    clima: asClima(entry.clima),
     km: Math.max(0, asFiniteNumber(entry.km)),
     nota: asString(entry.nota),
     createdAt: asFiniteNumber(entry.createdAt, Date.now()),
@@ -49,11 +67,11 @@ function normalizePontos(value: unknown): Ponto[] {
   if (!Array.isArray(value)) return [];
   return value.filter(isRecord).map((ponto, index) => ({
     id: asString(ponto.id, `ponto-importado-${index}`),
-    tipo: asString(ponto.tipo, 'outro'),
+    tipo: asPontoTipo(ponto.tipo),
     nome: asString(ponto.nome),
     referencia: asString(ponto.referencia),
     obs: asString(ponto.obs),
-    avaliacao: Math.max(0, asFiniteNumber(ponto.avaliacao)),
+    avaliacao: asPontoAvaliacao(ponto.avaliacao),
     fechado: ponto.fechado === true,
   }));
 }

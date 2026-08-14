@@ -1,18 +1,25 @@
 import { useState } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
+import type { DiarioEntryDraft } from "../../types";
 import { DiarioForm } from "./DiarioForm";
 
 export default function DiarioPage() {
   const { state, setPage, addEntrada, delEntrada } = useStore();
   const { theme: T } = useTheme();
-  const [showForm,    setShowForm]    = useState(false);
-  const [confirmDel,  setConfirmDel]  = useState(null);
-  const [expanded,    setExpanded]    = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const totalKm = state.diario.reduce((s,e)=>s+(Number(e.km)||0),0);
+
+  const salvarEntrada = (entrada: DiarioEntryDraft) => {
+    addEntrada(entrada);
+    setShowForm(false);
+  };
+
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:T.pageBg }}>
-      {showForm && <DiarioForm onSave={e=>{ addEntrada(e); setShowForm(false); }} onClose={()=>setShowForm(false)}/>}
+      {showForm && <DiarioForm onSave={salvarEntrada} onClose={()=>setShowForm(false)}/>} 
       <div style={{ background:T.navy, padding:"14px 14px 18px", flexShrink:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <button onClick={()=>setPage("missao")} style={{ width:34, height:34, borderRadius:9,
@@ -45,7 +52,7 @@ export default function DiarioPage() {
           </div>
         ) : state.diario.map(entrada => {
           const isOpen = expanded===entrada.id;
-          const data   = new Date(entrada.createdAt).toLocaleDateString("pt-BR",
+          const data = new Date(entrada.createdAt).toLocaleDateString("pt-BR",
             { day:"2-digit", month:"short", year:"numeric" });
           return (
             <div key={entrada.id} style={{ background:T.white,

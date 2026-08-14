@@ -65,6 +65,19 @@ export const DICAS=[
  {id:'rota',icon:'🗺️',titulo:'Tenha rota offline',texto:'Baixe mapas e anote pontos importantes antes de ficar sem sinal.'},
 ];
 export const CHANGELOG=[
+ {versao:'1.0.6',data:'14/08/2026',mudancas:[
+  'Planejamento, Diário de Campo e Pontos de Apoio migrados para TypeScript/TSX',
+  'Formulários de diário e pontos agora usam contratos tipados compartilhados com o estado persistente',
+  'Status do planejamento, tipos de viagem, clima, filtros de pontos e avaliações ganharam tipos explícitos',
+  'Importação de backups agora normaliza clima, tipo de ponto e avaliação para valores válidos',
+  'Proteções estruturais ampliadas; quantidade de arquivos JSX restante caiu de 16 para 10',
+ ]},
+ {versao:'1.0.5',data:'14/08/2026',mudancas:[
+  'Calculadora e Equipamentos migrados de JSX/JavaScript para TypeScript/TSX',
+  'Formulários, propriedades e eventos dessas telas agora possuem contratos de tipos explícitos',
+  'Totais de equipamentos e cálculos de alimentação foram centralizados nos services, removendo lógica duplicada da interface',
+  'Proteções estruturais ampliadas; quantidade de arquivos JSX restante caiu de 32 para 16',
+ ]},
  {versao:'1.0.4',data:'14/08/2026',mudancas:[
   'Extras, Dicas, Exportação e Sobre migrados de JSX para TypeScript/TSX',
   'Modais de dica, apoio e contato agora possuem contratos de propriedades explícitos',

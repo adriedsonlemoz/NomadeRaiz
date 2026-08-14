@@ -4,8 +4,18 @@ export type ItemStatus = 'pendente'|'comprado';
 export type Priority = 'baixo'|'medio'|'urgente';
 export type FontScale = 'sm'|'md'|'lg';
 export type ThemeMode = 'light'|'dark';
+export type ClimaIcon = '☀️'|'⛅'|'☁️'|'🌧️'|'⛈️'|'🌬️';
+export type PontoTipo = 'agua'|'mercado'|'camping'|'saude'|'oficina'|'outro';
+export type PontoAvaliacao = 1|2|3;
+export type TravelTypeId = 'cicloviagem'|'camping'|'bate-volta'|'longa';
 export type ItemFilter = 'todos'|'pendentes'|'comprados'|string;
 export type ItemSort = 'prioridade'|'preco-asc'|'preco-desc'|string;
+
+export interface EquipmentCategory {
+  id: string;
+  icon: string;
+  label: string;
+}
 
 export interface Item {
   id: string;
@@ -20,23 +30,29 @@ export interface Item {
   updatedAt: number;
 }
 
-export interface DiarioEntry {
-  id: string;
+export interface DiarioEntryDraft {
   local: string;
-  clima: string;
+  clima: ClimaIcon;
   km: number;
   nota: string;
+}
+
+export interface DiarioEntry extends DiarioEntryDraft {
+  id: string;
   createdAt: number;
 }
 
-export interface Ponto {
-  id: string;
-  tipo: string;
+export interface PontoDraft {
+  tipo: PontoTipo;
   nome: string;
   referencia: string;
   obs: string;
-  avaliacao: number;
+  avaliacao: PontoAvaliacao;
   fechado: boolean;
+}
+
+export interface Ponto extends PontoDraft {
+  id: string;
 }
 
 export interface AppSettings {

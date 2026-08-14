@@ -262,7 +262,14 @@ export function calcCustoViagem(
   return { total, dias: diasNum };
 }
 
-export function calcIndiceGeral(recursos: readonly GeneralResource[] = []) {
+export interface GeneralIndexResult<T extends GeneralResource = GeneralResource> {
+  dias: number | null;
+  gargalo: T | null;
+}
+
+export function calcIndiceGeral<T extends GeneralResource>(
+  recursos: readonly T[] = [],
+): GeneralIndexResult<T> {
   const candidatos = recursos.filter(
     (recurso) =>
       !recurso.neutro &&
