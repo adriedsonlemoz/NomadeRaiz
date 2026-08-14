@@ -2,6 +2,15 @@
 
 Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
 
+## 1.0.3 — Base visual em TypeScript
+
+- Ponto de entrada `App` migrado de JSX para TSX.
+- Layouts principais (`AppShell`, `BottomNav`, `SplashScreen` e `ErrorBoundary`) migrados para TypeScript.
+- Hooks compartilhados migrados para TypeScript, com contratos explícitos para háptica, dias na estrada e alertas.
+- Componentes comuns antigos em JSX (`Badge`, `BicycleIcon`, `EmptyState`, `Modal`, `ProgressBar` e `QtyControl`) migrados para TSX.
+- Barrels de layouts e componentes comuns migrados para TypeScript e passaram a exportar tipos públicos.
+- Migração mantém as páginas de negócio funcionando em JSX enquanto a base compartilhada passa a fornecer tipos para as próximas etapas.
+
 ## 1.0.2 — Identidade e apresentação
 
 - Nome visível padronizado para **Nomade Raiz** no app, splash, Capacitor, navegador e telas internas.

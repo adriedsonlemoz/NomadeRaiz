@@ -65,6 +65,12 @@ export const DICAS=[
  {id:'rota',icon:'🗺️',titulo:'Tenha rota offline',texto:'Baixe mapas e anote pontos importantes antes de ficar sem sinal.'},
 ];
 export const CHANGELOG=[
+ {versao:'1.0.3',data:'14/08/2026',mudancas:[
+  'Base compartilhada da interface migrada de JSX para TypeScript/TSX',
+  'App, layouts, hooks e componentes comuns agora possuem contratos de tipos explícitos',
+  'Barrels de componentes e layouts migrados para TypeScript com exportação de tipos públicos',
+  'Migração preparada para continuar pelas páginas de negócio sem alterar o comportamento atual',
+ ]},
  {versao:'1.0.2',data:'11/08/2026',mudancas:[
   'Identidade visual e nome padronizados como Nomade Raiz em todo o app',
   'Página Sobre renovada com versão atual, tecnologias e histórico de mudanças',

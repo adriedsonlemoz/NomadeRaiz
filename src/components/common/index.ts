@@ -1,10 +1,16 @@
 export { default as BicycleIcon } from "./BicycleIcon";
 export { Badge } from "./Badge";
+export type { BadgeProps } from "./Badge";
 export { Bar, Ring } from "./ProgressBar";
+export type { BarProps, RingProps } from "./ProgressBar";
 export { QtyControl } from "./QtyControl";
+export type { QtyControlProps } from "./QtyControl";
 export { ModalBase } from "./Modal";
+export type { ModalBaseProps } from "./Modal";
 export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps } from "./EmptyState";
 export { AppButton } from "./AppButton";
+export type { AppButtonProps } from "./AppButton";
 export { Card } from "./Card";
 export { PageHeader } from "./PageHeader";
 export { SectionLabel } from "./SectionLabel";

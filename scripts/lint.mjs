@@ -78,10 +78,32 @@ const constants = fs.readFileSync(path.join(src,'constants/index.js'),'utf8');
 if (!constants.includes('APP_VERSAO=APP_VERSION')) errors.push('constants/index.js: APP_VERSAO deve derivar de APP_VERSION.');
 if (!constants.includes(`versao:'${pkg.version}'`)) errors.push(`constants/index.js: CHANGELOG exibido no app deve conter a versão ${pkg.version}.`);
 
+const migratedSharedModules = [
+  'App',
+  'layouts/AppShell', 'layouts/BottomNav', 'layouts/ErrorBoundary', 'layouts/SplashScreen', 'layouts/index',
+  'components/common/Badge', 'components/common/BicycleIcon', 'components/common/EmptyState',
+  'components/common/Modal', 'components/common/ProgressBar', 'components/common/QtyControl',
+  'components/common/index', 'hooks/index',
+];
+for (const moduleName of migratedSharedModules) {
+  const tsxPath = path.join(src, `${moduleName}.tsx`);
+  const tsPath = path.join(src, `${moduleName}.ts`);
+  if (!fs.existsSync(tsxPath) && !fs.existsSync(tsPath)) errors.push(`${moduleName}: módulo TypeScript migrado não encontrado.`);
+  for (const legacyExt of ['.js', '.jsx']) {
+    if (fs.existsSync(path.join(src, `${moduleName}${legacyExt}`))) errors.push(`${moduleName}${legacyExt}: versão antiga não pode coexistir com o módulo TypeScript.`);
+  }
+}
+
+const serviceNames = ['calculator','equipment','export','pix','planning','storage'];
+for (const serviceName of serviceNames) {
+  const tsPath = path.join(src, `services/${serviceName}.service.ts`);
+  const jsPath = path.join(src, `services/${serviceName}.service.js`);
+  if (!fs.existsSync(tsPath)) errors.push(`${serviceName}.service.ts: service TypeScript obrigatório não encontrado.`);
+  if (fs.existsSync(jsPath)) errors.push(`${serviceName}.service.js antigo ainda existe e pode sombrear a implementação TypeScript.`);
+}
+
 const storage = fs.readFileSync(path.join(src,'services/storage.service.ts'),'utf8');
 if (!storage.includes("from '../database/db'")) errors.push('storage.service.ts: persistência deve usar a camada IndexedDB/Dexie.');
-if (fs.existsSync(path.join(src,'services/storage.service.js'))) errors.push('storage.service.js antigo ainda existe e pode sombrear a implementação TypeScript.');
-if (fs.existsSync(path.join(src,'services/export.service.js'))) errors.push('export.service.js antigo ainda existe e pode sombrear a implementação TypeScript.');
 
 const tsconfig = JSON.parse(fs.readFileSync(path.join(root,'tsconfig.json'),'utf8'));
 if ((tsconfig.include ?? []).includes('capacitor.config.ts')) errors.push('tsconfig.json: capacitor.config.ts não deve estar no projeto web principal.');
