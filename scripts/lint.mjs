@@ -40,11 +40,19 @@ for (const file of walk(src).filter(file => /\.(?:js|jsx|ts|tsx)$/.test(file))) 
   if (text.includes('localStorage') && rel !== 'src/services/storage.service.ts' && !rel.endsWith('StoreContext.tsx')) errors.push(`${rel}: localStorage direto não é permitido; use StorageService.`);
 }
 
+const legacySourceFiles = walk(src).filter(file => /\.(?:js|jsx)$/.test(file));
+for (const file of legacySourceFiles) {
+  errors.push(`${path.relative(root,file)}: JavaScript/JSX legado não é permitido em src; use .ts/.tsx.`);
+}
+
 const pkg = JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 if (!/^\d+\.\d+\.\d+$/.test(pkg.version)) errors.push('package.json: version deve seguir X.Y.Z.');
 const lock = JSON.parse(fs.readFileSync(path.join(root,'package-lock.json'),'utf8'));
 if (lock.version !== pkg.version || lock.packages?.['']?.version !== pkg.version) errors.push('package-lock.json: versão deve acompanhar package.json.');
 if (pkg.name !== 'nomade-raiz') errors.push('package.json: name deve permanecer nomade-raiz.');
+if (pkg.engines?.node !== '20.x') errors.push('package.json: engines.node deve permanecer fixado em 20.x para builds reproduzíveis.');
+const nvmrcPath = path.join(root,'.nvmrc');
+if (!fs.existsSync(nvmrcPath) || fs.readFileSync(nvmrcPath,'utf8').trim() !== '20') errors.push('.nvmrc: deve fixar Node 20.');
 
 const readmePath = path.join(root,'README.md');
 if (!fs.existsSync(readmePath)) errors.push('README.md: arquivo obrigatório para apresentação do projeto no GitHub.');
@@ -71,12 +79,13 @@ else {
   if (manifest.name !== 'Nomade Raiz' || manifest.short_name !== 'Nomade Raiz') errors.push('manifest.webmanifest: name e short_name devem ser Nomade Raiz.');
 }
 
-const configPage = fs.readFileSync(path.join(src,'pages/Configuracoes/ConfiguracoesPage.jsx'),'utf8');
+const configPage = fs.readFileSync(path.join(src,'pages/Configuracoes/ConfiguracoesPage.tsx'),'utf8');
 if (/v\d+\.\d+\.\d+/.test(configPage)) errors.push('ConfiguracoesPage: versão não pode ser hardcoded; use APP_VERSION.');
 
-const constants = fs.readFileSync(path.join(src,'constants/index.js'),'utf8');
-if (!constants.includes('APP_VERSAO=APP_VERSION')) errors.push('constants/index.js: APP_VERSAO deve derivar de APP_VERSION.');
-if (!constants.includes(`versao:'${pkg.version}'`)) errors.push(`constants/index.js: CHANGELOG exibido no app deve conter a versão ${pkg.version}.`);
+const constants = fs.readFileSync(path.join(src,'constants/index.ts'),'utf8');
+if (!constants.includes('APP_VERSAO=APP_VERSION')) errors.push('constants/index.ts: APP_VERSAO deve derivar de APP_VERSION.');
+if (!constants.includes(`versao:'${pkg.version}'`)) errors.push(`constants/index.ts: CHANGELOG exibido no app deve conter a versão ${pkg.version}.`);
+if (!constants.includes('satisfies readonly FoodConfigWithUnits[]')) errors.push('constants/index.ts: ALIMENTOS_CONFIG deve ser validado por FoodConfigWithUnits na origem.');
 
 const migratedSharedModules = [
   'App',
@@ -96,6 +105,13 @@ const migratedSharedModules = [
   'pages/Planejamento/PlanejamentoPage', 'pages/Planejamento/StatusBadge', 'pages/Planejamento/index',
   'pages/Diario/DiarioPage', 'pages/Diario/DiarioForm', 'pages/Diario/index',
   'pages/Pontos/PontosPage', 'pages/Pontos/PontoForm', 'pages/Pontos/index',
+  'pages/Home/HomePage', 'pages/Home/ChecklistVerificacao', 'pages/Home/NotaRapidaModal', 'pages/Home/index',
+  'pages/Alertas/AlertasPage', 'pages/Alertas/index',
+  'pages/Configuracoes/ConfiguracoesPage', 'pages/Configuracoes/index',
+  'pages/ManualBike/ManualBikePage', 'pages/ManualBike/GlossarioModal', 'pages/ManualBike/NivelBadge',
+  'pages/ManualBike/PecaModal', 'pages/ManualBike/ProblemaModal', 'pages/ManualBike/index',
+  'pages/Dicas/index', 'pages/Exportar/index', 'pages/Extras/index', 'pages/Sobre/index',
+  'constants/index',
 ];
 for (const moduleName of migratedSharedModules) {
   const tsxPath = path.join(src, `${moduleName}.tsx`);
@@ -120,6 +136,12 @@ if (!storage.includes("from '../database/db'")) errors.push('storage.service.ts:
 const tsconfig = JSON.parse(fs.readFileSync(path.join(root,'tsconfig.json'),'utf8'));
 if ((tsconfig.include ?? []).includes('capacitor.config.ts')) errors.push('tsconfig.json: capacitor.config.ts não deve estar no projeto web principal.');
 if (Array.isArray(tsconfig.references) && tsconfig.references.length) errors.push('tsconfig.json: project references não são necessários nesta configuração e podem reintroduzir TS6305.');
+if (tsconfig.compilerOptions?.allowJs !== false) errors.push('tsconfig.json: allowJs deve permanecer false; src é integralmente TypeScript.');
+
+for (const rel of ['pages/Calculadora/CalculadoraPage.tsx','pages/Calculadora/ComidaCard.tsx']) {
+  const text = fs.readFileSync(path.join(src,rel),'utf8');
+  if (/ALIMENTOS_CONFIG\s+as\s+/.test(text)) errors.push(`${rel}: não faça cast de ALIMENTOS_CONFIG; tipagem deve ser validada na origem.`);
+}
 
 if (errors.length) {
   console.error(`\n[lint] ${errors.length} problema(s) encontrado(s):`);

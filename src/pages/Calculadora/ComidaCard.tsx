@@ -9,7 +9,7 @@ import { ALIMENTOS_CONFIG } from '../../constants';
 import type { ThemeTokens } from '../../styles/theme';
 import type { FoodConfigWithUnits, FoodFormState, StateSetter } from './types';
 
-const alimentosConfig = ALIMENTOS_CONFIG as readonly FoodConfigWithUnits[];
+const alimentosConfig: readonly FoodConfigWithUnits[] = ALIMENTOS_CONFIG;
 
 interface FoodRowProps {
   alimento: FoodConfigWithUnits;

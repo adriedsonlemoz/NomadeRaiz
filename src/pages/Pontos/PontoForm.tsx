@@ -9,7 +9,7 @@ interface TipoPontoConfig {
   label: string;
 }
 
-const tiposPonto = TIPOS_PONTO as readonly TipoPontoConfig[];
+const tiposPonto: readonly TipoPontoConfig[] = TIPOS_PONTO;
 const avaliacoes: readonly PontoAvaliacao[] = [1,2,3];
 
 interface PontoFormProps {

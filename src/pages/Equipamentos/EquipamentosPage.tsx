@@ -8,7 +8,7 @@ import type { EquipmentCategory } from '../../types';
 import { ItemFormModal, CategoryCard } from '../../components/equipment';
 import { CategoryItemsView } from './CategoryItemsView';
 
-const categories = CATEGORIES as readonly EquipmentCategory[];
+const categories: readonly EquipmentCategory[] = CATEGORIES;
 
 export default function EquipamentosPage() {
   const { state } = useStore();

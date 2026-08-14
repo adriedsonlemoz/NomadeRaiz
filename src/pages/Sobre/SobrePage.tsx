@@ -19,7 +19,7 @@ interface ReleaseNote {
   mudancas: string[];
 }
 
-const changelog = CHANGELOG as ReleaseNote[];
+const changelog: ReleaseNote[] = CHANGELOG;
 
 export default function SobrePage() {
   const { setPage } = useStore();

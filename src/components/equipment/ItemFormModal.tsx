@@ -5,7 +5,7 @@ import { QtyControl } from '../common';
 import { CATEGORIES } from '../../constants';
 import type { EquipmentCategory, Item, ItemStatus, Priority } from '../../types';
 
-const categories = CATEGORIES as readonly EquipmentCategory[];
+const categories: readonly EquipmentCategory[] = CATEGORIES;
 
 type ItemPayload = Omit<Item, 'id' | 'createdAt' | 'updatedAt'>;
 

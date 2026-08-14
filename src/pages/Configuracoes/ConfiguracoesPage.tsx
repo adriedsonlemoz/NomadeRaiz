@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
 import { useStore } from "../../contexts";
 import { useTheme, useDiasNaEstrada } from "../../hooks";
 import { StorageService } from "../../services/storage.service";
 import { APP_NAME, APP_TAGLINE, APP_VERSION } from "../../config/app";
 import { AppButton, BicycleIcon, Card, PageHeader, SectionLabel } from "../../components/common";
+import type { FontScale } from "../../types";
 
 export default function ConfiguracoesPage() {
   const { state, setPage, setSettings } = useStore();
@@ -10,50 +12,60 @@ export default function ConfiguracoesPage() {
   const dias = useDiasNaEstrada();
 
   const toggleTheme = () => setSettings({ themeMode: isDark ? "light" : "dark" });
-  const setFont = (fontScale) => setSettings({ fontScale });
+  const setFont = (scale: FontScale) => setSettings({ fontScale: scale });
 
   const iniciarViagem = () => {
-    if (state.settings.startDate && !confirm("Isso vai resetar o contador de dias. Confirmar?")) return;
+    if (state.settings.startDate && !window.confirm("Isso vai resetar o contador de dias. Confirmar?")) return;
     setSettings({ startDate: Date.now() });
   };
 
   const resetarViagem = () => {
-    if (confirm("Zerar o contador de dias na estrada?")) setSettings({ startDate: null });
+    if (window.confirm("Zerar o contador de dias na estrada?")) setSettings({ startDate: null });
   };
 
   const apagarDados = async () => {
-    if (!confirm("⚠️ Isso apagará TODOS os dados salvos neste dispositivo. Continuar?")) return;
+    if (!window.confirm("⚠️ Isso apagará TODOS os dados salvos neste dispositivo. Continuar?")) return;
     await StorageService.clearAll();
     window.location.reload();
   };
 
-  const Row = ({ label, children }) => (
+  interface RowProps {
+    label: string;
+    children: ReactNode;
+  }
+
+  const Row = ({ label, children }: RowProps) => (
     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 0", borderBottom:`1px solid ${T.border}` }}>
       <span style={{ color:T.textMain, fontSize:14, fontWeight:500 }}>{label}</span>
       {children}
     </div>
   );
 
-  const FontBtn = ({ scale, label }) => (
-    <button onClick={()=>setFont(scale)} style={{ padding:"7px 14px", borderRadius:9,
-      border:`1.5px solid ${fontScale===scale?T.blue:T.border}`,
-      background:fontScale===scale?T.blueLight:T.white,
-      color:fontScale===scale?T.blue:T.textSub,
-      fontSize:scale==="sm"?11:scale==="md"?13:15,
+  interface FontBtnProps {
+    scale: FontScale;
+    label: string;
+  }
+
+  const FontBtn = ({ scale, label }: FontBtnProps) => (
+    <button onClick={() => setFont(scale)} style={{ padding:"7px 14px", borderRadius:9,
+      border:`1.5px solid ${fontScale === scale ? T.blue : T.border}`,
+      background:fontScale === scale ? T.blueLight : T.white,
+      color:fontScale === scale ? T.blue : T.textSub,
+      fontSize:scale === "sm" ? 11 : scale === "md" ? 13 : 15,
       fontWeight:700, cursor:"pointer" }}>{label}</button>
   );
 
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:T.pageBg }}>
-      <PageHeader eyebrow="App" title="Configurações" onBack={()=>setPage("extras")}/>
+      <PageHeader eyebrow="App" title="Configurações" onBack={() => setPage("extras")}/>
 
       <div style={{ flex:1, overflowY:"auto", padding:"0 16px 32px" }}>
         <SectionLabel>Aparência</SectionLabel>
         <Card style={{ padding:"0 14px" }}>
           <Row label="Modo escuro">
             <button aria-label="Alternar modo escuro" onClick={toggleTheme} style={{ position:"relative", width:48, height:26,
-              borderRadius:99, border:"none", cursor:"pointer", background:isDark?T.blue:T.blueChip, transition:"background .3s" }}>
-              <div style={{ position:"absolute", top:3, left:isDark?24:3, width:20, height:20, borderRadius:"50%",
+              borderRadius:99, border:"none", cursor:"pointer", background:isDark ? T.blue : T.blueChip, transition:"background .3s" }}>
+              <div style={{ position:"absolute", top:3, left:isDark ? 24 : 3, width:20, height:20, borderRadius:"50%",
                 background:"#fff", transition:"left .3s", boxShadow:"0 1px 3px rgba(0,0,0,.2)" }}/>
             </button>
           </Row>
@@ -76,7 +88,7 @@ export default function ConfiguracoesPage() {
           </Row>
           <div style={{ padding:"12px 0", borderBottom:`1px solid ${T.border}`, display:"flex", gap:8 }}>
             <AppButton onClick={iniciarViagem} style={{ flex:1 }}>
-              {state.settings.startDate?"🔄 Reiniciar viagem":"🚀 Iniciar viagem"}
+              {state.settings.startDate ? "🔄 Reiniciar viagem" : "🚀 Iniciar viagem"}
             </AppButton>
             {state.settings.startDate && <AppButton variant="danger" onClick={resetarViagem}>Zerar</AppButton>}
           </div>

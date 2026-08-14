@@ -19,9 +19,9 @@ const asFiniteNumber = (value: unknown, fallback = 0) =>
 const asString = (value: unknown, fallback = '') => typeof value === 'string' ? value : fallback;
 const asStringArray = (value: unknown) => Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
 
-const climasValidos = new Set<ClimaIcon>(CLIMAS as readonly ClimaIcon[]);
+const climasValidos = new Set<ClimaIcon>(CLIMAS);
 const tiposPontoValidos = new Set<PontoTipo>(
-  (TIPOS_PONTO as readonly { id:PontoTipo }[]).map((tipo) => tipo.id),
+  TIPOS_PONTO.map((tipo) => tipo.id),
 );
 
 const asClima = (value: unknown): ClimaIcon =>

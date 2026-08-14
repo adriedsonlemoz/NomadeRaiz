@@ -11,7 +11,7 @@ interface TipoPontoConfig {
   label: string;
 }
 
-const tiposPonto = TIPOS_PONTO as readonly TipoPontoConfig[];
+const tiposPonto: readonly TipoPontoConfig[] = TIPOS_PONTO;
 
 export default function PontosPage() {
   const { state, setPage, addPonto, delPonto, updPonto } = useStore();

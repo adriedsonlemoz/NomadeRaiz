@@ -3,7 +3,7 @@ import { useTheme } from "../../hooks";
 import { CLIMAS } from "../../constants";
 import type { ClimaIcon, DiarioEntryDraft } from "../../types";
 
-const climas = CLIMAS as readonly ClimaIcon[];
+const climas: readonly ClimaIcon[] = CLIMAS;
 
 interface DiarioFormProps {
   onSave: (entrada: DiarioEntryDraft) => void;

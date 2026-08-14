@@ -1,7 +1,13 @@
 import { ModalBase } from "../../components/common";
 import { GLOSSARIO_BIKE } from "../../constants";
+import type { ThemeTokens } from "../../styles/theme";
 
-export function GlossarioModal({ onClose, T }) {
+interface GlossarioModalProps {
+  onClose: () => void;
+  T: ThemeTokens;
+}
+
+export function GlossarioModal({ onClose, T }: GlossarioModalProps) {
   return (
     <ModalBase T={T} onClose={onClose} header={
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>

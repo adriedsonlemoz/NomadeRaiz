@@ -1,5 +1,13 @@
-export function NivelBadge({ nivel, T }) {
-  const mapa = {
+import type { ThemeTokens } from "../../styles/theme";
+import type { BikeSkillLevel } from "../../types";
+
+interface NivelBadgeProps {
+  nivel: BikeSkillLevel;
+  T: ThemeTokens;
+}
+
+export function NivelBadge({ nivel, T }: NivelBadgeProps) {
+  const mapa: Record<BikeSkillLevel, { color:string; bg:string; border:string; label:string; icon:string }> = {
     basico:        { color:T.doneCheck, bg:T.doneBg, border:T.doneBorder, label:"Básico",        icon:"🟢" },
     intermediario: { color:T.medColor,  bg:T.medBg,  border:T.medBorder,  label:"Intermediário", icon:"🟡" },
     avancado:      { color:T.urgColor,  bg:T.urgBg,  border:T.urgBorder,  label:"Avançado",       icon:"🔴" },

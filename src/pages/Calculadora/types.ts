@@ -2,8 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import type {
   EnergyEquipment,
   FoodInput,
-  FoodConfig,
-  FoodUnitConfig,
+  FoodConfigWithUnits,
   GeneralIndexResult,
   GeneralResource,
   WeightInput,
@@ -22,9 +21,7 @@ export interface BikeFormState {
 
 export type FoodFormState = Record<string, FoodInput>;
 
-export interface FoodConfigWithUnits extends FoodConfig {
-  unidades: readonly [FoodUnitConfig, ...FoodUnitConfig[]];
-}
+export type { FoodConfigWithUnits } from '../../services/calculator.service';
 
 export interface EnergyFormState {
   painel: string;

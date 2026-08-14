@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ChangeEvent, type CSSProperties } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
 import {
@@ -8,12 +8,13 @@ import {
 import { PecaModal } from "./PecaModal";
 import { ProblemaModal } from "./ProblemaModal";
 import { GlossarioModal } from "./GlossarioModal";
+import type { BikePiece, BikeProblem } from "../../types";
 
 export default function ManualBikePage() {
   const { state, setPage, setManualBikeAlvo } = useStore();
   const { theme: T } = useTheme();
-  const [pecaAberta, setPecaAberta]         = useState(null);
-  const [problemaAberto, setProblemaAberto] = useState(null);
+  const [pecaAberta, setPecaAberta]         = useState<BikePiece | null>(null);
+  const [problemaAberto, setProblemaAberto] = useState<BikeProblem | null>(null);
   const [glossarioAberto, setGlossarioAberto] = useState(false);
   const [busca, setBusca] = useState("");
 
@@ -32,9 +33,9 @@ export default function ManualBikePage() {
     setManualBikeAlvo(null);
   }, [state.manualBikeAlvo, setManualBikeAlvo]);
 
-  const cardStyle = { background:T.white, border:`1px solid ${T.border}`, borderRadius:16,
+  const cardStyle: CSSProperties = { background:T.white, border:`1px solid ${T.border}`, borderRadius:16,
     padding:"16px", boxShadow:"0 1px 5px rgba(15,39,68,.06)", boxSizing:"border-box" };
-  const kicker = { color:T.textMuted, fontSize:10.5, fontWeight:800, letterSpacing:"0.12em",
+  const kicker: CSSProperties = { color:T.textMuted, fontSize:10.5, fontWeight:800, letterSpacing:"0.12em",
     textTransform:"uppercase", margin:"0 0 10px", display:"flex", alignItems:"center", gap:6 };
 
   const termoBusca = busca.trim().toLowerCase();
@@ -71,7 +72,7 @@ export default function ManualBikePage() {
         </div>
         <p style={{ color:"#7ea3d4", fontSize:12, margin:"0 0 12px", lineHeight:1.5 }}>
           Conheça sua bicicleta e aprenda a resolver os problemas mais comuns na estrada.</p>
-        <input value={busca} onChange={e=>setBusca(e.target.value)}
+        <input value={busca} onChange={(e: ChangeEvent<HTMLInputElement>)=>setBusca(e.target.value)}
           placeholder="🔎 Buscar peça, problema ou termo..."
           style={{ width:"100%", padding:"10px 13px", borderRadius:11, border:"none",
             background:"rgba(255,255,255,.12)", color:"#fff", fontSize:13, outline:"none",

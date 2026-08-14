@@ -1,16 +1,24 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useStore } from "../../contexts";
 import { ModalBase } from "../../components/common";
+import type { ThemeTokens } from "../../styles/theme";
+import type { BikeProblem } from "../../types";
 
-export function ProblemaModal({ problema, onClose, T }) {
+interface ProblemaModalProps {
+  problema: BikeProblem;
+  onClose: () => void;
+  T: ThemeTokens;
+}
+
+export function ProblemaModal({ problema, onClose, T }: ProblemaModalProps) {
   const { state, toggleHabilidade, addEntrada } = useStore();
   const [registrado, setRegistrado] = useState(false);
   const domina = state.habilidadesDominadas.includes(`problema:${problema.id}`);
-  const sectionLabel = { color:T.textMuted, fontSize:10, fontWeight:800, letterSpacing:"0.1em",
+  const sectionLabel: CSSProperties = { color:T.textMuted, fontSize:10, fontWeight:800, letterSpacing:"0.1em",
     textTransform:"uppercase", margin:"0 0 6px" };
 
   const registrarNoDiario = () => {
-    addEntrada({ local:"Na estrada", clima:"", km:0,
+    addEntrada({ local:"Na estrada", clima:"☀️", km:0,
       nota:`🔧 Problema resolvido: ${problema.nome}. ${problema.solucaoDefinitiva}` });
     setRegistrado(true);
   };

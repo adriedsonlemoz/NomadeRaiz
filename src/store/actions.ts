@@ -1,4 +1,4 @@
-import type { AppSettings, AppState, DiarioEntry, Item, ModoId, PersistedState, Ponto } from '../types';
+import type { AppSettings, AppState, DiarioEntry, Item, ManualBikeTarget, ModoId, PersistedState, Ponto } from '../types';
 
 export type Action =
   | { type:'SET_ITEMS'; payload:Item[] }
@@ -31,5 +31,5 @@ export type Action =
   | { type:'TOGGLE_FAVORITO_TUTORIAL'; payload:string }
   | { type:'SET_HABILIDADES'; payload:string[] }
   | { type:'TOGGLE_HABILIDADE'; payload:string }
-  | { type:'SET_MANUAL_BIKE_ALVO'; payload:{tipo:'peca'|'problema';id:string}|null }
+  | { type:'SET_MANUAL_BIKE_ALVO'; payload:ManualBikeTarget|null }
   | { type:'RESTORE_PERSISTED'; payload:PersistedState };

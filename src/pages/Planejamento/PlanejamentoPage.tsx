@@ -36,8 +36,8 @@ interface PlanningSummaryItem {
   status: PlanningStatus;
 }
 
-const tiposViagem = TIPOS_VIAGEM as readonly TravelTypeOption[];
-const equipamentoParaManual = EQUIPAMENTO_PARA_MANUAL as Record<string, ManualBikeLink | undefined>;
+const tiposViagem: readonly TravelTypeOption[] = TIPOS_VIAGEM;
+const equipamentoParaManual: Readonly<Record<string, ManualBikeLink | undefined>> = EQUIPAMENTO_PARA_MANUAL;
 
 export default function PlanejamentoPage() {
   const { state, setPage, setManualBikeAlvo } = useStore();

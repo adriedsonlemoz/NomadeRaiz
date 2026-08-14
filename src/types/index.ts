@@ -8,6 +8,50 @@ export type ClimaIcon = '☀️'|'⛅'|'☁️'|'🌧️'|'⛈️'|'🌬️';
 export type PontoTipo = 'agua'|'mercado'|'camping'|'saude'|'oficina'|'outro';
 export type PontoAvaliacao = 1|2|3;
 export type TravelTypeId = 'cicloviagem'|'camping'|'bate-volta'|'longa';
+export type BikeSkillLevel = 'basico'|'intermediario'|'avancado';
+export type BikeAreaId = 'rodas'|'transmissao'|'freios'|'estrutura';
+export type ManualBikeTarget = { tipo:'peca'|'problema'; id:string };
+
+export interface BikeArea {
+  id: BikeAreaId;
+  icone: string;
+  label: string;
+}
+
+export interface BikePiece {
+  id: string;
+  area: BikeAreaId;
+  icone: string;
+  nome: string;
+  nivel: BikeSkillLevel;
+  funcao: string;
+  problemasComuns: readonly string[];
+  manutencao: string;
+  comoResolver: readonly string[];
+}
+
+export interface BikeProblem {
+  id: string;
+  icone: string;
+  nome: string;
+  causas: readonly string[];
+  ferramentas: readonly string[];
+  solucaoTemporaria: string;
+  solucaoDefinitiva: string;
+}
+
+export interface BikeGlossaryTerm {
+  id: string;
+  termo: string;
+  definicao: string;
+}
+
+export interface BikeToolKitItem {
+  id: string;
+  icone: string;
+  nome: string;
+  motivo: string;
+}
 export type ItemFilter = 'todos'|'pendentes'|'comprados'|string;
 export type ItemSort = 'prioridade'|'preco-asc'|'preco-desc'|string;
 
@@ -79,7 +123,7 @@ export interface AppState extends PersistedState {
   filter: ItemFilter;
   sort: ItemSort;
   page: PageId;
-  manualBikeAlvo: {tipo:'peca'|'problema';id:string}|null;
+  manualBikeAlvo: ManualBikeTarget|null;
 }
 
 export interface BackupEnvelope {

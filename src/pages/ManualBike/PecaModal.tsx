@@ -1,13 +1,22 @@
+import type { CSSProperties } from "react";
 import { useStore } from "../../contexts";
 import { ModalBase } from "../../components/common";
 import { NivelBadge } from "./NivelBadge";
+import type { ThemeTokens } from "../../styles/theme";
+import type { BikePiece } from "../../types";
 
-export function PecaModal({ peca, onClose, T }) {
+interface PecaModalProps {
+  peca: BikePiece;
+  onClose: () => void;
+  T: ThemeTokens;
+}
+
+export function PecaModal({ peca, onClose, T }: PecaModalProps) {
   const { state, toggleHabilidade } = useStore();
   const domina = state.habilidadesDominadas.includes(`peca:${peca.id}`);
-  const sectionLabel = { color:T.textMuted, fontSize:10, fontWeight:800, letterSpacing:"0.1em",
+  const sectionLabel: CSSProperties = { color:T.textMuted, fontSize:10, fontWeight:800, letterSpacing:"0.1em",
     textTransform:"uppercase", margin:"0 0 6px" };
-  const sectionText  = { color:T.textMain, fontSize:13, lineHeight:1.6, margin:0 };
+  const sectionText: CSSProperties = { color:T.textMain, fontSize:13, lineHeight:1.6, margin:0 };
   return (
     <ModalBase T={T} onClose={onClose} header={
       <>

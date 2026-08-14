@@ -8,7 +8,7 @@ import type { EquipmentCategory, ItemFilter, ItemSort } from '../../types';
 import { Bar } from '../../components/common';
 import { EquipmentCard } from '../../components/equipment';
 
-const categories = CATEGORIES as readonly EquipmentCategory[];
+const categories: readonly EquipmentCategory[] = CATEGORIES;
 
 export interface CategoryItemsViewProps {
   catId: string;

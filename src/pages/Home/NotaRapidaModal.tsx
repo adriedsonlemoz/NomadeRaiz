@@ -1,14 +1,20 @@
+import type { ChangeEvent, MouseEvent } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
 
-export function NotaRapidaModal({ onClose }) {
+interface NotaRapidaModalProps {
+  onClose: () => void;
+}
+
+export function NotaRapidaModal({ onClose }: NotaRapidaModalProps) {
   const { state, setNota } = useStore();
   const { theme: T } = useTheme();
+
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, zIndex:60,
       background:"rgba(0,0,0,.55)", display:"flex", alignItems:"center",
       justifyContent:"center", padding:"24px 20px" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:400,
+      <div onClick={(event: MouseEvent<HTMLDivElement>) => event.stopPropagation()} style={{ width:"100%", maxWidth:400,
         background:T.white, borderRadius:20, overflow:"hidden",
         boxShadow:"0 20px 60px rgba(0,0,0,.3)" }}>
         <div style={{ background:T.navy, padding:"16px 18px 14px",
@@ -26,7 +32,7 @@ export function NotaRapidaModal({ onClose }) {
         <div style={{ padding:"16px 18px" }}>
           <textarea autoFocus
             value={state.notaRapida}
-            onChange={e=>setNota(e.target.value)}
+            onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setNota(event.target.value)}
             placeholder="Registre algo rápido aqui... (salvo automaticamente)"
             style={{ width:"100%", border:`1.5px solid ${T.border}`, borderRadius:12, outline:"none",
               resize:"none", fontSize:14, color:T.textMain, background:"transparent",

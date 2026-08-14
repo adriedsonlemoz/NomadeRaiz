@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from "react";
-import type { AppState, Item, DiarioEntry, Ponto, AppSettings, ModoId, PersistedState } from "../types";
+import type { AppState, Item, DiarioEntry, Ponto, AppSettings, ModoId, PersistedState, ManualBikeTarget } from "../types";
 import type { Action } from "../store/actions";
 import { reducer, INITIAL } from "../store/reducer";
 import { StorageService } from "../services/storage.service";
@@ -41,14 +41,14 @@ interface StoreCtx {
   toggleFavoritoTutorial: (id: string) => void;
   // Manual da Bike
   toggleHabilidade:  (id: string) => void;
-  setManualBikeAlvo: (alvo: { tipo:"peca"|"problema"; id:string } | null) => void;
+  setManualBikeAlvo: (alvo: ManualBikeTarget | null) => void;
   // Pronto do carregamento inicial (Dexie/IndexedDB é assíncrono)
   loaded: boolean;
 }
 
 const Ctx = createContext<StoreCtx | null>(null);
 
-const makeSeedItems = (): Item[] => (SEED_ITEMS as Item[]).map(i => ({
+const makeSeedItems = (): Item[] => SEED_ITEMS.map(i => ({
   ...i, createdAt: Date.now(), updatedAt: Date.now(),
 }));
 
@@ -162,7 +162,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     toggleFavoritoDica:     useCallback((id: string) => dispatch({ type:"TOGGLE_FAVORITO_DICA", payload: id }), []),
     toggleFavoritoTutorial: useCallback((id: string) => dispatch({ type:"TOGGLE_FAVORITO_TUTORIAL", payload: id }), []),
     toggleHabilidade:  useCallback((id: string) => dispatch({ type:"TOGGLE_HABILIDADE", payload: id }), []),
-    setManualBikeAlvo: useCallback((alvo: {tipo:"peca"|"problema";id:string}|null) => dispatch({ type:"SET_MANUAL_BIKE_ALVO", payload: alvo }), []),
+    setManualBikeAlvo: useCallback((alvo: ManualBikeTarget|null) => dispatch({ type:"SET_MANUAL_BIKE_ALVO", payload: alvo }), []),
   };
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;

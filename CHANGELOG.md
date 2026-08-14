@@ -2,6 +2,24 @@
 
 Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
 
+## 1.0.8 — 14/08/2026
+- Manual da Bike migrado integralmente para TypeScript/TSX.
+- Todo o código-fonte em `src` agora usa TypeScript; arquivos `.js` e `.jsx` passam a ser bloqueados pelo lint.
+- Corrigido o TS2352 da configuração de alimentação: `ALIMENTOS_CONFIG` agora é validado na origem como uma lista com ao menos uma unidade por alimento, sem casts forçados nas telas.
+- Tipos compartilhados adicionados para peças, problemas, níveis e alvos do Manual da Bike.
+- Node.js fixado na linha 20.x para evitar atualização automática de major no Vercel.
+- Validações de build reforçadas para detectar regressões de tipagem antes do deploy.
+
+## 1.0.7 — Home, Alertas e Configurações em TypeScript
+
+- **Home**, **Alertas de Reposição** e **Configurações** migrados de JSX/JavaScript para TypeScript/TSX, incluindo seus barrels.
+- Estados de checklist, nota rápida, edição de mínimos e escala de fonte agora possuem contratos de tipos explícitos.
+- O progresso dos checklists ganhou proteção contra divisão por zero sem alterar o fluxo normal da interface.
+- A aplicação de mínimos sugeridos agora preserva `0` quando ele foi definido manualmente e preenche somente mínimos ausentes.
+- Confirmações destrutivas em Configurações passaram a usar explicitamente `window.confirm`, mantendo o comportamento e deixando a intenção clara para o TypeScript.
+- O lint protege todos os módulos desta rodada contra o retorno acidental de versões `.jsx`/`.js` legadas.
+- Quantidade de arquivos JSX restante caiu de 10 para 5; o **Manual da Bike** passa a ser o último bloco JSX principal.
+
 ## 1.0.6 — Planejamento, Diário e Pontos em TypeScript
 
 - **Planejamento**, **Diário de Campo** e **Pontos de Apoio** migrados de JSX/JavaScript para TypeScript/TSX, incluindo páginas, formulários, badge de status e barrels.

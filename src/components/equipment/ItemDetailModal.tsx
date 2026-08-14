@@ -6,7 +6,7 @@ import { fmt } from '../../utils/format';
 import type { EquipmentCategory, Item, Priority } from '../../types';
 import { QtyControl } from '../common';
 
-const categories = CATEGORIES as readonly EquipmentCategory[];
+const categories: readonly EquipmentCategory[] = CATEGORIES;
 
 export interface ItemDetailModalProps {
   item: Item;

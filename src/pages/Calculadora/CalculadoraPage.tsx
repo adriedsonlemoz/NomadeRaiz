@@ -39,8 +39,8 @@ interface AutonomyTabConfig {
   label: string;
 }
 
-const autonomyTabs = AUTONOMIA_TABS as readonly AutonomyTabConfig[];
-const alimentosConfig = ALIMENTOS_CONFIG as readonly FoodConfigWithUnits[];
+const autonomyTabs: readonly AutonomyTabConfig[] = AUTONOMIA_TABS;
+const alimentosConfig: readonly FoodConfigWithUnits[] = ALIMENTOS_CONFIG;
 
 export default function CalculadoraPage() {
   const { state, setPage } = useStore();

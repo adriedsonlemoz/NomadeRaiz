@@ -25,6 +25,10 @@ export interface FoodConfig {
   [key: string]: unknown;
 }
 
+export interface FoodConfigWithUnits extends FoodConfig {
+  unidades: readonly [FoodUnitConfig, ...FoodUnitConfig[]];
+}
+
 export interface FoodInput {
   unidade?: string;
   quantidade?: NumericInput;

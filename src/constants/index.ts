@@ -1,4 +1,21 @@
 import { APP_VERSION } from '../config/app';
+import type { FoodConfigWithUnits } from '../services/calculator.service';
+import type {
+  BikeArea,
+  BikeAreaId,
+  BikeGlossaryTerm,
+  BikePiece,
+  BikeProblem,
+  BikeSkillLevel,
+  BikeToolKitItem,
+  ClimaIcon,
+  EquipmentCategory,
+  Item,
+  ManualBikeTarget,
+  PontoTipo,
+  Priority,
+  TravelTypeId,
+} from '../types';
 export const APP_VERSAO=APP_VERSION;
 export const APP_ANO=2026;
 export const PIX_CHAVE='adriedson@outlook.com';
@@ -13,8 +30,9 @@ export const CATEGORIES=[
  {id:'seguranca',label:'Segurança',icon:'🦺'},
  {id:'vestuario',label:'Vestuário',icon:'👕'},
  {id:'higiene',label:'Higiene & Saúde',icon:'🩹'},
-];
-const seed=(id,name,categoryId,priority='medio',quantity=1,price=0,notes='')=>({id,name,categoryId,priority,quantity,price,notes,status:'pendente'});
+] satisfies readonly EquipmentCategory[];
+type SeedItem = Omit<Item, 'createdAt' | 'updatedAt'>;
+const seed=(id:string,name:string,categoryId:string,priority:Priority='medio',quantity=1,price=0,notes=''):SeedItem=>({id,name,categoryId,priority,quantity,price,notes,status:'pendente'});
 export const SEED_ITEMS=[
  seed('camara','Câmara de ar reserva','mobilidade','urgente',2),seed('remendo','Kit de remendos','ferramentas','urgente',1),
  seed('bomba','Bomba de ar','ferramentas','urgente',1),seed('multitool','Multitool / jogo de chaves','ferramentas','urgente',1),
@@ -34,7 +52,7 @@ export const MODOS=[
  {id:'manutencao',icon:'🔧',label:'Bike',desc:'Checagem rápida da bicicleta',cor:'#b45309'},
  {id:'emergencia',icon:'🆘',label:'Emergência',desc:'Documentos, saúde e comunicação',cor:'#dc2626'},
 ];
-const check=(id,texto,dica='')=>({id,texto,dica});
+const check=(id:string,texto:string,dica='')=>({id,texto,dica});
 export const VERIFICACOES={
  'antes-sair':{icon:'🎒',titulo:'Antes de sair',cor:'#2563eb',itens:[check('agua','Água abastecida','Saia com água suficiente até o próximo ponto seguro.'),check('luzes','Luzes e celular carregados'),check('pneus','Pressão dos pneus conferida'),check('freios','Freios funcionando'),check('documentos','Documentos e dinheiro protegidos')]},
  chuva:{icon:'🌧️',titulo:'Chuva',cor:'#0e7490',itens:[check('capa','Capa de chuva acessível'),check('eletronicos','Eletrônicos protegidos'),check('freios','Freios testados em baixa velocidade'),check('abrigo','Abrigo seco ou local de parada definido')]},
@@ -44,10 +62,10 @@ export const VERIFICACOES={
 };
 export const MODOS_PERSISTENTES=new Set(['antes-sair','manutencao']);
 
-export const CLIMAS=['☀️','⛅','☁️','🌧️','⛈️','🌬️'];
-export const TIPOS_PONTO=[{id:'agua',icon:'💧',label:'Água'},{id:'mercado',icon:'🛒',label:'Mercado'},{id:'camping',icon:'⛺',label:'Camping'},{id:'saude',icon:'🏥',label:'Saúde'},{id:'oficina',icon:'🔧',label:'Oficina'},{id:'outro',icon:'📍',label:'Outro'}];
-export const TIPOS_VIAGEM=[{id:'cicloviagem',icon:'🚲',label:'Cicloviagem'},{id:'camping',icon:'🏕️',label:'Camping'},{id:'bate-volta',icon:'🧭',label:'Bate-volta'},{id:'longa',icon:'🛣️',label:'Longa duração'}];
-export const AUTONOMIA_TABS=[{id:'resumo',icon:'📊',label:'Resumo'},{id:'bike',icon:'🚲',label:'Bike'},{id:'comida',icon:'🍱',label:'Comida'},{id:'agua',icon:'💧',label:'Água'},{id:'energia',icon:'⚡',label:'Energia'},{id:'dinheiro',icon:'💰',label:'Dinheiro'},{id:'peso',icon:'⚖️',label:'Peso'},{id:'custo',icon:'🧾',label:'Custo'}];
+export const CLIMAS=['☀️','⛅','☁️','🌧️','⛈️','🌬️'] as const satisfies readonly ClimaIcon[];
+export const TIPOS_PONTO=[{id:'agua',icon:'💧',label:'Água'},{id:'mercado',icon:'🛒',label:'Mercado'},{id:'camping',icon:'⛺',label:'Camping'},{id:'saude',icon:'🏥',label:'Saúde'},{id:'oficina',icon:'🔧',label:'Oficina'},{id:'outro',icon:'📍',label:'Outro'}] as const satisfies readonly {id:PontoTipo;icon:string;label:string}[];
+export const TIPOS_VIAGEM=[{id:'cicloviagem',icon:'🚲',label:'Cicloviagem'},{id:'camping',icon:'🏕️',label:'Camping'},{id:'bate-volta',icon:'🧭',label:'Bate-volta'},{id:'longa',icon:'🛣️',label:'Longa duração'}] as const satisfies readonly {id:TravelTypeId;icon:string;label:string}[];
+export const AUTONOMIA_TABS=[{id:'resumo',icon:'📊',label:'Resumo'},{id:'bike',icon:'🚲',label:'Bike'},{id:'comida',icon:'🍱',label:'Comida'},{id:'agua',icon:'💧',label:'Água'},{id:'energia',icon:'⚡',label:'Energia'},{id:'dinheiro',icon:'💰',label:'Dinheiro'},{id:'peso',icon:'⚖️',label:'Peso'},{id:'custo',icon:'🧾',label:'Custo'}] as const;
 
 export const ALIMENTOS_CONFIG=[
  {id:'arroz',nome:'Arroz',icone:'🍚',unidades:[{id:'kg',label:'kg',precoPadrao:7,consumoDiarioPadrao:.2}]},
@@ -55,7 +73,7 @@ export const ALIMENTOS_CONFIG=[
  {id:'macarrao',nome:'Macarrão',icone:'🍝',unidades:[{id:'pct',label:'pacote',precoPadrao:5,consumoDiarioPadrao:.5},{id:'kg',label:'kg',precoPadrao:10,consumoDiarioPadrao:.2}]},
  {id:'sardinha',nome:'Sardinha / proteína',icone:'🥫',unidades:[{id:'un',label:'un.',precoPadrao:7,consumoDiarioPadrao:1}]},
  {id:'castanhas',nome:'Castanhas / amendoim',icone:'🥜',unidades:[{id:'kg',label:'kg',precoPadrao:24,consumoDiarioPadrao:.1}]},
-];
+] satisfies readonly FoodConfigWithUnits[];
 
 export const DICAS=[
  {id:'agua',icon:'💧',titulo:'Nunca dependa de um único ponto de água',texto:'Mantenha sempre uma pequena reserva e reabasteça antes de ficar no limite.'},
@@ -65,6 +83,20 @@ export const DICAS=[
  {id:'rota',icon:'🗺️',titulo:'Tenha rota offline',texto:'Baixe mapas e anote pontos importantes antes de ficar sem sinal.'},
 ];
 export const CHANGELOG=[
+ {versao:'1.0.8',data:'14/08/2026',mudancas:[
+  'Manual da Bike migrado integralmente para TypeScript/TSX',
+  'Todo o código-fonte em src agora usa TypeScript; JavaScript/JSX passa a ser bloqueado pelo lint',
+  'Configuração de alimentação ganhou validação tipada na origem, eliminando o TS2352 visto no build do Vercel',
+  'Tipos compartilhados do Manual da Bike e contratos de configuração foram reforçados para prevenir regressões',
+  'Node.js fixado em 20.x para evitar atualização automática de major no Vercel',
+ ]},
+ {versao:'1.0.7',data:'14/08/2026',mudancas:[
+  'Home, Alertas e Configurações migrados para TypeScript/TSX',
+  'Checklists rápidos, nota do dia, edição de mínimos e preferências ganharam contratos de tipos explícitos',
+  'Mínimos sugeridos agora preservam o valor 0 definido manualmente e só preenchem itens realmente sem mínimo',
+  'Barrels dos três módulos migrados para TypeScript e protegidos contra regressão para JSX/JavaScript',
+  'Quantidade de arquivos JSX restante caiu de 10 para 5; apenas o Manual da Bike permanece em JSX',
+ ]},
  {versao:'1.0.6',data:'14/08/2026',mudancas:[
   'Planejamento, Diário de Campo e Pontos de Apoio migrados para TypeScript/TSX',
   'Formulários de diário e pontos agora usam contratos tipados compartilhados com o estado persistente',
@@ -111,8 +143,8 @@ export const CHANGELOG=[
  ]},
 ];
 
-export const AREAS_BIKE=[{id:'rodas',icone:'🛞',label:'Rodas e pneus'},{id:'transmissao',icone:'⛓️',label:'Transmissão'},{id:'freios',icone:'🛑',label:'Freios'},{id:'estrutura',icone:'🚲',label:'Estrutura'}];
-const peca=(id,area,icone,nome,nivel,funcao,problemasComuns,manutencao,comoResolver)=>({id,area,icone,nome,nivel,funcao,problemasComuns,manutencao,comoResolver});
+export const AREAS_BIKE=[{id:'rodas',icone:'🛞',label:'Rodas e pneus'},{id:'transmissao',icone:'⛓️',label:'Transmissão'},{id:'freios',icone:'🛑',label:'Freios'},{id:'estrutura',icone:'🚲',label:'Estrutura'}] satisfies readonly BikeArea[];
+const peca=(id:string,area:BikeAreaId,icone:string,nome:string,nivel:BikeSkillLevel,funcao:string,problemasComuns:readonly string[],manutencao:string,comoResolver:readonly string[]):BikePiece=>({id,area,icone,nome,nivel,funcao,problemasComuns,manutencao,comoResolver});
 export const PECAS_BIKE=[
  peca('pneu','rodas','🛞','Pneu','basico','Faz contato com o solo e absorve parte das irregularidades.',['Furo','Corte','Baixa pressão'],'Inspecione cortes e calibre regularmente.',['Remova a roda se necessário.','Use espátulas para retirar um lado do pneu.','Repare/troque a câmara e remonte sem beliscar.']),
  peca('camara','rodas','⭕','Câmara de ar','basico','Mantém o pneu inflado.',['Furo','Válvula danificada'],'Carregue ao menos uma reserva.',['Localize o furo.','Aplique remendo ou substitua a câmara.','Confira o interior do pneu antes de montar.']),
@@ -120,15 +152,15 @@ export const PECAS_BIKE=[
  peca('cambio','transmissao','⚙️','Câmbio traseiro','intermediario','Move a corrente entre os pinhões.',['Marcha pulando','Câmbio desalinhado'],'Evite pancadas e confira a gancheira.',['Cheque cabo e gancheira.','Ajuste tensão do cabo em pequenos passos.','Teste todos os pinhões.']),
  peca('vbrake','freios','🛑','V-brake','basico','Reduz a velocidade pressionando sapatas contra o aro.',['Sapata pegando','Freio fraco'],'Mantenha aro e sapatas limpos.',['Centralize os braços.','Alinhe as sapatas no aro.','Ajuste a tensão do cabo.']),
  peca('movimento','estrutura','🔩','Movimento central','avancado','Permite a rotação do pedivela.',['Estalo','Folga','Rolamento áspero'],'Evite lavagem com jato direto.',['Confirme se a folga vem do pedivela.','Aperte conforme o sistema.','Substitua o movimento se houver dano interno.']),
-];
+] satisfies readonly BikePiece[];
 export const PROBLEMAS_ESTRADA=[
  {id:'furo',icone:'🛞',nome:'Pneu furado',causas:['Espinho ou vidro','Baixa pressão','Câmara beliscada'],ferramentas:['Espátulas','Bomba','Remendo ou câmara'],solucaoTemporaria:'Troque a câmara ou aplique um remendo e calibre com pressão moderada.',solucaoDefinitiva:'Retire o objeto causador, confira a fita de aro e substitua componentes danificados.'},
  {id:'corrente-quebrou',icone:'⛓️',nome:'Corrente quebrou',causas:['Desgaste','Troca de marcha sob carga','Elo danificado'],ferramentas:['Multitool com extrator','Elo rápido'],solucaoTemporaria:'Remova o elo danificado e feche a corrente com elo rápido compatível.',solucaoDefinitiva:'Avalie desgaste da corrente e relação; substitua se necessário.'},
  {id:'freio-pegando',icone:'🛑',nome:'Freio pegando',causas:['Roda desalinhada','Freio descentrado','Sapata fora de posição'],ferramentas:['Chave Allen','Chave de fenda'],solucaoTemporaria:'Centralize o freio ou alivie levemente o cabo para liberar a roda.',solucaoDefinitiva:'Alinhe roda e sapatas e faça regulagem completa.'},
  {id:'parafuso-solto',icone:'🔩',nome:'Parafuso soltando',causas:['Vibração','Torque inadequado'],ferramentas:['Multitool'],solucaoTemporaria:'Reaperte com cuidado, sem exceder o torque.',solucaoDefinitiva:'Revise rosca, arruelas e aplique trava-rosca apropriado quando indicado.'},
-];
-export const GLOSSARIO_BIKE=[{id:'cassete',termo:'Cassete',definicao:'Conjunto de pinhões na roda traseira.'},{id:'gancheira',termo:'Gancheira',definicao:'Peça que liga o câmbio traseiro ao quadro.'},{id:'pedivela',termo:'Pedivela',definicao:'Conjunto das alavancas onde os pedais são instalados.'},{id:'movimento-central',termo:'Movimento central',definicao:'Rolamentos/eixo que permitem o pedivela girar no quadro.'},{id:'talão',termo:'Talão do pneu',definicao:'Borda do pneu que encaixa no aro.'}];
-export const KIT_MINIMO_FERRAMENTAS=[{id:'bomba',icone:'💨',nome:'Bomba de ar',motivo:'Recuperar pressão após remendo ou troca de câmara.'},{id:'remendo',icone:'🩹',nome:'Kit de remendos',motivo:'Reparar furos sem gastar a câmara reserva.'},{id:'multitool',icone:'🔧',nome:'Multitool',motivo:'Apertos e regulagens básicas na estrada.'},{id:'espátula',icone:'🪛',nome:'Espátulas de pneu',motivo:'Facilitam a retirada do pneu.'},{id:'elo',icone:'⛓️',nome:'Elo rápido',motivo:'Recuperar uma corrente quebrada.'}];
-export const KIT_FERRAMENTA_PARA_ITEM={bomba:'bomba',remendo:'remendo',multitool:'multitool',espátula:'espátula',elo:'elo'};
+] satisfies readonly BikeProblem[];
+export const GLOSSARIO_BIKE=[{id:'cassete',termo:'Cassete',definicao:'Conjunto de pinhões na roda traseira.'},{id:'gancheira',termo:'Gancheira',definicao:'Peça que liga o câmbio traseiro ao quadro.'},{id:'pedivela',termo:'Pedivela',definicao:'Conjunto das alavancas onde os pedais são instalados.'},{id:'movimento-central',termo:'Movimento central',definicao:'Rolamentos/eixo que permitem o pedivela girar no quadro.'},{id:'talão',termo:'Talão do pneu',definicao:'Borda do pneu que encaixa no aro.'}] satisfies readonly BikeGlossaryTerm[];
+export const KIT_MINIMO_FERRAMENTAS=[{id:'bomba',icone:'💨',nome:'Bomba de ar',motivo:'Recuperar pressão após remendo ou troca de câmara.'},{id:'remendo',icone:'🩹',nome:'Kit de remendos',motivo:'Reparar furos sem gastar a câmara reserva.'},{id:'multitool',icone:'🔧',nome:'Multitool',motivo:'Apertos e regulagens básicas na estrada.'},{id:'espátula',icone:'🪛',nome:'Espátulas de pneu',motivo:'Facilitam a retirada do pneu.'},{id:'elo',icone:'⛓️',nome:'Elo rápido',motivo:'Recuperar uma corrente quebrada.'}] satisfies readonly BikeToolKitItem[];
+export const KIT_FERRAMENTA_PARA_ITEM: Readonly<Record<string,string>>={bomba:'bomba',remendo:'remendo',multitool:'multitool',espátula:'espátula',elo:'elo'};
 export const EQUIPAMENTOS_SEGURANCA_IDS=['capacete','luz-bike','colete','primeiros-socorros'];
-export const EQUIPAMENTO_PARA_MANUAL={camara:{tipo:'peca',id:'camara'},remendo:{tipo:'problema',id:'furo'},multitool:{tipo:'peca',id:'corrente'},bomba:{tipo:'peca',id:'pneu'}};
+export const EQUIPAMENTO_PARA_MANUAL: Readonly<Record<string,ManualBikeTarget>>={camara:{tipo:'peca',id:'camara'},remendo:{tipo:'problema',id:'furo'},multitool:{tipo:'peca',id:'corrente'},bomba:{tipo:'peca',id:'pneu'}};

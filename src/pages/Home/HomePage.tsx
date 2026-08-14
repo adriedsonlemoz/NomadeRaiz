@@ -9,25 +9,28 @@ import { ChecklistVerificacao } from "./ChecklistVerificacao";
 import { NotaRapidaModal } from "./NotaRapidaModal";
 import { APP_NAME } from "../../config/app";
 
+type VerificationModeId = keyof typeof VERIFICACOES;
+
 export default function HomePage() {
   const { state, setPage, setModo } = useStore();
   const { theme: T } = useTheme();
-  const [verificando, setVerificando] = useState(null);
+  const [verificando, setVerificando] = useState<VerificationModeId | null>(null);
   const [notaAberta, setNotaAberta] = useState(false);
   const dias = useDiasNaEstrada();
 
-  if (verificando) return <ChecklistVerificacao modoId={verificando} onVoltar={()=>setVerificando(null)}/>;
+  if (verificando) {
+    return <ChecklistVerificacao modoId={verificando} onVoltar={() => setVerificando(null)} />;
+  }
 
   const stats = globalStats(state.items);
-  const pct   = stats.total>0 ? Math.round((stats.comprados/stats.total)*100) : 0;
-  const temNota = !!state.notaRapida?.trim();
+  const pct = stats.total > 0 ? Math.round((stats.comprados / stats.total) * 100) : 0;
+  const temNota = Boolean(state.notaRapida?.trim());
 
   return (
     <div style={{ flex:1, minHeight:0, display:"flex", flexDirection:"column",
       overflow:"hidden", background:T.pageBg }}>
-      {notaAberta && <NotaRapidaModal onClose={()=>setNotaAberta(false)}/>}
+      {notaAberta && <NotaRapidaModal onClose={() => setNotaAberta(false)} />}
 
-      {/* Header compacto */}
       <div style={{ flexShrink:0, background:T.navy, padding:"16px 16px 13px", position:"relative" }}>
         <div style={{ position:"absolute", top:-10, right:-10, fontSize:56,
           opacity:.05, transform:"rotate(-10deg)", pointerEvents:"none" }}>🚲</div>
@@ -46,21 +49,20 @@ export default function HomePage() {
                 <p style={{ color:"#7ea3d4", fontSize:7.5, margin:0 }}>dias</p>
               </div>
             )}
-            <button onClick={()=>setNotaAberta(true)} style={{ position:"relative", width:34, height:34,
+            <button onClick={() => setNotaAberta(true)} style={{ position:"relative", width:34, height:34,
               borderRadius:10, border:"none", background:"rgba(255,255,255,.1)", color:"#fff",
               fontSize:15, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
               📝
               {temNota && <span style={{ position:"absolute", top:-2, right:-2, width:8, height:8,
-                borderRadius:99, background:T.urgColor, border:`1.5px solid ${T.navy}` }}/>}
+                borderRadius:99, background:T.urgColor, border:`1.5px solid ${T.navy}` }}/>} 
             </button>
-            <button onClick={()=>setPage("dicas")} style={{ width:34, height:34,
+            <button onClick={() => setPage("dicas")} style={{ width:34, height:34,
               borderRadius:10, border:"none", background:"rgba(255,255,255,.1)", color:"#fff",
               fontSize:15, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>🧠</button>
           </div>
         </div>
       </div>
 
-      {/* Mini stats */}
       <div style={{ flexShrink:0, padding:"10px 14px 0" }}>
         <div style={{ background:T.white, borderRadius:13, padding:"10px 13px",
           boxShadow:"0 4px 16px rgba(15,39,68,.12)", border:`1px solid ${T.border}`,
@@ -83,20 +85,20 @@ export default function HomePage() {
       <p style={{ flexShrink:0, color:T.textMuted, fontSize:9.5, fontWeight:800, letterSpacing:"0.15em",
         textTransform:"uppercase", margin:"10px 14px 6px" }}>Verificações Rápidas</p>
 
-      {/* Grade 2×3 preenche todo o espaço restante — sem rolagem */}
       <div style={{ flex:1, minHeight:0, padding:"0 14px 10px", display:"grid",
         gridTemplateColumns:"1fr 1fr", gridTemplateRows:"repeat(3, 1fr)", gap:8 }}>
         {MODOS.map(modo => {
-          const v = VERIFICACOES[modo.id];
+          const modoId = modo.id as VerificationModeId;
+          const v = VERIFICACOES[modoId];
           const isAtivo = state.modoAtivo === modo.id;
           return (
             <button key={modo.id}
-              onClick={()=>{ setModo(modo.id); setVerificando(modo.id); }}
-              style={{ background:T.white, border:`1.5px solid ${isAtivo?modo.cor:T.border}`,
+              onClick={() => { setModo(modoId); setVerificando(modoId); }}
+              style={{ background:T.white, border:`1.5px solid ${isAtivo ? modo.cor : T.border}`,
                 borderRadius:14, padding:"10px 11px", minHeight:0, overflow:"hidden", position:"relative",
                 display:"flex", flexDirection:"column", justifyContent:"space-between",
                 cursor:"pointer", textAlign:"left", boxSizing:"border-box",
-                boxShadow:isAtivo?`0 2px 14px ${modo.cor}33`:"0 1px 4px rgba(15,39,68,.07)",
+                boxShadow:isAtivo ? `0 2px 14px ${modo.cor}33` : "0 1px 4px rgba(15,39,68,.07)",
                 transition:"all .2s" }}>
               <span aria-hidden="true" style={{ position:"absolute", right:-5, bottom:-12, fontSize:52,
                 opacity:.055, filter:"grayscale(1)", transform:"rotate(-10deg)", pointerEvents:"none", userSelect:"none" }}>{modo.icon}</span>
@@ -109,7 +111,7 @@ export default function HomePage() {
                 </div>
                 <span style={{ fontSize:8, fontWeight:700, color:modo.cor,
                   background:`${modo.cor}12`, border:`1px solid ${modo.cor}30`,
-                  padding:"2px 5px", borderRadius:99 }}>{v?.itens.length}</span>
+                  padding:"2px 5px", borderRadius:99 }}>{v?.itens.length ?? 0}</span>
               </div>
               <div style={{ minWidth:0, position:"relative", zIndex:1 }}>
                 <p style={{ color:T.textMain, fontWeight:800, fontSize:12, margin:"0 0 1px", lineHeight:1.2,
@@ -123,8 +125,7 @@ export default function HomePage() {
           );
         })}
 
-        {/* Atalho Equipamentos — completa a grade */}
-        <button onClick={()=>setPage("lista")} style={{ background:T.navy, border:"none",
+        <button onClick={() => setPage("lista")} style={{ background:T.navy, border:"none",
           borderRadius:14, padding:"10px 11px", minHeight:0, overflow:"hidden", position:"relative",
           display:"flex", flexDirection:"column", justifyContent:"space-between",
           cursor:"pointer", textAlign:"left", boxSizing:"border-box" }}>
@@ -134,7 +135,7 @@ export default function HomePage() {
             <div style={{ width:32, height:32, borderRadius:9, flexShrink:0,
               background:"rgba(255,255,255,.12)",
               display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>📋</div>
-            {stats.pendentes>0 && (
+            {stats.pendentes > 0 && (
               <span style={{ fontSize:8, fontWeight:700, color:"#fff",
                 background:"rgba(255,255,255,.15)", padding:"2px 5px", borderRadius:99 }}>{stats.pendentes}</span>
             )}

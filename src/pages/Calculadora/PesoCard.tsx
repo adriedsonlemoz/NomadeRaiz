@@ -5,7 +5,7 @@ import type { Item, EquipmentCategory } from '../../types';
 import type { ThemeTokens } from '../../styles/theme';
 import type { StateSetter, WeightFormState } from './types';
 
-const categories = CATEGORIES as readonly EquipmentCategory[];
+const categories: readonly EquipmentCategory[] = CATEGORIES;
 
 interface PesoRowProps {
   item: Item;
