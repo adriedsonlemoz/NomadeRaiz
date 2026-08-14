@@ -22,7 +22,7 @@ export function DinheiroCard({ dinheiro, setDinheiro, T }: DinheiroCardProps) {
       {r.valido
         ? <ResultBadge T={T} dias={r.dias} label="dias antes do dinheiro acabar"
             sub={`${fmt(r.gastoDia)}/dia com ${fmt(r.disponivel)} disponíveis`}/>
-        : <EmptyState T={T} text="Informe o dinheiro disponível e o gasto médio diário."/>}
+        : <EmptyState text="Informe o dinheiro disponível e o gasto médio diário."/>}
     </div>
   );
 }

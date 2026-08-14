@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
-import { TIPOS_PONTO } from "../../constants";
+import { TIPOS_PONTO } from "../../constants/travel";
 import type { Ponto, PontoDraft, PontoTipo } from "../../types";
 import { PontoForm } from "./PontoForm";
 

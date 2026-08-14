@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
-import { APP_ANO, CHANGELOG } from "../../constants";
+import { APP_ANO } from "../../constants/app";
+import { CHANGELOG } from "../../constants/changelog";
 import {
   APP_DESCRIPTION,
   APP_NAME,

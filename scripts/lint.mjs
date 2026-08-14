@@ -45,14 +45,41 @@ for (const file of legacySourceFiles) {
   errors.push(`${path.relative(root,file)}: JavaScript/JSX legado não é permitido em src; use .ts/.tsx.`);
 }
 
+const requiredTestFiles = [
+  'tests/calculator.test.ts',
+  'tests/planning.test.ts',
+  'tests/reducer.test.ts',
+  'tests/export.test.ts',
+  'tests/test.types.ts',
+  'scripts/run-tests.ts',
+  'scripts/ts-loader.mjs',
+  'scripts/register-test-loader.mjs',
+  'tsconfig.test.json',
+];
+for (const rel of requiredTestFiles) {
+  if (!fs.existsSync(path.join(root, rel))) errors.push(`${rel}: arquivo obrigatório da suíte de testes não encontrado.`);
+}
+
 const pkg = JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 if (!/^\d+\.\d+\.\d+$/.test(pkg.version)) errors.push('package.json: version deve seguir X.Y.Z.');
 const lock = JSON.parse(fs.readFileSync(path.join(root,'package-lock.json'),'utf8'));
 if (lock.version !== pkg.version || lock.packages?.['']?.version !== pkg.version) errors.push('package-lock.json: versão deve acompanhar package.json.');
 if (pkg.name !== 'nomade-raiz') errors.push('package.json: name deve permanecer nomade-raiz.');
+if (!pkg.scripts?.test || !pkg.scripts.test.includes('run-tests.ts')) errors.push('package.json: script test deve executar a suíte TypeScript automatizada.');
+if (!pkg.scripts?.check || !pkg.scripts.check.includes('npm run test')) errors.push('package.json: check deve incluir npm run test antes do build.');
+if (!pkg.scripts?.typecheck || !pkg.scripts.typecheck.includes('tsconfig.test.json')) errors.push('package.json: typecheck deve validar também tsconfig.test.json.');
 if (pkg.engines?.node !== '20.x') errors.push('package.json: engines.node deve permanecer fixado em 20.x para builds reproduzíveis.');
 const nvmrcPath = path.join(root,'.nvmrc');
 if (!fs.existsSync(nvmrcPath) || fs.readFileSync(nvmrcPath,'utf8').trim() !== '20') errors.push('.nvmrc: deve fixar Node 20.');
+
+
+const ciPath = path.join(root,'.github/workflows/ci.yml');
+if (!fs.existsSync(ciPath)) errors.push('.github/workflows/ci.yml: workflow de CI obrigatório.');
+else {
+  const ci = fs.readFileSync(ciPath,'utf8');
+  if (!ci.includes('run: npm run build')) errors.push('CI: deve executar npm run build para validar check + bundle.');
+  if (ci.includes('run: npm run check')) errors.push('CI: não execute check separadamente; npm run build já o inclui.');
+}
 
 const readmePath = path.join(root,'README.md');
 if (!fs.existsSync(readmePath)) errors.push('README.md: arquivo obrigatório para apresentação do projeto no GitHub.');
@@ -82,17 +109,29 @@ else {
 const configPage = fs.readFileSync(path.join(src,'pages/Configuracoes/ConfiguracoesPage.tsx'),'utf8');
 if (/v\d+\.\d+\.\d+/.test(configPage)) errors.push('ConfiguracoesPage: versão não pode ser hardcoded; use APP_VERSION.');
 
-const constants = fs.readFileSync(path.join(src,'constants/index.ts'),'utf8');
-if (!constants.includes('APP_VERSAO=APP_VERSION')) errors.push('constants/index.ts: APP_VERSAO deve derivar de APP_VERSION.');
-if (!constants.includes(`versao:'${pkg.version}'`)) errors.push(`constants/index.ts: CHANGELOG exibido no app deve conter a versão ${pkg.version}.`);
-if (!constants.includes('satisfies readonly FoodConfigWithUnits[]')) errors.push('constants/index.ts: ALIMENTOS_CONFIG deve ser validado por FoodConfigWithUnits na origem.');
+const constantsDir = path.join(src,'constants');
+const constantsIndex = fs.readFileSync(path.join(constantsDir,'index.ts'),'utf8');
+const appConstants = fs.readFileSync(path.join(constantsDir,'app.ts'),'utf8');
+const travelConstants = fs.readFileSync(path.join(constantsDir,'travel.ts'),'utf8');
+const appChangelog = fs.readFileSync(path.join(constantsDir,'changelog.ts'),'utf8');
+const constantDomains = ['app','equipment','checks','travel','tips','changelog','manualBike'];
+for (const domain of constantDomains) {
+  if (!fs.existsSync(path.join(constantsDir,`${domain}.ts`))) errors.push(`constants/${domain}.ts: módulo de domínio obrigatório não encontrado.`);
+}
+if (!/APP_VERSAO\s*=\s*APP_VERSION/.test(appConstants)) errors.push('constants/app.ts: APP_VERSAO deve derivar de APP_VERSION.');
+if (!appChangelog.includes(`versao:'${pkg.version}'`)) errors.push(`constants/changelog.ts: CHANGELOG exibido no app deve conter a versão ${pkg.version}.`);
+if (!travelConstants.includes('satisfies readonly FoodConfigWithUnits[]')) errors.push('constants/travel.ts: ALIMENTOS_CONFIG deve ser validado por FoodConfigWithUnits na origem.');
+if (/export\s+const\s+/.test(constantsIndex) || Buffer.byteLength(constantsIndex,'utf8') > 1024) errors.push('constants/index.ts: deve permanecer um barrel pequeno, sem dados de domínio.');
+for (const domain of constantDomains) {
+  if (!constantsIndex.includes(`export * from './${domain}'`)) errors.push(`constants/index.ts: deve reexportar constants/${domain}.ts.`);
+}
 
 const migratedSharedModules = [
   'App',
   'layouts/AppShell', 'layouts/BottomNav', 'layouts/ErrorBoundary', 'layouts/SplashScreen', 'layouts/index',
   'components/common/Badge', 'components/common/BicycleIcon', 'components/common/EmptyState',
   'components/common/Modal', 'components/common/ProgressBar', 'components/common/QtyControl',
-  'components/common/index', 'hooks/index',
+  'components/common/index', 'components/common/FormField', 'hooks/index',
   'pages/Extras/ExtrasPage', 'pages/Dicas/DicasPage', 'pages/Dicas/DicaModal',
   'pages/Exportar/ExportarPage', 'pages/Sobre/SobrePage', 'pages/Sobre/ApoioModal', 'pages/Sobre/ContatoModal',
   'pages/Calculadora/AguaCard', 'pages/Calculadora/BikeCard', 'pages/Calculadora/CalcAtoms',
@@ -128,6 +167,60 @@ for (const serviceName of serviceNames) {
   const jsPath = path.join(src, `services/${serviceName}.service.js`);
   if (!fs.existsSync(tsPath)) errors.push(`${serviceName}.service.ts: service TypeScript obrigatório não encontrado.`);
   if (fs.existsSync(jsPath)) errors.push(`${serviceName}.service.js antigo ainda existe e pode sombrear a implementação TypeScript.`);
+}
+
+// Arquitetura pós-refatoração 1.0.9–1.0.11.
+const storeContextPath = path.join(src,'contexts/StoreContext.tsx');
+const storeContext = fs.readFileSync(storeContextPath,'utf8');
+if (Buffer.byteLength(storeContext,'utf8') > 2500) errors.push('StoreContext.tsx: contexto voltou a concentrar responsabilidades; mantenha ações/persistência nos hooks dedicados.');
+if (!storeContext.includes('useStorePersistence') || !storeContext.includes('useStoreActions')) errors.push('StoreContext.tsx: deve coordenar useStorePersistence e useStoreActions.');
+if (storeContext.includes('StorageService')) errors.push('StoreContext.tsx: persistência direta não é permitida; use useStorePersistence.');
+for (const rel of ['contexts/store/useStoreActions.ts','contexts/store/useStorePersistence.ts','contexts/store/store.types.ts','pages/Planejamento/PlanningTripForm.tsx','pages/Planejamento/PlanningResults.tsx','pages/Planejamento/usePlanningAnalysis.ts','pages/ManualBike/ManualOverview.tsx','pages/ManualBike/ManualSearchResults.tsx','pages/ManualBike/useManualBikeData.ts']) {
+  if (!fs.existsSync(path.join(src,rel))) errors.push(`${rel}: módulo extraído obrigatório não encontrado.`);
+}
+const planningPage = fs.readFileSync(path.join(src,'pages/Planejamento/PlanejamentoPage.tsx'),'utf8');
+const manualPage = fs.readFileSync(path.join(src,'pages/ManualBike/ManualBikePage.tsx'),'utf8');
+if (Buffer.byteLength(planningPage,'utf8') > 8000) errors.push('PlanejamentoPage.tsx: página voltou a ficar grande; extraia seções/cálculos.');
+if (Buffer.byteLength(manualPage,'utf8') > 7000) errors.push('ManualBikePage.tsx: página voltou a ficar grande; preserve os componentes extraídos.');
+const persistenceHook = fs.readFileSync(path.join(src,'contexts/store/useStorePersistence.ts'),'utf8');
+if (!persistenceHook.includes('WRITE_DELAYS') || !persistenceHook.includes("nota: 450")) errors.push('useStorePersistence.ts: debounce por domínio/nota deve permanecer ativo.');
+
+for (const file of walk(src).filter(file => /\.(?:ts|tsx)$/.test(file))) {
+  const text = fs.readFileSync(file,'utf8');
+  if (/from\s+['"](?:\.\.\/)+constants['"]/.test(text)) errors.push(`${path.relative(root,file)}: importe constantes do módulo de domínio, não do barrel global.`);
+}
+
+
+// Design System próprio — 1.0.13.
+const designStyleFiles = ['tokens.css','globals.css','components.css','forms.css','utilities.css'];
+for (const file of designStyleFiles) {
+  if (!fs.existsSync(path.join(src,'styles',file))) errors.push(`styles/${file}: arquivo obrigatório do Design System não encontrado.`);
+}
+const indexCss = fs.readFileSync(path.join(src,'index.css'),'utf8');
+for (const file of designStyleFiles) {
+  if (!indexCss.includes(`./styles/${file}`)) errors.push(`index.css: deve importar styles/${file}.`);
+}
+if (indexCss.includes('@tailwind')) errors.push('index.css: diretivas Tailwind não são permitidas; use o Design System próprio.');
+if (pkg.devDependencies?.tailwindcss || pkg.dependencies?.tailwindcss) errors.push('package.json: Tailwind foi removido na 1.0.13; não reintroduza sem uma decisão arquitetural explícita.');
+if (fs.existsSync(path.join(root,'tailwind.config.js')) || fs.existsSync(path.join(root,'tailwind.config.ts'))) errors.push('tailwind.config: configuração legada deve permanecer removida.');
+const postcss = fs.readFileSync(path.join(root,'postcss.config.js'),'utf8');
+if (postcss.includes('tailwindcss')) errors.push('postcss.config.js: plugin Tailwind não deve ser carregado.');
+const themeContext = fs.readFileSync(path.join(src,'contexts/ThemeContext.tsx'),'utf8');
+if (!themeContext.includes('root.dataset.theme') || !themeContext.includes('root.dataset.fontScale')) errors.push('ThemeContext.tsx: deve sincronizar tema e escala de fonte com os tokens CSS globais.');
+
+const cssMigratedUi = [
+  'components/common/AppButton.tsx','components/common/Card.tsx','components/common/PageHeader.tsx',
+  'components/common/Modal.tsx','components/common/Badge.tsx','components/common/QtyControl.tsx',
+  'components/common/SectionLabel.tsx','components/common/EmptyState.tsx',
+  'layouts/BottomNav.tsx','layouts/ErrorBoundary.tsx','pages/Configuracoes/ConfiguracoesPage.tsx',
+];
+for (const rel of cssMigratedUi) {
+  const text = fs.readFileSync(path.join(src,rel),'utf8');
+  if (text.includes('style={{')) errors.push(`${rel}: bloco de estilo inline reintroduzido em módulo já migrado para o Design System.`);
+  if (!text.includes('className=')) errors.push(`${rel}: módulo migrado deve consumir classes do Design System.`);
+}
+for (const rel of ['components/common/FormField.tsx','styles/tokens.css','styles/components.css']) {
+  if (!fs.existsSync(path.join(src,rel))) errors.push(`${rel}: fundação obrigatória do Design System não encontrada.`);
 }
 
 const storage = fs.readFileSync(path.join(src,'services/storage.service.ts'),'utf8');

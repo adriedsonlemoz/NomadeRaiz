@@ -14,3 +14,6 @@ export type { AppButtonProps } from "./AppButton";
 export { Card } from "./Card";
 export { PageHeader } from "./PageHeader";
 export { SectionLabel } from "./SectionLabel";
+
+export { FormField } from "./FormField";
+export type { FormFieldProps } from "./FormField";

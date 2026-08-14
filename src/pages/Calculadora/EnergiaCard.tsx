@@ -66,7 +66,7 @@ export function EnergiaCard({ energia, setEnergia, T }: EnergiaCardProps) {
             <span style={{ color:T.blue, fontWeight:800, fontSize:12 }}>{Math.round(r.geracaoDiariaWh)} Wh/dia</span>
           </div>
         </>
-      ) : <EmptyState T={T} text="Marque ao menos um equipamento em uso para calcular."/>}
+      ) : <EmptyState text="Marque ao menos um equipamento em uso para calcular."/>}
     </div>
   );
 }

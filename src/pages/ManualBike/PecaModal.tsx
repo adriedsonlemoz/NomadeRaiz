@@ -18,7 +18,7 @@ export function PecaModal({ peca, onClose, T }: PecaModalProps) {
     textTransform:"uppercase", margin:"0 0 6px" };
   const sectionText: CSSProperties = { color:T.textMain, fontSize:13, lineHeight:1.6, margin:0 };
   return (
-    <ModalBase T={T} onClose={onClose} header={
+    <ModalBase onClose={onClose} header={
       <>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8, gap:10 }}>
           <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStore } from "../../contexts";
 import { useTheme, useHaptics } from "../../hooks";
-import { VERIFICACOES, MODOS_PERSISTENTES } from "../../constants";
+import { VERIFICACOES, MODOS_PERSISTENTES } from "../../constants/checks";
 import { Bar } from "../../components/common";
 import { DicaModal } from "../Dicas/DicaModal";
 import type { DicaModalItem } from "../Dicas/DicaModal";

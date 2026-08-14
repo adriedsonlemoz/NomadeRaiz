@@ -1,6 +1,6 @@
 # Nomade Raiz
 
-Versão atual: **1.0.8**
+Versão atual: **1.0.13**
 
 Nomade Raiz é um aplicativo offline-first para cicloviagem, bikepacking e vida na estrada. Ele reúne planejamento, equipamentos, autonomia, diário, pontos de apoio e um manual prático da bicicleta em uma interface pensada para funcionar também sem conexão constante.
 
@@ -19,12 +19,25 @@ Nomade Raiz é um aplicativo offline-first para cicloviagem, bikepacking e vida 
 ## Tecnologias
 
 - React 18
-- TypeScript + JavaScript/JSX em migração gradual
+- TypeScript/TSX em todo o código-fonte (`src`)
 - Vite
 - Capacitor 6
 - Manifesto web com identidade Nomade Raiz
 - Dexie / IndexedDB
-- Tailwind/PostCSS disponíveis na base
+- Design System próprio em CSS (tokens, componentes, formulários e utilitários)
+- PostCSS + Autoprefixer
+
+## Design System
+
+A interface está migrando gradualmente dos estilos inline legados para um Design System próprio em `src/styles/`:
+
+- `tokens.css`: cores, tema claro/escuro, espaçamento, raios, sombras e tipografia;
+- `globals.css`: reset e comportamento global;
+- `components.css`: componentes e layouts compartilhados;
+- `forms.css`: inputs, selects, textareas e campos;
+- `utilities.css`: utilitários pequenos e semânticos.
+
+Estilos inline continuam permitidos quando o valor depende realmente de runtime (por exemplo, porcentagem de progresso ou escala da interface). O lint impede regressões nos módulos que já foram migrados.
 
 ## Estrutura de dados
 
@@ -42,11 +55,12 @@ Verificações de qualidade:
 ```bash
 npm run lint
 npm run typecheck
+npm run test
 npm run check
 npm run build
 ```
 
-O `lint` também verifica imports relativos, uso indevido de `localStorage`, sincronização de versão entre `package.json`, `package-lock.json`, README e changelogs, além de regras estruturais da fundação.
+O `lint` também verifica imports relativos, uso indevido de `localStorage`, sincronização de versão entre `package.json`, `package-lock.json`, README e changelogs, além de regras estruturais da fundação. O `npm run test` executa a suíte automatizada de regras de negócio e backup; `npm run check` combina lint, TypeScript e testes antes do build.
 
 ## Capacitor
 
@@ -74,4 +88,4 @@ Projeto mantido em `adriedsonlemoz/NomadeRaiz` no GitHub.
 
 ## Estado atual
 
-A versão 1.0.2 padroniza a identidade **Nomade Raiz**, melhora a página Sobre, restaura as marcas-d’água visuais da Home e fortalece a apresentação e validação do projeto no GitHub.
+A versão 1.0.13 inaugura o Design System próprio do Nomade Raiz. Tokens de tema, componentes compartilhados, formulários e utilitários agora vivem em CSS centralizado; Tailwind foi removido por estar ocioso. A migração começou pela base compartilhada, layouts e Configurações, mantendo estilos dinâmicos inline apenas quando dependem de valores em runtime.

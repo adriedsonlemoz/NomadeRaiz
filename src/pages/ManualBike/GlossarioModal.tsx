@@ -1,5 +1,5 @@
 import { ModalBase } from "../../components/common";
-import { GLOSSARIO_BIKE } from "../../constants";
+import { GLOSSARIO_BIKE } from "../../constants/manualBike";
 import type { ThemeTokens } from "../../styles/theme";
 
 interface GlossarioModalProps {
@@ -9,7 +9,7 @@ interface GlossarioModalProps {
 
 export function GlossarioModal({ onClose, T }: GlossarioModalProps) {
   return (
-    <ModalBase T={T} onClose={onClose} header={
+    <ModalBase onClose={onClose} header={
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
         <p style={{ color:"#fff", fontWeight:800, fontSize:15, margin:0 }}>📖 Glossário de Termos</p>
         <button onClick={onClose} style={{ flexShrink:0, width:28, height:28, borderRadius:8, border:"none",

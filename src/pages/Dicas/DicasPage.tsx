@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
-import { DICAS } from "../../constants";
+import { DICAS } from "../../constants/tips";
 
 interface Dica {
   id: string;

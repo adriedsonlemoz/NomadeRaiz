@@ -4,7 +4,7 @@ import { useTheme, useDiasNaEstrada } from "../../hooks";
 import { globalStats } from "../../services/equipment.service";
 import { fmt } from "../../utils/format";
 import { Ring, Bar } from "../../components/common";
-import { MODOS, VERIFICACOES } from "../../constants";
+import { MODOS, VERIFICACOES } from "../../constants/checks";
 import { ChecklistVerificacao } from "./ChecklistVerificacao";
 import { NotaRapidaModal } from "./NotaRapidaModal";
 import { APP_NAME } from "../../config/app";

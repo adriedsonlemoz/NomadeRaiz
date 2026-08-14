@@ -8,7 +8,5 @@ export const darkT={...T,navy:'#07111f',navyMid:'#10243c',navyLight:'#18324f',pa
 export const FONT_SCALES={sm:{xs:9,sm:11,md:13,lg:16,xl:20},md:{xs:10,sm:12,md:14,lg:18,xl:22},lg:{xs:11,sm:13,md:15,lg:20,xl:24}} as const;
 export const UI_SCALE:Record<FontScale,number>={sm:.94,md:1,lg:1.07};
 
-// Tokens básicos para novos componentes. As telas antigas podem migrar aos poucos.
-export const SPACE={xs:4,sm:8,md:12,lg:16,xl:20,xxl:28} as const;
-export const RADIUS={sm:9,md:12,lg:14,xl:20,pill:999} as const;
-export const SHADOW={soft:'0 4px 14px rgba(15,39,68,.10)',modal:'0 20px 60px rgba(0,0,0,.30)'} as const;
+// Compatibilidade durante a migração gradual: telas legadas ainda consomem T/darkT em runtime.
+// Novos componentes devem preferir os tokens CSS definidos em styles/tokens.css.

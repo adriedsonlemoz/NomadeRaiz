@@ -1,5 +1,5 @@
 import { APP_ID, APP_VERSION, BACKUP_SCHEMA_VERSION } from '../config/app';
-import { CLIMAS, TIPOS_PONTO } from '../constants';
+import { CLIMAS, TIPOS_PONTO } from '../constants/travel';
 import type {
   AppState, BackupEnvelope, BackupImportResult, ClimaIcon, DiarioEntry, Item,
   PersistedState, Ponto, PontoAvaliacao, PontoTipo,

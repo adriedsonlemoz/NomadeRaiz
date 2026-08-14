@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ChangeEvent, CSSProperties, KeyboardEvent } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
-import { MINIMOS_SUGERIDOS } from "../../constants";
+import { MINIMOS_SUGERIDOS } from "../../constants/equipment";
 
 export default function AlertasPage() {
   const { state, setPage, setMinimos } = useStore();

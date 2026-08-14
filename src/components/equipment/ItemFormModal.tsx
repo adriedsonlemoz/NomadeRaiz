@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import { useStore } from '../../contexts';
 import { useTheme } from '../../hooks';
 import { QtyControl } from '../common';
-import { CATEGORIES } from '../../constants';
+import { CATEGORIES } from '../../constants/equipment';
 import type { EquipmentCategory, Item, ItemStatus, Priority } from '../../types';
 
 const categories: readonly EquipmentCategory[] = CATEGORIES;

@@ -5,7 +5,7 @@ import {
   type FoodInput,
   type FoodLine,
 } from '../../services/calculator.service';
-import { ALIMENTOS_CONFIG } from '../../constants';
+import { ALIMENTOS_CONFIG } from '../../constants/travel';
 import type { ThemeTokens } from '../../styles/theme';
 import type { FoodConfigWithUnits, FoodFormState, StateSetter } from './types';
 

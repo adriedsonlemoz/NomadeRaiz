@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useStore } from '../../contexts';
 import { useTheme } from '../../hooks';
-import { CATEGORIES } from '../../constants';
+import { CATEGORIES } from '../../constants/equipment';
 import { catStats, filterItems, sortItems } from '../../services/equipment.service';
 import { fmt } from '../../utils/format';
 import type { EquipmentCategory, ItemFilter, ItemSort } from '../../types';

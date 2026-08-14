@@ -1,6 +1,6 @@
 import { useState, type CSSProperties, type MouseEvent } from "react";
 import { useTheme } from "../../hooks";
-import { CLIMAS } from "../../constants";
+import { CLIMAS } from "../../constants/travel";
 import type { ClimaIcon, DiarioEntryDraft } from "../../types";
 
 const climas: readonly ClimaIcon[] = CLIMAS;

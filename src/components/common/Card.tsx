@@ -1,8 +1,10 @@
-import type { CSSProperties, ReactNode } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { RADIUS } from '../../styles/theme';
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
-export function Card({ children, style }: { children:ReactNode; style?:CSSProperties }) {
-  const { theme:T } = useTheme();
-  return <div style={{ background:T.white, border:`1px solid ${T.border}`, borderRadius:RADIUS.lg, ...style }}>{children}</div>;
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
+  style?: CSSProperties;
+}
+
+export function Card({ children, className = '', ...props }: CardProps) {
+  return <div {...props} className={`nr-card ${className}`.trim()}>{children}</div>;
 }

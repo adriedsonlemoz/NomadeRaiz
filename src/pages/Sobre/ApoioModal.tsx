@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import QRCode from "qrcode";
 import { gerarPayloadPix } from "../../services/pix.service";
-import { PIX_CHAVE } from "../../constants";
+import { PIX_CHAVE } from "../../constants/app";
 import type { ThemeCtx } from "../../contexts/ThemeContext";
 
 interface ApoioModalProps {

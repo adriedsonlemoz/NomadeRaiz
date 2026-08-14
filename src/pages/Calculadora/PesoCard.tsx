@@ -1,6 +1,6 @@
 import { parseNum } from '../../utils/format';
 import { montarLinhasPeso, calcPeso, type WeightInput } from '../../services/calculator.service';
-import { CATEGORIES } from '../../constants';
+import { CATEGORIES } from '../../constants/equipment';
 import type { Item, EquipmentCategory } from '../../types';
 import type { ThemeTokens } from '../../styles/theme';
 import type { StateSetter, WeightFormState } from './types';

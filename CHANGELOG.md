@@ -2,6 +2,51 @@
 
 Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
 
+## 1.0.13 — Design System próprio e CSS centralizado
+
+- Criada uma fundação visual própria em `src/styles/`: `tokens.css`, `globals.css`, `components.css`, `forms.css` e `utilities.css`.
+- Tokens de claro/escuro, espaçamento, raios, sombras, tipografia e cores semânticas passaram a ser consumidos via CSS Custom Properties.
+- `ThemeProvider` sincroniza `data-theme` e `data-font-scale` no documento, mantendo compatibilidade temporária com os tokens TypeScript usados pelas telas ainda não migradas.
+- Componentes comuns (`AppButton`, `Card`, `PageHeader`, `ModalBase`, `Badge`, `ProgressBar`, `QtyControl`, `SectionLabel` e `EmptyState`) migrados para classes semânticas; estilos inline ficaram reservados a valores realmente dinâmicos.
+- Layouts raiz, navegação inferior, splash e ErrorBoundary foram migrados para o Design System.
+- Configurações passou a usar o novo sistema, incluindo switch acessível, seleção de fonte, cards e botões padronizados.
+- Adicionado `FormField` e estilos-base para input, select e textarea, preparando a migração gradual dos formulários das demais páginas.
+- Tailwind removido de `package.json`, `package-lock.json`, PostCSS e configuração do projeto porque não havia uso de classes Tailwind no código.
+- Lint reforçado para garantir a presença do Design System, impedir reintrodução do Tailwind e evitar novos blocos de estilos inline nos componentes compartilhados já migrados.
+
+## 1.0.12 — Testes automáticos e rede de segurança
+
+- Adicionada suíte automatizada sem novas dependências, executada pelo Vite sobre os módulos TypeScript reais do app.
+- Calculadora recebeu testes de bicicleta, água, energia, alimentação, dinheiro, peso, custo e índice geral.
+- Planejamento recebeu testes dos status, energia automática e recomendações de autonomia.
+- Reducer recebeu cobertura das mutações críticas, limites numéricos, checklists, favoritos e restauração de estado persistido.
+- Backup/importação ganhou testes de round-trip, normalização de dados antigos/inválidos, compatibilidade legada e rejeição de schemas incompatíveis.
+- `npm run check` agora executa lint, TypeScript e testes; consequentemente o build falha antes do Vite se alguma regra de negócio coberta regredir.
+- CI deixou de executar `check` duas vezes: o job usa o próprio `npm run build`, que já incorpora todas as validações.
+
+
+## 1.0.11 — Constantes por domínio
+
+- `constants/index.ts` virou apenas um barrel de compatibilidade; dados agora vivem em módulos de domínio (`app`, `equipment`, `checks`, `travel`, `tips`, `changelog` e `manualBike`).
+- Imports internos foram direcionados aos módulos específicos, reduzindo acoplamento com um arquivo global.
+- Regras de lint passam a proteger a divisão e impedir que `constants/index.ts` volte a concentrar dados da aplicação.
+- Esta entrega consolida no mesmo pacote as refatorações planejadas para 1.0.9, 1.0.10 e 1.0.11.
+
+## 1.0.10 — Páginas grandes decompostas
+
+- `PlanejamentoPage` foi reduzida a composição de tela; formulário, cálculos derivados e resultados foram extraídos para módulos dedicados.
+- `ManualBikePage` foi dividida em busca, visão geral e hook de dados derivados, preservando modais, navegação e comportamento existente.
+- Cálculos derivados passaram a usar `useMemo` nos hooks específicos, evitando recomputações de blocos inteiros sem necessidade.
+- Responsabilidades de navegação, apresentação e cálculo ficaram separadas para facilitar futuras alterações e testes.
+
+## 1.0.9 — Store e persistência
+
+- `StoreContext` foi reduzido a um coordenador de estado, ações e persistência.
+- A API de ações da Store foi extraída para `useStoreActions`, mantendo o contrato público existente.
+- Carga inicial e gravação no IndexedDB foram isoladas em `useStorePersistence`.
+- Persistência ganhou debounce independente por domínio; a nota rápida usa janela maior para evitar uma escrita por caractere.
+- Escritas pendentes são preservadas na desmontagem e falhas continuam sendo registradas sem derrubar o app.
+
 ## 1.0.8 — 14/08/2026
 - Manual da Bike migrado integralmente para TypeScript/TSX.
 - Todo o código-fonte em `src` agora usa TypeScript; arquivos `.js` e `.jsx` passam a ser bloqueados pelo lint.

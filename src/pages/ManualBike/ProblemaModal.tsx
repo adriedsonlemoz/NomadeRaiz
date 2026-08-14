@@ -24,7 +24,7 @@ export function ProblemaModal({ problema, onClose, T }: ProblemaModalProps) {
   };
 
   return (
-    <ModalBase T={T} onClose={onClose} header={
+    <ModalBase onClose={onClose} header={
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
           <div style={{ width:38, height:38, borderRadius:11, flexShrink:0, background:"rgba(255,255,255,.12)",

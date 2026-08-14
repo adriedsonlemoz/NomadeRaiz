@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { PIX_CHAVE } from "../../constants";
+import { PIX_CHAVE } from "../../constants/app";
 import { APP_NAME } from "../../config/app";
 import type { ThemeCtx } from "../../contexts/ThemeContext";
 

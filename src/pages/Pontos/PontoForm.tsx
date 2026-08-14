@@ -1,6 +1,6 @@
 import { useState, type CSSProperties, type MouseEvent } from "react";
 import { useTheme } from "../../hooks";
-import { TIPOS_PONTO } from "../../constants";
+import { TIPOS_PONTO } from "../../constants/travel";
 import type { Ponto, PontoAvaliacao, PontoDraft, PontoTipo } from "../../types";
 
 interface TipoPontoConfig {

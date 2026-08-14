@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../../contexts';
 import { useTheme } from '../../hooks';
-import { CATEGORIES } from '../../constants';
+import { CATEGORIES } from '../../constants/equipment';
 import { globalStats, catStats } from '../../services/equipment.service';
 import { fmt } from '../../utils/format';
 import type { EquipmentCategory } from '../../types';

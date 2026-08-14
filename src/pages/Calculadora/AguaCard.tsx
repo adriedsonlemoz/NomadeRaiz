@@ -77,7 +77,7 @@ export function AguaCard({ litros, setLitros, reabastece, setReabastece, frequen
             </div>
           )}
         </>
-      ) : <EmptyState T={T} text="Informe quantos litros de água você está carregando."/>}
+      ) : <EmptyState text="Informe quantos litros de água você está carregando."/>}
     </div>
   );
 }

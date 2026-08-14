@@ -1,0 +1,89 @@
+export const CHANGELOG=[
+ {versao:'1.0.13',data:'14/08/2026',mudancas:[
+  'Design System próprio criado com tokens CSS para tema, espaçamento, raios, sombras e tipografia',
+  'Componentes compartilhados e layouts principais migrados de estilos inline repetidos para classes semânticas',
+  'Tema claro/escuro e escala de fonte agora também sincronizam atributos globais usados pelo CSS',
+  'Tailwind removido por estar ocioso; PostCSS/Autoprefixer permanecem para o CSS da aplicação',
+  'Configurações virou a primeira página completa migrada para o novo sistema visual e acessível',
+ ]},
+ {versao:'1.0.12',data:'14/08/2026',mudancas:[
+  'Suíte automatizada adicionada para Calculadora, Planejamento, reducer e backup/importação',
+  'npm run check agora executa lint, TypeScript e testes antes do build do Vite',
+  'Testes cobrem regressões de autonomia, limites numéricos, restauração, normalização e compatibilidade de backups',
+  'Runner de testes usa TypeScript já presente no projeto, sem adicionar nova biblioteca ou dependência',
+ ]},
+ {versao:'1.0.11',data:'14/08/2026',mudancas:[
+  'Constantes divididas por domínio; constants/index.ts agora funciona apenas como barrel de exportação',
+  'Planejamento e Manual da Bike decompostos em componentes menores e responsabilidades mais claras',
+  'Refatorações das versões 1.0.9, 1.0.10 e 1.0.11 consolidadas neste pacote',
+ ]},
+ {versao:'1.0.10',data:'14/08/2026',mudancas:[
+  'PlanejamentoPage e ManualBikePage quebrados em componentes e hooks menores',
+  'Cálculos derivados e estado de apresentação separados do JSX principal das páginas',
+  'Arquivos de página ficaram focados em composição e navegação',
+ ]},
+ {versao:'1.0.9',data:'14/08/2026',mudancas:[
+  'StoreContext simplificado com ações e persistência extraídas para hooks dedicados',
+  'Persistência no IndexedDB ganhou debounce por domínio para evitar gravações repetidas durante digitação',
+  'Carga inicial e tratamento de falhas de armazenamento ficaram isolados da camada de contexto',
+ ]},
+ {versao:'1.0.8',data:'14/08/2026',mudancas:[
+  'Manual da Bike migrado integralmente para TypeScript/TSX',
+  'Todo o código-fonte em src agora usa TypeScript; JavaScript/JSX passa a ser bloqueado pelo lint',
+  'Configuração de alimentação ganhou validação tipada na origem, eliminando o TS2352 visto no build do Vercel',
+  'Tipos compartilhados do Manual da Bike e contratos de configuração foram reforçados para prevenir regressões',
+  'Node.js fixado em 20.x para evitar atualização automática de major no Vercel',
+ ]},
+ {versao:'1.0.7',data:'14/08/2026',mudancas:[
+  'Home, Alertas e Configurações migrados para TypeScript/TSX',
+  'Checklists rápidos, nota do dia, edição de mínimos e preferências ganharam contratos de tipos explícitos',
+  'Mínimos sugeridos agora preservam o valor 0 definido manualmente e só preenchem itens realmente sem mínimo',
+  'Barrels dos três módulos migrados para TypeScript e protegidos contra regressão para JSX/JavaScript',
+  'Quantidade de arquivos JSX restante caiu de 10 para 5; apenas o Manual da Bike permanece em JSX',
+ ]},
+ {versao:'1.0.6',data:'14/08/2026',mudancas:[
+  'Planejamento, Diário de Campo e Pontos de Apoio migrados para TypeScript/TSX',
+  'Formulários de diário e pontos agora usam contratos tipados compartilhados com o estado persistente',
+  'Status do planejamento, tipos de viagem, clima, filtros de pontos e avaliações ganharam tipos explícitos',
+  'Importação de backups agora normaliza clima, tipo de ponto e avaliação para valores válidos',
+  'Proteções estruturais ampliadas; quantidade de arquivos JSX restante caiu de 16 para 10',
+ ]},
+ {versao:'1.0.5',data:'14/08/2026',mudancas:[
+  'Calculadora e Equipamentos migrados de JSX/JavaScript para TypeScript/TSX',
+  'Formulários, propriedades e eventos dessas telas agora possuem contratos de tipos explícitos',
+  'Totais de equipamentos e cálculos de alimentação foram centralizados nos services, removendo lógica duplicada da interface',
+  'Proteções estruturais ampliadas; quantidade de arquivos JSX restante caiu de 32 para 16',
+ ]},
+ {versao:'1.0.4',data:'14/08/2026',mudancas:[
+  'Extras, Dicas, Exportação e Sobre migrados de JSX para TypeScript/TSX',
+  'Modais de dica, apoio e contato agora possuem contratos de propriedades explícitos',
+  'Fluxos de backup/importação e QR Code ganharam tipagem sem alterar o comportamento existente',
+  'Proteções estruturais ampliadas para impedir o retorno de páginas JSX já migradas',
+ ]},
+ {versao:'1.0.3',data:'14/08/2026',mudancas:[
+  'Base compartilhada da interface migrada de JSX para TypeScript/TSX',
+  'App, layouts, hooks e componentes comuns agora possuem contratos de tipos explícitos',
+  'Barrels de componentes e layouts migrados para TypeScript com exportação de tipos públicos',
+  'Migração preparada para continuar pelas páginas de negócio sem alterar o comportamento atual',
+ ]},
+ {versao:'1.0.2',data:'11/08/2026',mudancas:[
+  'Identidade visual e nome padronizados como Nomade Raiz em todo o app',
+  'Página Sobre renovada com versão atual, tecnologias e histórico de mudanças',
+  'Ícones em marca-d’água restaurados nos quadros de verificações da tela inicial',
+  'README, .gitignore e metadados do GitHub adicionados e padronizados',
+  'Checagem automática garante que versão, README e changelogs permaneçam sincronizados',
+ ]},
+ {versao:'1.0.1',data:'11/08/2026',mudancas:[
+  'IndexedDB com Dexie e migração automática',
+  'Backup completo e versionado',
+  'Versão do app sincronizada com package.json',
+  'Componentes visuais básicos e checagens estruturais',
+ ]},
+ {versao:'1.0.0',data:'11/08/2026',mudancas:[
+  'Checklist de equipamentos e verificações rápidas',
+  'Planejamento de autonomia',
+  'Manual da bicicleta e diário de campo',
+  'Funcionamento offline no navegador',
+ ]},
+];
+

@@ -1,0 +1,11 @@
+.nr-sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
+.nr-flex { display: flex; }
+.nr-flex-1 { flex: 1; }
+.nr-items-center { align-items: center; }
+.nr-justify-between { justify-content: space-between; }
+.nr-gap-1 { gap: var(--nr-space-1); }
+.nr-gap-2 { gap: var(--nr-space-2); }
+.nr-gap-3 { gap: var(--nr-space-3); }
+.nr-text-muted { color: var(--nr-text-muted); }
+.nr-text-primary { color: var(--nr-text); }
+.nr-text-blue { color: var(--nr-blue); }

@@ -35,7 +35,7 @@ export function BikeCard({ bike, setBike, T }: BikeCardProps) {
             <p style={{ color:T.textMuted, fontSize:10.5, margin:'2px 0 0' }}>km na viagem</p>
           </div>
         </div>
-      ) : <EmptyState T={T} text="Informe velocidade média e horas por dia para calcular."/>}
+      ) : <EmptyState text="Informe velocidade média e horas por dia para calcular."/>}
     </div>
   );
 }

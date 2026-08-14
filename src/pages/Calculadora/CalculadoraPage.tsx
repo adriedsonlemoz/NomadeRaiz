@@ -11,7 +11,7 @@ import {
   calcDinheiro,
   calcIndiceGeral,
 } from '../../services/calculator.service';
-import { ALIMENTOS_CONFIG, AUTONOMIA_TABS } from '../../constants';
+import { ALIMENTOS_CONFIG, AUTONOMIA_TABS } from '../../constants/travel';
 import { estadoAutonomia } from './CalcAtoms';
 import { ResumoCard } from './ResumoCard';
 import { BikeCard } from './BikeCard';

@@ -1,7 +1,7 @@
 import { useState, type KeyboardEvent } from 'react';
 import { useStore } from '../../contexts';
 import { useTheme, useHaptics } from '../../hooks';
-import { CATEGORIES } from '../../constants';
+import { CATEGORIES } from '../../constants/equipment';
 import { fmt } from '../../utils/format';
 import type { EquipmentCategory, Item, Priority } from '../../types';
 import { QtyControl } from '../common';
