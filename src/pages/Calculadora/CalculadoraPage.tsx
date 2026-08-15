@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useStore } from '../../contexts';
-import { useTheme } from '../../hooks';
 import {
   calcBicicleta,
   calcAlimentacaoInteligente,
@@ -44,7 +43,6 @@ const alimentosConfig: readonly FoodConfigWithUnits[] = ALIMENTOS_CONFIG;
 
 export default function CalculadoraPage() {
   const { state, setPage } = useStore();
-  const { theme: T } = useTheme();
   const [tab, setTab] = useState<AutonomyTabId>('resumo');
 
   const [bike, setBike] = useState<BikeFormState>({ velocidade:'', horas:'', dias:'' });
@@ -122,44 +120,37 @@ export default function CalculadoraPage() {
   })));
 
   return (
-    <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', background:T.pageBg }}>
-      <div style={{ background:T.navy, padding:'14px 14px 10px', flexShrink:0 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
-          <button onClick={()=>setPage('extras')} style={{ width:34, height:34, borderRadius:9, border:'none',
-            background:T.navyLight, color:'#fff', fontSize:17, cursor:'pointer',
-            display:'flex', alignItems:'center', justifyContent:'center' }}>←</button>
+    <div className="nr14-bfbf751f">
+      <div className="nr14-1125a2ad">
+        <div className="nr14-a522af54">
+          <button onClick={()=>setPage('extras')} className="nr14-81c5d7e9">←</button>
           <div>
-            <p style={{ color:'#7ea3d4', fontSize:9, fontWeight:800, letterSpacing:'0.2em',
-              textTransform:'uppercase', margin:0 }}>Planejamento</p>
-            <h1 style={{ color:'#fff', fontSize:18, fontWeight:900, margin:0 }}>Autonomia da Viagem</h1>
+            <p className="nr14-bcecb245">Planejamento</p>
+            <h1 className="nr14-3d1bf271">Autonomia da Viagem</h1>
           </div>
         </div>
-        <div style={{ display:'flex', gap:6, overflowX:'auto', paddingBottom:2 }}>
+        <div className="nr14-ac048e4b">
           {autonomyTabs.map(tabConfig => (
-            <button key={tabConfig.id} onClick={()=>setTab(tabConfig.id)} style={{ flexShrink:0,
-              display:'flex', flexDirection:'column', alignItems:'center', gap:2,
-              padding:'7px 12px', borderRadius:11, border:'none', cursor:'pointer',
-              background:tab===tabConfig.id?T.blue:T.navyLight,
-              color:tab===tabConfig.id?'#fff':'#7ea3d4', minWidth:56 }}>
-              <span style={{ fontSize:18 }}>{tabConfig.icon}</span>
-              <span style={{ fontSize:9, fontWeight:700 }}>{tabConfig.label}</span>
+            <button key={tabConfig.id} onClick={()=>setTab(tabConfig.id)} className="nr-calc-tab" aria-pressed={tab===tabConfig.id}>
+              <span className="nr14-4ff818ff">{tabConfig.icon}</span>
+              <span className="nr14-c380c3c2">{tabConfig.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div style={{ flex:1, overflowY:'auto', padding:'14px' }}>
-        {tab==='resumo' && <ResumoCard recursos={recursos} resultadoGeral={resultadoGeral} T={T} onSelect={setTab}/>} 
-        {tab==='bike' && <BikeCard bike={bike} setBike={setBike} T={T}/>} 
-        {tab==='comida' && <ComidaCard alimentos={alimentos} setAlimentos={setAlimentos} T={T}/>} 
+      <div className="nr14-3022deb2">
+        {tab==='resumo' && <ResumoCard recursos={recursos} resultadoGeral={resultadoGeral} onSelect={setTab}/>} 
+        {tab==='bike' && <BikeCard bike={bike} setBike={setBike}/>} 
+        {tab==='comida' && <ComidaCard alimentos={alimentos} setAlimentos={setAlimentos}/>} 
         {tab==='agua' && <AguaCard litros={litros} setLitros={setLitros} reabastece={reabastece}
           setReabastece={setReabastece} frequenciaDias={frequenciaDias}
-          setFrequenciaDias={setFrequenciaDias} locais={locaisAgua} setLocais={setLocaisAgua} T={T}/>} 
-        {tab==='energia' && <EnergiaCard energia={energia} setEnergia={setEnergia} T={T}/>} 
-        {tab==='dinheiro' && <DinheiroCard dinheiro={dinheiro} setDinheiro={setDinheiro} T={T}/>} 
-        {tab==='peso' && <PesoCard pesoData={pesoData} setPesoData={setPesoData} items={state.items} T={T}/>} 
-        {tab==='custo' && <CustoCard custo={custo} setCusto={setCusto} T={T}/>} 
-        <div style={{ height:24 }}/>
+          setFrequenciaDias={setFrequenciaDias} locais={locaisAgua} setLocais={setLocaisAgua}/>} 
+        {tab==='energia' && <EnergiaCard energia={energia} setEnergia={setEnergia}/>} 
+        {tab==='dinheiro' && <DinheiroCard dinheiro={dinheiro} setDinheiro={setDinheiro}/>} 
+        {tab==='peso' && <PesoCard pesoData={pesoData} setPesoData={setPesoData} items={state.items}/>} 
+        {tab==='custo' && <CustoCard custo={custo} setCusto={setCusto}/>} 
+        <div className="nr14-29a11d37"/>
       </div>
     </div>
   );

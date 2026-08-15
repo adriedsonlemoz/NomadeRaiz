@@ -192,7 +192,7 @@ for (const file of walk(src).filter(file => /\.(?:ts|tsx)$/.test(file))) {
 
 
 // Design System próprio — 1.0.13.
-const designStyleFiles = ['tokens.css','globals.css','components.css','forms.css','utilities.css'];
+const designStyleFiles = ['tokens.css','globals.css','components.css','forms.css','utilities.css','pages-v14.css'];
 for (const file of designStyleFiles) {
   if (!fs.existsSync(path.join(src,'styles',file))) errors.push(`styles/${file}: arquivo obrigatório do Design System não encontrado.`);
 }
@@ -222,6 +222,26 @@ for (const rel of cssMigratedUi) {
 for (const rel of ['components/common/FormField.tsx','styles/tokens.css','styles/components.css']) {
   if (!fs.existsSync(path.join(src,rel))) errors.push(`${rel}: fundação obrigatória do Design System não encontrada.`);
 }
+
+// Segunda fase do Design System — 1.0.14.
+const phaseTwoUiDirs = ['pages/Home','pages/Planejamento','pages/Calculadora','pages/Equipamentos','pages/ManualBike'];
+let phaseTwoInlineStyles = 0;
+for (const dir of phaseTwoUiDirs) {
+  for (const file of walk(path.join(src,dir)).filter(file => file.endsWith('.tsx'))) {
+    const text = fs.readFileSync(file,'utf8');
+    phaseTwoInlineStyles += (text.match(/style=\{\{/g) ?? []).length;
+  }
+}
+if (phaseTwoInlineStyles > 2) errors.push(`Design System 1.0.14: áreas migradas possuem ${phaseTwoInlineStyles} estilos inline; limite é 2 e somente para cores dinâmicas.`);
+for (const dir of ['pages/Planejamento','pages/Calculadora','pages/Equipamentos','pages/ManualBike']) {
+  for (const file of walk(path.join(src,dir)).filter(file => file.endsWith('.tsx'))) {
+    const text = fs.readFileSync(file,'utf8');
+    if (text.includes('style={{')) errors.push(`${path.relative(root,file)}: estilo inline estático/dinâmico não deve voltar após a migração visual 1.0.14.`);
+  }
+}
+const phaseTwoCss = fs.readFileSync(path.join(src,'styles/pages-v14.css'),'utf8');
+if (!phaseTwoCss.includes('Nomade Raiz 1.0.14')) errors.push('styles/pages-v14.css: cabeçalho da migração 1.0.14 não encontrado.');
+if (!fs.readFileSync(path.join(src,'styles/components.css'),'utf8').includes('.nr-content-card')) errors.push('styles/components.css: componentes semânticos da fase 1.0.14 não encontrados.');
 
 const storage = fs.readFileSync(path.join(src,'services/storage.service.ts'),'utf8');
 if (!storage.includes("from '../database/db'")) errors.push('storage.service.ts: persistência deve usar a camada IndexedDB/Dexie.');

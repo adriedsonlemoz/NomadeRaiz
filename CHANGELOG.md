@@ -2,6 +2,16 @@
 
 Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
 
+## 1.0.14 — Segunda fase do Design System
+
+- Home, Planejamento, Calculadora, Equipamentos e Manual da Bike migrados em massa para o CSS centralizado.
+- 411 blocos `style={{...}}` deixaram de ficar inline nessas cinco áreas; estilos estáticos foram centralizados e estados visuais passaram a usar classes/`data-*`.
+- As cinco áreas passaram de 413 blocos `style={{...}}` para apenas 2, reservados às cores configuráveis em runtime da Home e dos checklists.
+- Calculadora deixou de receber o objeto `ThemeTokens` em seus cards; estados de autonomia, abas, toggles e resultados agora usam classes e `data-*`.
+- Badges de Planejamento/Manual, chips de filtros, seleção de tipo de viagem, ações de habilidade e estados do kit ganharam variantes semânticas no Design System.
+- Barras de progresso de Equipamentos passaram a reutilizar o componente `Bar`, reduzindo CSS e lógica duplicados.
+- Lint reforçado para exigir `pages-v14.css` e impedir o retorno de estilos inline estáticos nas cinco áreas migradas.
+
 ## 1.0.13 — Design System próprio e CSS centralizado
 
 - Criada uma fundação visual própria em `src/styles/`: `tokens.css`, `globals.css`, `components.css`, `forms.css` e `utilities.css`.

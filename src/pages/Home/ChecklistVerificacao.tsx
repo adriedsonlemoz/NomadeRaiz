@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useStore } from "../../contexts";
-import { useTheme, useHaptics } from "../../hooks";
+import { useHaptics } from "../../hooks";
 import { VERIFICACOES, MODOS_PERSISTENTES } from "../../constants/checks";
 import { Bar } from "../../components/common";
 import { DicaModal } from "../Dicas/DicaModal";
@@ -26,7 +26,6 @@ interface ChecklistVerificacaoProps {
 
 export function ChecklistVerificacao({ modoId, onVoltar }: ChecklistVerificacaoProps) {
   const { state, toggleCheck, resetChecks } = useStore();
-  const { theme: T } = useTheme();
   const { light } = useHaptics();
   const [dicaModal, setDicaModal] = useState<DicaModalItem | null>(null);
   const v = VERIFICACOES[modoId] as VerificationConfig;
@@ -44,69 +43,51 @@ export function ChecklistVerificacao({ modoId, onVoltar }: ChecklistVerificacaoP
   };
 
   return (
-    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:T.pageBg }}>
+    <div className="nr14-bfbf751f nr-checklist" style={{ '--nr-check-accent': v.cor } as CSSProperties}>
       {dicaModal && <DicaModal item={dicaModal} cor={v.cor} onClose={() => setDicaModal(null)}/>} 
-      <div style={{ background:v.cor, padding:"14px 14px 18px", flexShrink:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-          <button onClick={onVoltar} style={{ width:34, height:34, borderRadius:9, border:"none",
-            background:"rgba(255,255,255,.2)", color:"#fff", fontSize:17, cursor:"pointer",
-            display:"flex", alignItems:"center", justifyContent:"center" }}>←</button>
-          <div style={{ flex:1 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:18 }}>{v.icon}</span>
-              <span style={{ color:"#fff", fontWeight:900, fontSize:16 }}>{v.titulo}</span>
+      <div className="nr-checklist__header">
+        <div className="nr14-8d446200">
+          <button onClick={onVoltar} className="nr14-8c82ce11">←</button>
+          <div className="nr14-97445a8d">
+            <div className="nr14-b88d1817">
+              <span className="nr14-4ff818ff">{v.icon}</span>
+              <span className="nr14-947ca0f0">{v.titulo}</span>
             </div>
-            <p style={{ color:"rgba(255,255,255,.7)", fontSize:10, margin:"1px 0 0" }}>
+            <p className="nr14-cd5b2958">
               {checked}/{total} verificados
             </p>
           </div>
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:4 }}>
+          <div className="nr14-83c25f97">
             {isPersistente && (
-              <span style={{ fontSize:9, color:"rgba(255,255,255,.6)", fontWeight:600,
-                background:"rgba(255,255,255,.12)", padding:"1px 6px", borderRadius:99 }}>💾 salvo</span>
+              <span className="nr14-4429e2b3">💾 salvo</span>
             )}
-            <button onClick={() => resetChecks(modoId)} style={{ padding:"5px 11px", borderRadius:9,
-              border:"none", background:"rgba(255,255,255,.2)", color:"#fff",
-              fontSize:11, fontWeight:700, cursor:"pointer" }}>Resetar</button>
+            <button onClick={() => resetChecks(modoId)} className="nr14-2a1b4287">Resetar</button>
           </div>
         </div>
         <Bar pct={pct} h={4} cor="rgba(255,255,255,.8)"/>
       </div>
-      <div style={{ flex:1, overflowY:"auto", padding:"12px 13px",
-        display:"flex", flexDirection:"column", gap:7 }}>
+      <div className="nr14-8bde5484">
         {checked === total && total > 0 && (
-          <div style={{ background:T.doneBg, border:`1.5px solid ${T.doneBorder}`,
-            borderRadius:12, padding:"12px 14px", textAlign:"center", marginBottom:4 }}>
-            <p style={{ color:T.doneCheck, fontWeight:800, fontSize:14, margin:0 }}>
+          <div className="nr14-f1d5441c">
+            <p className="nr14-b7ec0c0f">
               ✅ Tudo verificado — pode ir!</p>
           </div>
         )}
         {v.itens.map(item => {
           const ok = Boolean(marcados[item.id]);
           return (
-            <div key={item.id} style={{ background:ok ? T.doneBg : T.white,
-              border:`1.5px solid ${ok ? T.doneBorder : T.border}`, borderRadius:12,
-              boxShadow:"0 1px 3px rgba(15,39,68,.06)",
-              display:"flex", alignItems:"center", gap:10, padding:"12px 13px" }}>
-              <button onClick={() => handleToggle(item.id)} style={{ width:26, height:26,
-                borderRadius:6, flexShrink:0, border:"none", cursor:"pointer",
-                background:ok ? v.cor : "transparent", outline:`2px solid ${ok ? v.cor : T.border}`,
-                display:"flex", alignItems:"center", justifyContent:"center", transition:"all .2s" }}>
-                {ok && <span style={{ color:"#fff", fontSize:12, fontWeight:900 }}>✓</span>}
+            <div key={item.id} className="nr-checklist-item" data-checked={ok}>
+              <button onClick={() => handleToggle(item.id)} className="nr-checklist-item__toggle">
+                {ok && <span className="nr14-e3d83348">✓</span>}
               </button>
-              <p style={{ flex:1, color:ok ? T.textMuted : T.textMain, fontWeight:500, fontSize:13,
-                margin:0, lineHeight:1.4, textDecoration:ok ? "line-through" : "none" }}>{item.texto}</p>
+              <p className="nr-checklist-item__text">{item.texto}</p>
               {item.dica && (
-                <button onClick={() => setDicaModal(item)} style={{ width:26, height:26,
-                  borderRadius:"50%", border:`1.5px solid ${T.border}`, flexShrink:0,
-                  background:T.white, color:T.blue, fontSize:12, fontWeight:800,
-                  cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-                  boxShadow:"0 1px 3px rgba(15,39,68,.1)" }}>?</button>
+                <button onClick={() => setDicaModal(item)} className="nr14-679faabd">?</button>
               )}
             </div>
           );
         })}
-        <div style={{ height:16 }}/>
+        <div className="nr14-30de4aee"/>
       </div>
     </div>
   );

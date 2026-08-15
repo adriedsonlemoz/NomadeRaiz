@@ -1,6 +1,6 @@
 # Nomade Raiz
 
-Versão atual: **1.0.13**
+Versão atual: **1.0.14**
 
 Nomade Raiz é um aplicativo offline-first para cicloviagem, bikepacking e vida na estrada. Ele reúne planejamento, equipamentos, autonomia, diário, pontos de apoio e um manual prático da bicicleta em uma interface pensada para funcionar também sem conexão constante.
 
@@ -88,4 +88,4 @@ Projeto mantido em `adriedsonlemoz/NomadeRaiz` no GitHub.
 
 ## Estado atual
 
-A versão 1.0.13 inaugura o Design System próprio do Nomade Raiz. Tokens de tema, componentes compartilhados, formulários e utilitários agora vivem em CSS centralizado; Tailwind foi removido por estar ocioso. A migração começou pela base compartilhada, layouts e Configurações, mantendo estilos dinâmicos inline apenas quando dependem de valores em runtime.
+A versão 1.0.14 amplia o Design System para Home, Planejamento, Calculadora, Equipamentos e Manual da Bike. Nessas cinco áreas, estilos estáticos foram movidos para CSS centralizado e restaram apenas dois estilos inline, ambos usados para cores configuráveis em runtime. A Calculadora também deixou de depender dos tokens de tema em TypeScript, usando o tema exclusivamente por CSS.

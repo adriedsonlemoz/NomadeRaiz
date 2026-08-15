@@ -6,7 +6,6 @@ import {
   type FoodLine,
 } from '../../services/calculator.service';
 import { ALIMENTOS_CONFIG } from '../../constants/travel';
-import type { ThemeTokens } from '../../styles/theme';
 import type { FoodConfigWithUnits, FoodFormState, StateSetter } from './types';
 
 const alimentosConfig: readonly FoodConfigWithUnits[] = ALIMENTOS_CONFIG;
@@ -16,10 +15,9 @@ interface FoodRowProps {
   entrada?: FoodInput;
   linha: FoodLine;
   onChange: (patch: FoodInput) => void;
-  T: ThemeTokens;
 }
 
-function FoodRow({ alimento, entrada, linha, onChange, T }: FoodRowProps) {
+function FoodRow({ alimento, entrada, linha, onChange }: FoodRowProps) {
   const unidadeId = entrada?.unidade ?? alimento.unidades[0].id;
   const unidadeCfg = alimento.unidades.find(u => u.id === unidadeId) ?? alimento.unidades[0];
   const qtd = entrada?.quantidade ?? '';
@@ -33,55 +31,46 @@ function FoodRow({ alimento, entrada, linha, onChange, T }: FoodRowProps) {
   };
 
   return (
-    <div style={{ background:T.white, border:`1px solid ${T.border}`, borderRadius:12, padding:'10px 12px' }}>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8, gap:8 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
-          <span style={{ fontSize:17, flexShrink:0 }}>{alimento.icone}</span>
-          <span style={{ color:T.textMain, fontWeight:700, fontSize:12.5, minWidth:0,
-            overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{alimento.nome}</span>
+    <div className="nr14-10e04b3e">
+      <div className="nr14-a0972c52">
+        <div className="nr14-f2d95454">
+          <span className="nr14-ab31c751">{alimento.icone}</span>
+          <span className="nr14-3c310ef4">{alimento.nome}</span>
           {alimento.unidades.length > 1 && (
             <select value={unidadeId} onChange={e=>trocarUnidade(e.target.value)}
-              style={{ fontSize:10, border:`1px solid ${T.border}`, borderRadius:6, background:T.blueLight,
-                color:T.textSub, padding:'2px 4px', flexShrink:0 }}>
+              className="nr14-edee9217">
               {alimento.unidades.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}
             </select>
           )}
         </div>
-        <span style={{ color:T.blue, fontWeight:800, fontSize:13, flexShrink:0 }}>{fmt(linha.valor)}</span>
+        <span className="nr14-3faa39f4">{fmt(linha.valor)}</span>
       </div>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:7 }}>
+      <div className="nr14-3ef6527d">
         <div>
-          <p style={{ color:T.textMuted, fontSize:9, margin:'0 0 3px' }}>Qtd. ({unidadeCfg.label})</p>
+          <p className="nr14-786efa70">Qtd. ({unidadeCfg.label})</p>
           <input type="number" min="0" step="0.01" placeholder="0" value={qtd}
             onChange={e=>onChange({ quantidade:e.target.value })}
-            style={{ padding:'7px 6px', border:`1.5px solid ${T.border}`, borderRadius:8,
-              fontSize:12, color:T.textMain, background:T.blueLight, outline:'none',
-              fontFamily:'inherit', width:'100%', boxSizing:'border-box' }}/>
+            className="nr14-cc2ab854"/>
         </div>
         <div>
-          <p style={{ color:T.textMuted, fontSize:9, margin:'0 0 3px' }}>Preço/{unidadeCfg.id}</p>
-          <div style={{ position:'relative' }}>
-            <span style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%)',
-              fontSize:9.5, color:T.textMuted, pointerEvents:'none' }}>R$</span>
+          <p className="nr14-786efa70">Preço/{unidadeCfg.id}</p>
+          <div className="nr14-d461c96d">
+            <span className="nr14-e9c83d60">R$</span>
             <input type="number" min="0" step="0.01" value={preco}
               onChange={e=>onChange({ preco:e.target.value })}
-              style={{ padding:'7px 6px 7px 20px', border:`1.5px solid ${T.border}`, borderRadius:8,
-                fontSize:12, color:T.textMain, background:T.blueLight, outline:'none',
-                fontFamily:'inherit', width:'100%', boxSizing:'border-box' }}/>
+              className="nr14-e7584155"/>
           </div>
         </div>
         <div>
-          <p style={{ color:T.textMuted, fontSize:9, margin:'0 0 3px' }}>Consumo/dia</p>
+          <p className="nr14-786efa70">Consumo/dia</p>
           <input type="number" min="0" step="0.01" value={consumo}
             onChange={e=>onChange({ consumo:e.target.value })}
-            style={{ padding:'7px 6px', border:`1.5px solid ${T.border}`, borderRadius:8,
-              fontSize:12, color:T.textMain, background:T.blueLight, outline:'none',
-              fontFamily:'inherit', width:'100%', boxSizing:'border-box' }}/>
+            className="nr14-cc2ab854"/>
         </div>
       </div>
       {linha.dias !== null && (
-        <p style={{ color:T.textMuted, fontSize:10, margin:'7px 0 0' }}>
-          Dura aproximadamente <b style={{ color:T.blue }}>{linha.dias} dias</b> nesse ritmo de consumo.</p>
+        <p className="nr14-b76606a2">
+          Dura aproximadamente <b className="nr14-88978781">{linha.dias} dias</b> nesse ritmo de consumo.</p>
       )}
     </div>
   );
@@ -90,10 +79,9 @@ function FoodRow({ alimento, entrada, linha, onChange, T }: FoodRowProps) {
 interface ComidaCardProps {
   alimentos: FoodFormState;
   setAlimentos: StateSetter<FoodFormState>;
-  T: ThemeTokens;
 }
 
-export function ComidaCard({ alimentos, setAlimentos, T }: ComidaCardProps) {
+export function ComidaCard({ alimentos, setAlimentos }: ComidaCardProps) {
   const linhas = montarLinhasAlimentacaoInteligente(alimentosConfig, alimentos);
   const r = calcAlimentacaoInteligente(linhas);
   const linhasPorId = new Map(linhas.map(linha => [linha.id, linha]));
@@ -103,28 +91,28 @@ export function ComidaCard({ alimentos, setAlimentos, T }: ComidaCardProps) {
   }));
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+    <div className="nr14-be265379">
       {alimentosConfig.map(a => {
         const linha = linhasPorId.get(a.id);
         if (!linha) return null;
         return (
-          <FoodRow key={a.id} alimento={a} entrada={alimentos[a.id]} linha={linha} T={T}
+          <FoodRow key={a.id} alimento={a} entrada={alimentos[a.id]} linha={linha}
             onChange={patch=>update(a.id, patch)}/>
         );
       })}
-      <div style={{ background:T.navy, borderRadius:14, padding:'14px 16px', marginTop:4 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
-          <span style={{ color:'#7ea3d4', fontSize:11.5 }}>Valor total da alimentação</span>
-          <span style={{ color:'#fff', fontWeight:800, fontSize:13 }}>{fmt(r.valorTotal)}</span>
+      <div className="nr14-875daa5f">
+        <div className="nr14-dd15bb92">
+          <span className="nr14-4f579149">Valor total da alimentação</span>
+          <span className="nr14-cdaea852">{fmt(r.valorTotal)}</span>
         </div>
-        <div style={{ display:'flex', justifyContent:'space-between' }}>
-          <span style={{ color:'#7ea3d4', fontSize:11.5 }}>Quantidade total informada</span>
-          <span style={{ color:'#fff', fontWeight:800, fontSize:13 }}>{r.quantidadeTotal.toFixed(2).replace(/\.00$/,'')}</span>
+        <div className="nr14-a3d12b9b">
+          <span className="nr14-4f579149">Quantidade total informada</span>
+          <span className="nr14-cdaea852">{r.quantidadeTotal.toFixed(2).replace(/\.00$/,'')}</span>
         </div>
         {r.valido && r.dias !== null && (
-          <div style={{ borderTop:'1px solid rgba(255,255,255,.12)', marginTop:10, paddingTop:10, textAlign:'center' }}>
-            <p style={{ color:'#fff', fontSize:24, fontWeight:900, margin:0, lineHeight:1 }}>{r.dias} dias</p>
-            <p style={{ color:'#7ea3d4', fontSize:11, margin:'3px 0 0' }}>
+          <div className="nr14-91fbe470">
+            <p className="nr14-44ac9f51">{r.dias} dias</p>
+            <p className="nr14-4b5f37c9">
               de autonomia alimentar estimada{r.gargalo ? ` — limitado por ${r.gargalo.nome.toLowerCase()}` : ''}</p>
           </div>
         )}

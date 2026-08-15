@@ -1,4 +1,3 @@
-import type { ThemeTokens } from '../../styles/theme';
 import type { AutonomyState } from './types';
 
 export function estadoAutonomia(dias: number | null | undefined): AutonomyState {
@@ -8,12 +7,6 @@ export function estadoAutonomia(dias: number | null | undefined): AutonomyState 
   return 'critica';
 }
 
-export function corEstado(estado: AutonomyState, T: ThemeTokens) {
-  if (estado === 'boa') return { bg:T.doneBg, border:T.doneBorder, color:T.doneCheck };
-  if (estado === 'media') return { bg:T.medBg, border:T.medBorder, color:T.medColor };
-  if (estado === 'critica') return { bg:T.urgBg, border:T.urgBorder, color:T.urgColor };
-  return { bg:T.blueLight, border:T.border, color:T.blue };
-}
 
 export interface CalcFieldProps {
   label: string;
@@ -21,21 +14,17 @@ export interface CalcFieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   suffix?: string;
-  T: ThemeTokens;
 }
 
-export function CalcField({ label, value, onChange, placeholder, suffix, T }: CalcFieldProps) {
+export function CalcField({ label, value, onChange, placeholder, suffix }: CalcFieldProps) {
   return (
     <div>
-      <p style={{ color:T.textSub, fontSize:11.5, fontWeight:600, margin:'0 0 4px' }}>{label}</p>
-      <div style={{ position:'relative' }}>
+      <p className="nr14-fc5e2cb4">{label}</p>
+      <div className="nr14-d461c96d">
         <input type="number" min="0" inputMode="decimal" value={value} placeholder={placeholder}
           onChange={e=>onChange(e.target.value)}
-          style={{ padding:'10px 34px 10px 12px', border:`1.5px solid ${T.border}`, borderRadius:10,
-            fontSize:14, color:T.textMain, background:T.blueLight, outline:'none',
-            fontFamily:'inherit', width:'100%', boxSizing:'border-box' }}/>
-        {suffix && <span style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)',
-          fontSize:10.5, color:T.textMuted, fontWeight:700, pointerEvents:'none' }}>{suffix}</span>}
+          className="nr14-7341edd8"/>
+        {suffix && <span className="nr14-19b92e1c">{suffix}</span>}
       </div>
     </div>
   );
@@ -45,19 +34,15 @@ export interface ResultBadgeProps {
   dias: number | null;
   label: string;
   sub?: string;
-  T: ThemeTokens;
 }
 
-export function ResultBadge({ dias, label, sub, T }: ResultBadgeProps) {
+export function ResultBadge({ dias, label, sub }: ResultBadgeProps) {
   const estado = estadoAutonomia(dias);
-  const c = corEstado(estado, T);
   return (
-    <div style={{ background:c.bg, border:`1.5px solid ${c.border}`, borderRadius:14,
-      padding:'16px', textAlign:'center' }}>
-      <p style={{ color:c.color, fontSize:32, fontWeight:900, margin:'0 0 2px', lineHeight:1 }}>
-        {dias === null ? '—' : dias}</p>
-      <p style={{ color:c.color, fontSize:13, fontWeight:700, margin:0 }}>{label}</p>
-      {sub && <p style={{ color:T.textSub, fontSize:11.5, margin:'8px 0 0' }}>{sub}</p>}
+    <div className="nr-result-panel nr-result-panel--autonomy" data-state={estado==='boa'?'ok':estado==='media'?'warning':estado==='critica'?'danger':'neutral'}>
+      <p className="nr-result-panel__value">{dias === null ? '—' : dias}</p>
+      <p className="nr-result-panel__label">{label}</p>
+      {sub && <p className="nr14-ff5d7b89">{sub}</p>}
     </div>
   );
 }

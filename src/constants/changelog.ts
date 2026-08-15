@@ -1,4 +1,11 @@
 export const CHANGELOG=[
+ {versao:'1.0.14',data:'14/08/2026',mudancas:[
+  'Segunda fase do Design System aplicada a Home, Planejamento, Calculadora, Equipamentos e Manual da Bike',
+  'Estilos inline estáticos dessas cinco áreas foram centralizados em CSS; apenas cores realmente dinâmicas permanecem inline',
+  'Calculadora deixou de depender do objeto de tema TypeScript e passou a consumir estados visuais via classes e data attributes',
+  'Badges, chips, estados de autonomia, seleção de viagem, checklists e ações do Manual ganharam variantes semânticas no Design System',
+  'Lint reforçado para impedir regressão visual nas áreas já migradas e exigir o CSS da segunda fase',
+ ]},
  {versao:'1.0.13',data:'14/08/2026',mudancas:[
   'Design System próprio criado com tokens CSS para tema, espaçamento, raios, sombras e tipografia',
   'Componentes compartilhados e layouts principais migrados de estilos inline repetidos para classes semânticas',

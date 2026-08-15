@@ -1,49 +1,41 @@
-import type { ThemeTokens } from '../../styles/theme';
-import { corEstado } from './CalcAtoms';
 import type { AutonomyIndexResult, AutonomyResource, AutonomyTabId } from './types';
 
 interface ResumoCardProps {
   recursos: AutonomyResource[];
   resultadoGeral: AutonomyIndexResult;
-  T: ThemeTokens;
   onSelect: (tab: AutonomyTabId) => void;
 }
 
-export function ResumoCard({ recursos, resultadoGeral, T, onSelect }: ResumoCardProps) {
+export function ResumoCard({ recursos, resultadoGeral, onSelect }: ResumoCardProps) {
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+    <div className="nr14-be265379">
       {recursos.map(r => {
-        const c = corEstado(r.estado, T);
         return (
-          <button key={r.id} onClick={()=>onSelect(r.id)} style={{ display:'flex', alignItems:'center', gap:12,
-            background:T.white, border:`1.5px solid ${c.border}`, borderRadius:13, padding:'11px 13px',
-            cursor:'pointer', textAlign:'left', width:'100%', boxSizing:'border-box' }}>
-            <div style={{ width:38, height:38, borderRadius:10, background:c.bg, flexShrink:0,
-              display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>{r.icon}</div>
-            <div style={{ flex:1, minWidth:0 }}>
-              <p style={{ color:T.textMain, fontWeight:700, fontSize:13, margin:0 }}>{r.label}</p>
-              <p style={{ color:T.textMuted, fontSize:10.5, margin:'1px 0 0' }}>{r.nota}</p>
+          <button key={r.id} onClick={()=>onSelect(r.id)} className="nr-autonomy-resource" data-state={r.estado}>
+            <div className="nr-autonomy-resource__icon">{r.icon}</div>
+            <div className="nr14-22ee3aed">
+              <p className="nr14-61833899">{r.label}</p>
+              <p className="nr14-898c52fb">{r.nota}</p>
             </div>
-            <div style={{ width:10, height:10, borderRadius:99, background:c.color, flexShrink:0 }}/>
+            <div className="nr-autonomy-resource__dot"/>
           </button>
         );
       })}
-      <div style={{ background:T.navy, borderRadius:16, padding:'20px 16px', textAlign:'center', marginTop:6 }}>
+      <div className="nr14-bb8a5066">
         {resultadoGeral.dias !== null ? (
           <>
-            <p style={{ color:'#7ea3d4', fontSize:10, fontWeight:800, letterSpacing:'0.15em',
-              textTransform:'uppercase', margin:'0 0 4px' }}>Autonomia estimada</p>
-            <p style={{ color:'#fff', fontSize:38, fontWeight:900, margin:0, lineHeight:1 }}>
-              {resultadoGeral.dias} <span style={{ fontSize:16, fontWeight:700 }}>dias</span></p>
-            <p style={{ color:'#7ea3d4', fontSize:12, margin:'8px 0 0', lineHeight:1.5 }}>
+            <p className="nr14-6579d20d">Autonomia estimada</p>
+            <p className="nr14-16ad5fee">
+              {resultadoGeral.dias} <span className="nr14-ee5749fc">dias</span></p>
+            <p className="nr14-8adae2a1">
               Com os recursos atuais, sua autonomia estimada é de aproximadamente{' '}
-              <b style={{ color:'#fff' }}>{resultadoGeral.dias} dias</b>
-              {resultadoGeral.gargalo && <> — limitada por <b style={{ color:'#fff' }}>
+              <b className="nr14-729d2fa4">{resultadoGeral.dias} dias</b>
+              {resultadoGeral.gargalo && <> — limitada por <b className="nr14-729d2fa4">
                 {resultadoGeral.gargalo.label.toLowerCase()}</b></>}.
             </p>
           </>
         ) : (
-          <p style={{ color:'#7ea3d4', fontSize:12.5, margin:0, lineHeight:1.6 }}>
+          <p className="nr14-41f2d4e9">
             Preencha alimentação, água, energia e dinheiro para ver sua autonomia estimada.</p>
         )}
       </div>
