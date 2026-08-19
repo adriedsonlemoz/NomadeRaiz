@@ -1,7 +1,7 @@
 {
   "name": "nomade-raiz",
   "private": true,
-  "version": "1.0.19",
+  "version": "1.0.21",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,8 @@
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios",
     "test": "node --import ./scripts/register-test-loader.mjs ./scripts/run-tests.ts",
-    "doctor": "node scripts/toolchain-doctor.mjs"
+    "doctor": "node scripts/toolchain-doctor.mjs",
+    "android:branding": "node scripts/apply-android-branding.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.0",

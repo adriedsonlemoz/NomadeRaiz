@@ -69,8 +69,8 @@ export default function SobrePage() {
           <div style={{ position:"relative", zIndex:1, display:"flex", gap:13, alignItems:"center" }}>
             <div style={{ width:58, height:58, borderRadius:17, flexShrink:0,
               background:"rgba(255,255,255,.1)", border:"1px solid rgba(255,255,255,.12)",
-              display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <BicycleIcon size={38} color="#fff"/>
+              padding:3, overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <img src="./icons/app-logo.png" alt="" style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:14 }}/>
             </div>
             <div style={{ minWidth:0 }}>
               <h1 style={{ color:"#fff", fontSize:21, fontWeight:900, margin:"0 0 3px" }}>{APP_NAME}</h1>

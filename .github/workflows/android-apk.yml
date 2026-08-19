@@ -26,6 +26,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24.19.0'
+          package-manager-cache: false
 
       - name: Mostrar ambiente
         shell: bash
@@ -35,11 +36,27 @@ jobs:
           node --version
           npm --version
 
+      - name: Verificar estratégia de dependências
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json encontrado."
+          else
+            echo "Sem package-lock.json: cache automático do setup-node foi desativado e será usado npm install."
+          fi
+
       - name: Instalar dependências
         run: npm install --no-audit --no-fund
 
       - name: Validar e gerar frontend
         run: npm run build
+
+      - name: Criar Android limpo e sincronizar Capacitor 8
+        shell: bash
+        run: |
+          rm -rf android
+          npx cap add android
+          npx cap sync android
 
       - name: Java 21
         uses: actions/setup-java@v5
@@ -48,12 +65,17 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      - name: Criar Android limpo e sincronizar Capacitor 8
+      - name: Aplicar ícone e identidade Android
+        run: npm run android:branding
+
+      - name: Verificar ícones Android
         shell: bash
         run: |
-          rm -rf android
-          npx cap add android
-          npx cap sync android
+          test -s android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+          grep -q "#0F2744" android/app/src/main/res/values/ic_launcher_background.xml
+          echo "Ícones Android personalizados validados."
 
       - name: Verificar configuração Android gerada
         shell: bash

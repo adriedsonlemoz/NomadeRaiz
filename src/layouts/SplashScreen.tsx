@@ -1,5 +1,4 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { BicycleIcon } from "../components/common";
 import { APP_NAME, APP_TAGLINE } from "../config/app";
 
 const SPLASH_CONFIG = { appName: APP_NAME, appTagline: APP_TAGLINE, duracao: 2200, fadeOut: 400 } as const;
@@ -22,7 +21,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
     <div className="nr-splash" data-phase={fase}>
       <div className="nr-splash__icon-wrap">
         <div className="nr-splash__orbit" />
-        <div className="nr-splash__icon"><BicycleIcon size={60} color="#fff" /></div>
+        <div className="nr-splash__icon"><img src="./icons/app-logo.png" alt="" className="nr-splash__logo" /></div>
       </div>
       <div className="nr-splash__copy">
         <h1 className="nr-splash__title">{SPLASH_CONFIG.appName}</h1>

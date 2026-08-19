@@ -1,6 +1,6 @@
 # Nomade Raiz
 
-Versão atual: **1.0.19**
+Versão atual: **1.0.21**
 
 Nomade Raiz é um aplicativo offline-first para cicloviagem, bikepacking e vida na estrada. Ele reúne planejamento, equipamentos, autonomia, diário, pontos de apoio e um manual prático da bicicleta em uma interface pensada para funcionar também sem conexão constante.
 
@@ -108,5 +108,7 @@ A versão mostrada dentro do aplicativo é lida automaticamente do `package.json
 Projeto mantido em `adriedsonlemoz/NomadeRaiz` no GitHub.
 
 ## Estado atual
+
+A versão 1.0.20 integrou a nova identidade visual ao aplicativo: a logo passa a aparecer no Splash e na tela Sobre, torna-se ícone PWA e favicon, e o workflow Android aplica automaticamente os ícones de launcher e o foreground adaptativo em todas as densidades.
 
 A versão 1.0.19 corrige o gatilho do APK no GitHub: pushes na `main` agora executam o build Android automaticamente, com validação explícita do arquivo e resumo/diagnóstico da execução. O Manual da Bike também foi ampliado com mais peças, problemas, diagnóstico, segurança e dicas práticas.

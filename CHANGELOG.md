@@ -1,4 +1,19 @@
+## 1.0.21 — Correção do GitHub Actions
+
+- Corrige o GitHub Actions que parava no `setup-node@v6` quando não havia `package-lock.json`.
+- Desativa explicitamente o cache automático do npm nos workflows enquanto o projeto usa `npm install` sem lockfile.
+- Move a configuração do Java/Gradle para depois da criação da plataforma Android, permitindo que o cache enxergue os arquivos Gradle reais.
+- Mantém diagnóstico explícito quando o APK não é produzido.
+
 # Changelog
+
+## 1.0.20 — Logo e ícone Android
+
+- Nova logo integrada ao Splash e à tela Sobre.
+- Ícones PWA atualizados, incluindo favicon, Apple touch icon e variante maskable.
+- Android recebe ícones launcher, round e foreground adaptativo em mdpi, hdpi, xhdpi, xxhdpi e xxxhdpi.
+- GitHub Actions reaplica e valida o branding depois que o Capacitor recria a plataforma Android.
+- Cor de fundo do ícone adaptativo alinhada ao azul-marinho da identidade do aplicativo.
 
 ## 1.0.19 — APK automático e Manual da Bike ampliado
 

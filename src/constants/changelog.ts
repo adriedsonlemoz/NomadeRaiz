@@ -1,4 +1,16 @@
 export const CHANGELOG=[
+ {versao:'1.0.21',data:'19/08/2026',mudancas:[
+  'GitHub Actions deixa de falhar no setup-node quando o projeto não possui package-lock.json',
+  'Cache automático do npm foi desativado explicitamente nos workflows enquanto npm install é usado sem lockfile',
+  'Java e cache do Gradle agora são configurados depois que o Capacitor cria a plataforma Android',
+  'Diagnóstico do pipeline continua mostrando claramente quando o APK não é produzido',
+ ]},
+ {versao:'1.0.20',data:'19/08/2026',mudancas:[
+  'Nova logo integrada ao Splash e à tela Sobre',
+  'Ícones PWA atualizados com favicon, Apple touch icon e variante maskable',
+  'Android recebe launcher, round e foreground adaptativo em todas as densidades',
+  'GitHub Actions reaplica e valida automaticamente o branding após recriar a plataforma Android',
+ ]},
  {versao:'1.0.19',data:'19/08/2026',mudancas:[
   'Build Android APK passa a rodar automaticamente a cada push na main, além de execução manual e tags',
   'Workflow valida o arquivo final, lista as saídas do Gradle e mostra resumo/diagnóstico visível na execução',
