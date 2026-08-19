@@ -4,6 +4,7 @@ import { cases as planningCases } from '../tests/planning.test';
 import { cases as reducerCases } from '../tests/reducer.test';
 import { cases as exportCases } from '../tests/export.test';
 import { cases as equipmentCases } from '../tests/equipment.test';
+import { cases as manualBikeCases } from '../tests/manualBike.test';
 
 const suites: Array<{ name: string; cases: TestCase[] }> = [
   { name: 'Calculadora', cases: calculatorCases },
@@ -11,6 +12,7 @@ const suites: Array<{ name: string; cases: TestCase[] }> = [
   { name: 'Reducer', cases: reducerCases },
   { name: 'Backup e importação', cases: exportCases },
   { name: 'Equipamentos e alertas', cases: equipmentCases },
+  { name: 'Manual da Bike', cases: manualBikeCases },
 ];
 
 let passed = 0;

@@ -54,6 +54,7 @@ const requiredTestFiles = [
   'tests/reducer.test.ts',
   'tests/export.test.ts',
   'tests/test.types.ts',
+  'tests/manualBike.test.ts',
   'scripts/run-tests.ts',
   'scripts/ts-loader.mjs',
   'scripts/register-test-loader.mjs',
@@ -91,9 +92,15 @@ const androidWorkflowPath = path.join(root,'.github/workflows/android-apk.yml');
 if (!fs.existsSync(androidWorkflowPath)) errors.push('.github/workflows/android-apk.yml: workflow de APK Android obrigatório.');
 else {
   const androidWorkflow = fs.readFileSync(androidWorkflowPath,'utf8');
+  if (!androidWorkflow.includes('actions/checkout@v6')) errors.push('Android CI: use actions/checkout v6.');
+  if (!androidWorkflow.includes('actions/setup-node@v6')) errors.push('Android CI: use actions/setup-node v6.');
+  if (!androidWorkflow.includes('actions/setup-java@v5')) errors.push('Android CI: use actions/setup-java v5.');
   if (!androidWorkflow.includes('npx cap add android')) errors.push('Android CI: deve criar a plataforma com npx cap add android.');
   if (!androidWorkflow.includes('assembleDebug')) errors.push('Android CI: deve gerar APK debug com Gradle.');
-  if (!androidWorkflow.includes('actions/upload-artifact@v4')) errors.push('Android CI: deve publicar o APK com upload-artifact v4.');
+  if (!androidWorkflow.includes('actions/upload-artifact@v7')) errors.push('Android CI: deve publicar o APK com upload-artifact v7.');
+  if (!/push:\s*[\s\S]*branches:\s*[\s\S]*- main/.test(androidWorkflow)) errors.push('Android CI: push na branch main deve disparar geração automática do APK.');
+  if (!androidWorkflow.includes('test -s "$APK_PATH"')) errors.push('Android CI: deve validar que o APK existe e não está vazio antes do upload.');
+  if (!androidWorkflow.includes('GITHUB_STEP_SUMMARY')) errors.push('Android CI: deve registrar resumo/diagnóstico visível da geração do APK.');
   if (!androidWorkflow.includes("node-version: '24.19.0'")) errors.push('Android CI: deve usar Node 24.19.0 LTS.');
   if (!androidWorkflow.includes("java-version: '21'")) errors.push('Android CI: deve usar Java 21.');
   if (!androidWorkflow.includes('rm -rf android')) errors.push('Android CI: deve recriar a plataforma nativa para evitar Gradle legado.');
@@ -111,6 +118,7 @@ else {
   if (!ci.includes('run: npm run build')) errors.push('CI: deve executar npm run build para validar check + bundle.');
   if (ci.includes('run: npm run check')) errors.push('CI: não execute check separadamente; npm run build já o inclui.');
   if (!ci.includes("node-version: '24.19.0'")) errors.push('CI: deve usar Node 24.19.0 LTS.');
+  if (!ci.includes('actions/checkout@v6') || !ci.includes('actions/setup-node@v6')) errors.push('CI: actions oficiais de checkout/setup-node devem permanecer nos majors estáveis atuais.');
 }
 
 const readmePath = path.join(root,'README.md');
@@ -293,6 +301,12 @@ for (const rel of ['pages/Calculadora/CalculadoraPage.tsx','pages/Calculadora/Co
   const text = fs.readFileSync(path.join(src,rel),'utf8');
   if (/ALIMENTOS_CONFIG\s+as\s+/.test(text)) errors.push(`${rel}: não faça cast de ALIMENTOS_CONFIG; tipagem deve ser validada na origem.`);
 }
+
+const manualBikeConstants = fs.readFileSync(path.join(src,'constants/manualBike.ts'),'utf8');
+if (!manualBikeConstants.includes('DICAS_RAPIDAS_BIKE')) errors.push('Manual da Bike: dicas rápidas expandidas não encontradas.');
+const manualPiecesCount = (manualBikeConstants.match(/id:'[^']+',area:/g) ?? []).length;
+if (manualPiecesCount < 10) errors.push('Manual da Bike: catálogo de peças ficou incompleto (<10).');
+if (!fs.readFileSync(path.join(src,'pages/ManualBike/ProblemaModal.tsx'),'utf8').includes('Posso continuar a viagem?')) errors.push('Manual da Bike: problemas devem informar claramente se é seguro continuar.');
 
 if (errors.length) {
   console.error(`\n[lint] ${errors.length} problema(s) encontrado(s):`);

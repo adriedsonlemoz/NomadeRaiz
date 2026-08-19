@@ -1,6 +1,6 @@
 # Nomade Raiz
 
-Versão atual: **1.0.18**
+Versão atual: **1.0.19**
 
 Nomade Raiz é um aplicativo offline-first para cicloviagem, bikepacking e vida na estrada. Ele reúne planejamento, equipamentos, autonomia, diário, pontos de apoio e um manual prático da bicicleta em uma interface pensada para funcionar também sem conexão constante.
 
@@ -82,13 +82,12 @@ A identidade visível do aplicativo é **Nomade Raiz**. O identificador nativo e
 
 O workflow `.github/workflows/android-apk.yml` gera um APK de teste instalável sem exigir Android Studio no seu computador:
 
-1. envie os arquivos do projeto para o GitHub;
-2. abra a aba **Actions**;
-3. escolha **Build Android APK**;
-4. clique em **Run workflow**;
-5. ao terminar, abra a execução e baixe o artefato **NomadeRaiz-Android-...**.
+1. envie os arquivos do projeto para a branch **main**;
+2. o workflow **Build Android APK** inicia automaticamente;
+3. também é possível iniciá-lo manualmente em **Actions → Build Android APK → Run workflow**;
+4. ao terminar, abra a execução e baixe o artefato **NomadeRaiz-Android-...** na seção **Artifacts**.
 
-O arquivo gerado se chama `NomadeRaiz-X.Y.Z-debug.apk`. O workflow também roda automaticamente quando uma tag `v*` é enviada ao repositório.
+O arquivo gerado se chama `NomadeRaiz-X.Y.Z-debug.apk`. O workflow também roda quando uma tag `v*` é enviada. A própria execução mostra um resumo com o nome do APK; se falhar, imprime a árvore de saída Android para facilitar o diagnóstico.
 
 ## PWA e modo offline
 
@@ -110,4 +109,4 @@ Projeto mantido em `adriedsonlemoz/NomadeRaiz` no GitHub.
 
 ## Estado atual
 
-A versão 1.0.18 moderniza o toolchain com Node 24.19 LTS, Capacitor 8.5, React 19.2 e Vite 8.2. O Android do CI é recriado em cada build para não reutilizar arquivos Gradle antigos; o pipeline usa Java 21 e o template atual do Capacitor, com SDK 36.
+A versão 1.0.19 corrige o gatilho do APK no GitHub: pushes na `main` agora executam o build Android automaticamente, com validação explícita do arquivo e resumo/diagnóstico da execução. O Manual da Bike também foi ampliado com mais peças, problemas, diagnóstico, segurança e dicas práticas.

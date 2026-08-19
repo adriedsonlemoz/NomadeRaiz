@@ -291,3 +291,33 @@
 .nr-checklist-item[data-checked="true"] .nr-checklist-item__toggle { background: var(--nr-check-accent); outline-color: var(--nr-check-accent); }
 .nr-checklist-item__text { flex: 1; color: var(--nr-text); font-weight: 500; font-size: 13px; margin: 0; line-height: 1.4; }
 .nr-checklist-item[data-checked="true"] .nr-checklist-item__text { color: var(--nr-text-muted); text-decoration: line-through; }
+
+/* Manual da Bike 1.0.19 — conteúdo técnico expandido */
+.nr-manual-guide-intro { display: grid; gap: 12px; }
+.nr-manual-guide-intro__text { margin: 0; color: var(--nr-text-muted); font-size: 13px; line-height: 1.55; }
+.nr-manual-tip-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.nr-manual-tip { padding: 12px; border: 1px solid var(--nr-border); border-radius: 14px; background: var(--nr-neutral-bg); }
+.nr-manual-tip summary { display: grid; grid-template-columns: auto 1fr auto; gap: 9px; align-items: center; cursor: pointer; list-style: none; color: var(--nr-text); font-size: 13px; }
+.nr-manual-tip summary::-webkit-details-marker { display: none; }
+.nr-manual-tip__icon { font-size: 18px; }
+.nr-manual-tip summary strong { display: block; }
+.nr-manual-tip summary small { display: block; margin-top: 3px; color: var(--nr-text-muted); font-size: 11px; line-height: 1.4; font-weight: 500; }
+.nr-manual-tip__chevron { color: var(--nr-text-muted); font-size: 16px; transition: transform .18s ease; }
+.nr-manual-tip[open] .nr-manual-tip__chevron { transform: rotate(180deg); }
+.nr-manual-tip ul { margin: 10px 0 0; padding: 10px 0 0 28px; border-top: 1px solid var(--nr-border); color: var(--nr-text); font-size: 12px; line-height: 1.55; }
+.nr-manual-bullet-list { display: grid; gap: 6px; }
+.nr-manual-bullet { display: grid; grid-template-columns: 12px 1fr; gap: 6px; color: var(--nr-text); font-size: 13px; line-height: 1.55; }
+.nr-manual-bullet > span:first-child { color: var(--nr-blue); font-weight: 900; }
+.nr-manual-bullet-list[data-tone="danger"] .nr-manual-bullet > span:first-child { color: var(--nr-danger, #b42318); }
+.nr-manual-callout, .nr-manual-stop, .nr-manual-continue { padding: 12px; border-radius: 14px; border: 1px solid var(--nr-border); }
+.nr-manual-callout { background: color-mix(in srgb, var(--nr-blue) 7%, var(--nr-surface)); }
+.nr-manual-stop { background: color-mix(in srgb, #b42318 7%, var(--nr-surface)); border-color: color-mix(in srgb, #b42318 25%, var(--nr-border)); }
+.nr-manual-continue { background: color-mix(in srgb, #b45309 7%, var(--nr-surface)); }
+.nr-manual-continue[data-level="baixa"] { background: color-mix(in srgb, #15803d 7%, var(--nr-surface)); }
+.nr-manual-continue[data-level="alta"] { background: color-mix(in srgb, #b42318 7%, var(--nr-surface)); }
+.nr-manual-callout__title, .nr-manual-stop__title, .nr-manual-continue__title { margin: 0 0 7px; color: var(--nr-text); font-size: 12px; font-weight: 900; }
+.nr-manual-stop p, .nr-manual-continue p { margin-top: 0; margin-bottom: 0; color: var(--nr-text); font-size: 13px; line-height: 1.55; }
+.nr-manual-severity { display: inline-flex; margin-top: 4px; padding: 3px 7px; border-radius: 999px; font-size: 10px; font-weight: 900; background: color-mix(in srgb, #15803d 12%, var(--nr-surface)); color: #15803d; }
+.nr-manual-severity[data-level="media"] { background: color-mix(in srgb, #b45309 12%, var(--nr-surface)); color: #b45309; }
+.nr-manual-severity[data-level="alta"] { background: color-mix(in srgb, #b42318 12%, var(--nr-surface)); color: #b42318; }
+@media (min-width: 680px) { .nr-manual-tip-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }

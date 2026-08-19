@@ -1,5 +1,6 @@
 import {
   AREAS_BIKE,
+  DICAS_RAPIDAS_BIKE,
   GLOSSARIO_BIKE,
   KIT_MINIMO_FERRAMENTAS,
   PECAS_BIKE,
@@ -22,6 +23,12 @@ const levelIcon = (level: BikePiece['nivel']) => level === 'basico' ? '🟢' : l
 
 export function ManualOverview({ habilidades, kitComStatus, kitPossui, kitRastreado, onPiece, onProblem, onGlossary }: Props) {
   return <>
+
+    <div className="nr-content-card nr-manual-guide-intro">
+      <p className="nr-kicker nr-kicker--inline"><span>🧠</span>Dicas rápidas de oficina na estrada</p>
+      <p className="nr-manual-guide-intro__text">Não é só “qual parafuso apertar”: use estas regras para diagnosticar com segurança antes de desmontar a bicicleta.</p>
+      <div className="nr-manual-tip-grid">{DICAS_RAPIDAS_BIKE.map(tip => <details key={tip.id} className="nr-manual-tip"><summary><span className="nr-manual-tip__icon">{tip.icone}</span><span><strong>{tip.titulo}</strong><small>{tip.resumo}</small></span><span className="nr-manual-tip__chevron">⌄</span></summary><ul>{tip.detalhes.map(detail=><li key={detail}>{detail}</li>)}</ul></details>)}</div>
+    </div>
     {AREAS_BIKE.map(area => <div key={area.id} className="nr-content-card">
       <p className="nr-kicker nr-kicker--inline"><span>{area.icone}</span>{area.label}</p>
       <div className="nr14-154d3a4a">

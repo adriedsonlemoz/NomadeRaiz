@@ -1,4 +1,11 @@
 export const CHANGELOG=[
+ {versao:'1.0.19',data:'19/08/2026',mudancas:[
+  'Build Android APK passa a rodar automaticamente a cada push na main, além de execução manual e tags',
+  'Workflow valida o arquivo final, lista as saídas do Gradle e mostra resumo/diagnóstico visível na execução',
+  'Actions oficiais atualizadas para checkout v6, setup-node v6, setup-java v5 e upload-artifact v7',
+  'Manual da Bike ampliado com diagnóstico, ferramentas, passo a passo, segurança, novas peças e novos problemas de estrada',
+  'Busca do Manual passa a pesquisar também sintomas, causas, manutenção, ferramentas, soluções e glossário',
+ ]},
  {versao:'1.0.18',data:'19/08/2026',mudancas:[
   'Node atualizado para 24.19 LTS e CI passa a validar explicitamente o toolchain',
   'Capacitor atualizado de 6.2 para 8.5 com Android recriado de forma limpa no GitHub Actions',

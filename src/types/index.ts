@@ -9,6 +9,7 @@ export type PontoTipo = 'agua'|'mercado'|'camping'|'saude'|'oficina'|'outro';
 export type PontoAvaliacao = 1|2|3;
 export type TravelTypeId = 'cicloviagem'|'camping'|'bate-volta'|'longa';
 export type BikeSkillLevel = 'basico'|'intermediario'|'avancado';
+export type BikeIssueSeverity = 'baixa'|'media'|'alta';
 export type BikeAreaId = 'rodas'|'transmissao'|'freios'|'estrutura';
 export type ManualBikeTarget = { tipo:'peca'|'problema'; id:string };
 
@@ -26,18 +27,35 @@ export interface BikePiece {
   nivel: BikeSkillLevel;
   funcao: string;
   problemasComuns: readonly string[];
+  sinaisAtencao: readonly string[];
+  ferramentas: readonly string[];
+  antesDeMexer: readonly string[];
   manutencao: string;
   comoResolver: readonly string[];
+  quandoParar: string;
 }
 
 export interface BikeProblem {
   id: string;
   icone: string;
   nome: string;
+  gravidade: BikeIssueSeverity;
   causas: readonly string[];
+  diagnostico: readonly string[];
   ferramentas: readonly string[];
+  passos: readonly string[];
   solucaoTemporaria: string;
   solucaoDefinitiva: string;
+  naoFaca: readonly string[];
+  podeContinuar: string;
+}
+
+export interface BikeQuickTip {
+  id: string;
+  icone: string;
+  titulo: string;
+  resumo: string;
+  detalhes: readonly string[];
 }
 
 export interface BikeGlossaryTerm {

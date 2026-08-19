@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.19 — APK automático e Manual da Bike ampliado
+
+- Corrigido o motivo de o GitHub ficar verde sem gerar APK: o workflow Android agora também dispara em todo push na branch `main`, além de execução manual e tags `v*`.
+- Workflow valida que `app-debug.apk` existe e não está vazio antes de publicar o artefato.
+- Logs passam a listar os arquivos produzidos pelo Gradle e a escrever um resumo visível na execução, inclusive diagnóstico em caso de falha.
+- Actions oficiais atualizadas para os majors estáveis atuais: checkout v6, setup-node v6, setup-java v5 e upload-artifact v7.
+- Manual da Bike ampliado com mais peças, problemas de estrada, diagnóstico rápido, ferramentas, passo a passo, alertas de segurança e orientação sobre quando não continuar.
+- Busca do Manual agora encontra conteúdo por sintomas, causas, ferramentas, manutenção, solução e glossário, não apenas pelo nome.
+- Novos testes e lint protegem o conteúdo do Manual e impedem que o gatilho automático do APK seja removido por regressão.
+
 ## 1.0.18 — Toolchain moderno e migração segura para Capacitor 8
 
 - Node.js atualizado de 20.x para 24.19.0 LTS no projeto e no GitHub Actions.

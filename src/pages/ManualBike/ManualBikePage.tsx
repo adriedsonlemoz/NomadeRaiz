@@ -40,7 +40,7 @@ export default function ManualBikePage() {
         <button onClick={()=>setPage('extras')} className="nr14-81c5d7e9">←</button>
         <div><p className="nr14-bcecb245">Educativo</p><h1 className="nr14-3d1bf271">🚲 Manual da Bike</h1></div>
       </div>
-      <p className="nr14-a99c3720">Conheça sua bicicleta e aprenda a resolver os problemas mais comuns na estrada.</p>
+      <p className="nr14-a99c3720">Diagnóstico, manutenção e soluções de emergência para entender a bike e decidir com segurança o que dá para resolver na estrada.</p>
       <input value={busca} onChange={(event:ChangeEvent<HTMLInputElement>)=>setBusca(event.target.value)} placeholder="🔎 Buscar peça, problema ou termo..." className="nr14-3e7612f1"/>
     </div>
 
