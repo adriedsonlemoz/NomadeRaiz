@@ -13,14 +13,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Node.js
+      - name: Node.js 24 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: '24.19.0'
 
-      - name: Clean install
-        run: npm ci --no-audit --no-fund
+      - name: Instalar dependências fixadas
+        run: npm install --no-audit --no-fund
 
       - name: Test, typecheck and build
         run: npm run build

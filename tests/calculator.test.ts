@@ -5,6 +5,7 @@ import {
   calcAlimentacaoInteligente,
   calcBicicleta,
   calcCustoViagem,
+  calcNecessidadeAlimentacao,
   calcDinheiro,
   calcEnergia,
   calcIndiceGeral,
@@ -41,6 +42,17 @@ export const cases: TestCase[] = [
       assert.equal(calcAguaInteligente(3, true, 2).suficientePorIntervalo, false);
     },
   },
+
+  {
+    name: 'água dimensiona o consumo para mais de uma pessoa',
+    run: () => {
+      const result = calcAguaInteligente(6, false, 0, 2);
+      assert.equal(result.consumoDia, 6);
+      assert.equal(result.dias, 1);
+      assert.equal(result.baixo, false);
+    },
+  },
+
   {
     name: 'energia reconhece cenário autossustentável',
     run: () => {
@@ -68,6 +80,24 @@ export const cases: TestCase[] = [
       assert.equal(result.valorTotal, 32);
     },
   },
+
+  {
+    name: 'alimentação considera o tamanho do grupo e calcula custo faltante',
+    run: () => {
+      const [primeiro] = ALIMENTOS_CONFIG;
+      assert.ok(primeiro);
+      const linhas = montarLinhasAlimentacaoInteligente(ALIMENTOS_CONFIG, {
+        [primeiro.id]: { quantidade: 2, consumo: 1, preco: 5 },
+      }, 2);
+      const result = calcAlimentacaoInteligente(linhas);
+      const necessidade = calcNecessidadeAlimentacao(linhas, 3, 2);
+      assert.equal(result.dias, 1);
+      assert.equal(necessidade.valorNecessario, 30);
+      assert.equal(necessidade.valorFaltante, 20);
+      assert.equal(necessidade.itensFaltando, 1);
+    },
+  },
+
   {
     name: 'dinheiro nunca divide por zero',
     run: () => {

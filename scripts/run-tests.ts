@@ -3,12 +3,14 @@ import { cases as calculatorCases } from '../tests/calculator.test';
 import { cases as planningCases } from '../tests/planning.test';
 import { cases as reducerCases } from '../tests/reducer.test';
 import { cases as exportCases } from '../tests/export.test';
+import { cases as equipmentCases } from '../tests/equipment.test';
 
 const suites: Array<{ name: string; cases: TestCase[] }> = [
   { name: 'Calculadora', cases: calculatorCases },
   { name: 'Planejamento', cases: planningCases },
   { name: 'Reducer', cases: reducerCases },
   { name: 'Backup e importação', cases: exportCases },
+  { name: 'Equipamentos e alertas', cases: equipmentCases },
 ];
 
 let passed = 0;

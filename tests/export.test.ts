@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { TestCase } from './test.types';
 import { APP_ID, BACKUP_SCHEMA_VERSION } from '../src/config/app';
-import { createBackup, exportBackupJSON, importBackupJSON, toPersistedState } from '../src/services/export.service';
+import { createBackup, exportBackupJSON, exportText, importBackupJSON, toPersistedState } from '../src/services/export.service';
 import { INITIAL } from '../src/store/reducer';
 import type { AppState } from '../src/types';
 
@@ -72,5 +72,31 @@ export const cases: TestCase[] = [
   } },
   { name: 'backup de outro app ou schema é rejeitado', run: () => {
     assert.throws(() => importBackupJSON(JSON.stringify({ app: 'outro', schemaVersion: 999, data: {} })), /incompatível|inválido/);
+  } },
+
+  { name: 'formatos de exportação têm conteúdos realmente distintos', run: () => {
+    const items = [
+      { id:'a', name:'Comprado', categoryId:'x', status:'comprado' as const, priority:'medio' as const, quantity:1, price:20, notes:'levar', createdAt:1, updatedAt:1 },
+      { id:'b', name:'Pendente', categoryId:'x', status:'pendente' as const, priority:'medio' as const, quantity:2, price:15, createdAt:1, updatedAt:1 },
+    ];
+    const resumo = exportText(items, 'resumo');
+    const compras = exportText(items, 'compras');
+    const completo = exportText(items, 'completo');
+    assert.match(resumo, /Comprados: 1/);
+    assert.match(resumo, /Pendentes: 1/);
+    assert.equal(compras.includes('Comprado'), false);
+    assert.match(compras, /Pendente ×2/);
+    assert.match(completo, /Comprado ×1/);
+    assert.match(completo, /levar/);
+    assert.notEqual(resumo, compras);
+    assert.notEqual(compras, completo);
+  } },
+  { name: 'exportação respeita quantidade zero', run: () => {
+    const items = [
+      { id:'z', name:'Zero', categoryId:'x', status:'pendente' as const, priority:'medio' as const, quantity:0, price:100, createdAt:1, updatedAt:1 },
+    ];
+    assert.match(exportText(items, 'resumo'), /Investimento total: R\$\s*0,00/);
+    assert.match(exportText(items, 'compras'), /Nenhuma compra pendente/);
+    assert.match(exportText(items, 'completo'), /Zero ×0/);
   } },
 ];

@@ -38,6 +38,9 @@ for (const file of walk(src).filter(file => /\.(?:js|jsx|ts|tsx)$/.test(file))) 
   }
   if (text.includes('localStorage.clear(')) errors.push(`${rel}: uso proibido de localStorage.clear(); apague apenas dados do app.`);
   if (text.includes('localStorage') && rel !== 'src/services/storage.service.ts' && !rel.endsWith('StoreContext.tsx')) errors.push(`${rel}: localStorage direto não é permitido; use StorageService.`);
+  if (/ReactDOM\.(?:render|hydrate|findDOMNode|unmountComponentAtNode)\b/.test(text)) errors.push(`${rel}: API removida no React 19 detectada.`);
+  if (/\buseRef\(\s*\)/.test(text)) errors.push(`${rel}: React 19 exige argumento em useRef; use null ou undefined explicitamente.`);
+  if (/useReducer\s*<\s*React\.Reducer/.test(text)) errors.push(`${rel}: assinatura genérica antiga de useReducer não é compatível com os tipos do React 19.`);
 }
 
 const legacySourceFiles = walk(src).filter(file => /\.(?:js|jsx)$/.test(file));
@@ -62,16 +65,44 @@ for (const rel of requiredTestFiles) {
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 if (!/^\d+\.\d+\.\d+$/.test(pkg.version)) errors.push('package.json: version deve seguir X.Y.Z.');
-const lock = JSON.parse(fs.readFileSync(path.join(root,'package-lock.json'),'utf8'));
-if (lock.version !== pkg.version || lock.packages?.['']?.version !== pkg.version) errors.push('package-lock.json: versão deve acompanhar package.json.');
+const lockPath = path.join(root,'package-lock.json');
+if (fs.existsSync(lockPath)) {
+  const lock = JSON.parse(fs.readFileSync(lockPath,'utf8'));
+  if (lock.version !== pkg.version || lock.packages?.['']?.version !== pkg.version) errors.push('package-lock.json: versão deve acompanhar package.json.');
+}
 if (pkg.name !== 'nomade-raiz') errors.push('package.json: name deve permanecer nomade-raiz.');
 if (!pkg.scripts?.test || !pkg.scripts.test.includes('run-tests.ts')) errors.push('package.json: script test deve executar a suíte TypeScript automatizada.');
 if (!pkg.scripts?.check || !pkg.scripts.check.includes('npm run test')) errors.push('package.json: check deve incluir npm run test antes do build.');
 if (!pkg.scripts?.typecheck || !pkg.scripts.typecheck.includes('tsconfig.test.json')) errors.push('package.json: typecheck deve validar também tsconfig.test.json.');
-if (pkg.engines?.node !== '20.x') errors.push('package.json: engines.node deve permanecer fixado em 20.x para builds reproduzíveis.');
+if (pkg.engines?.node !== '>=24.19.0 <25') errors.push('package.json: engines.node deve permanecer na linha Node 24 LTS (>=24.19.0 <25).');
 const nvmrcPath = path.join(root,'.nvmrc');
-if (!fs.existsSync(nvmrcPath) || fs.readFileSync(nvmrcPath,'utf8').trim() !== '20') errors.push('.nvmrc: deve fixar Node 20.');
+if (!fs.existsSync(nvmrcPath) || fs.readFileSync(nvmrcPath,'utf8').trim() !== '24.19.0') errors.push('.nvmrc: deve fixar Node 24.19.0.');
 
+const capacitorExpected = '8.5.0';
+for (const name of ['@capacitor/core','@capacitor/android','@capacitor/ios']) {
+  if (pkg.dependencies?.[name] !== capacitorExpected) errors.push(`package.json: ${name} deve permanecer em ${capacitorExpected}.`);
+}
+if (pkg.devDependencies?.['@capacitor/cli'] !== capacitorExpected) errors.push(`package.json: @capacitor/cli deve permanecer em ${capacitorExpected}.`);
+if (pkg.dependencies?.react !== pkg.dependencies?.['react-dom']) errors.push('package.json: react e react-dom devem permanecer alinhados.');
+if (pkg.devDependencies?.vite !== '8.2.1') errors.push('package.json: Vite deve permanecer em 8.2.1 nesta release.');
+
+
+const androidWorkflowPath = path.join(root,'.github/workflows/android-apk.yml');
+if (!fs.existsSync(androidWorkflowPath)) errors.push('.github/workflows/android-apk.yml: workflow de APK Android obrigatório.');
+else {
+  const androidWorkflow = fs.readFileSync(androidWorkflowPath,'utf8');
+  if (!androidWorkflow.includes('npx cap add android')) errors.push('Android CI: deve criar a plataforma com npx cap add android.');
+  if (!androidWorkflow.includes('assembleDebug')) errors.push('Android CI: deve gerar APK debug com Gradle.');
+  if (!androidWorkflow.includes('actions/upload-artifact@v4')) errors.push('Android CI: deve publicar o APK com upload-artifact v4.');
+  if (!androidWorkflow.includes("node-version: '24.19.0'")) errors.push('Android CI: deve usar Node 24.19.0 LTS.');
+  if (!androidWorkflow.includes("java-version: '21'")) errors.push('Android CI: deve usar Java 21.');
+  if (!androidWorkflow.includes('rm -rf android')) errors.push('Android CI: deve recriar a plataforma nativa para evitar Gradle legado.');
+  if (!androidWorkflow.includes('compileSdkVersion = 36') || !androidWorkflow.includes('targetSdkVersion = 36')) errors.push('Android CI: deve validar compile/target SDK 36.');
+}
+for (const rel of ['scripts/generate-sw.mjs','public/icons/icon-192.png','public/icons/icon-512.png','public/icons/apple-touch-icon.png']) {
+  if (!fs.existsSync(path.join(root,rel))) errors.push(`${rel}: infraestrutura PWA obrigatória não encontrada.`);
+}
+if (!pkg.scripts?.build?.includes('generate-sw.mjs')) errors.push('package.json: build deve gerar o Service Worker offline após o Vite.');
 
 const ciPath = path.join(root,'.github/workflows/ci.yml');
 if (!fs.existsSync(ciPath)) errors.push('.github/workflows/ci.yml: workflow de CI obrigatório.');
@@ -79,6 +110,7 @@ else {
   const ci = fs.readFileSync(ciPath,'utf8');
   if (!ci.includes('run: npm run build')) errors.push('CI: deve executar npm run build para validar check + bundle.');
   if (ci.includes('run: npm run check')) errors.push('CI: não execute check separadamente; npm run build já o inclui.');
+  if (!ci.includes("node-version: '24.19.0'")) errors.push('CI: deve usar Node 24.19.0 LTS.');
 }
 
 const readmePath = path.join(root,'README.md');
@@ -98,12 +130,18 @@ else {
 
 const appConfig = fs.readFileSync(path.join(src,'config/app.ts'),'utf8');
 if (!appConfig.includes("APP_NAME = 'Nomade Raiz'")) errors.push('config/app.ts: APP_NAME deve ser Nomade Raiz.');
+const capacitorConfig = fs.readFileSync(path.join(root,'capacitor.config.ts'),'utf8');
+if (!capacitorConfig.includes('SystemBars') || !capacitorConfig.includes("insetsHandling: 'css'")) errors.push('capacitor.config.ts: Capacitor 8 deve manter SystemBars com insetsHandling css.');
+
+const mainEntry = fs.readFileSync(path.join(src,'main.tsx'),'utf8');
+if (!mainEntry.includes('serviceWorker') || !mainEntry.includes('Capacitor.isNativePlatform') || !mainEntry.includes('import.meta.env.PROD')) errors.push('main.tsx: PWA deve registrar Service Worker apenas em build web de produção e fora do Capacitor nativo.');
 
 const manifestPath = path.join(root,'public/manifest.webmanifest');
 if (!fs.existsSync(manifestPath)) errors.push('public/manifest.webmanifest: manifesto do app é obrigatório.');
 else {
   const manifest = JSON.parse(fs.readFileSync(manifestPath,'utf8'));
   if (manifest.name !== 'Nomade Raiz' || manifest.short_name !== 'Nomade Raiz') errors.push('manifest.webmanifest: name e short_name devem ser Nomade Raiz.');
+  if (!Array.isArray(manifest.icons) || manifest.icons.length < 2) errors.push('manifest.webmanifest: ícones PWA 192/512 são obrigatórios.');
 }
 
 const configPage = fs.readFileSync(path.join(src,'pages/Configuracoes/ConfiguracoesPage.tsx'),'utf8');

@@ -5,6 +5,7 @@ import type {
   PersistedState, Ponto, PontoAvaliacao, PontoTipo,
 } from '../types';
 import { fmt } from '../utils/format';
+import { calcTotal, globalStats, normalizedQuantity } from './equipment.service';
 
 const DEFAULT_SETTINGS: PersistedState['settings'] = {
   themeMode: 'light',
@@ -97,10 +98,52 @@ function normalizeNumberMap(value: unknown): Record<string,number> {
   );
 }
 
-export function exportText(items: Item[] = [], formato = 'completo'): string {
-  return items
-    .map((item) => `${item.status === 'comprado' ? '✓' : '○'} ${item.name} ×${item.quantity} — ${fmt((item.price || 0) * (item.quantity || 1))}${formato === 'completo' && item.notes ? ` — ${item.notes}` : ''}`)
-    .join('\n');
+export type ExportTextFormat = 'resumo' | 'compras' | 'completo';
+
+const exportItemLine = (item: Item, includeNotes = false): string => {
+  const quantity = normalizedQuantity(item);
+  const line = `${item.status === 'comprado' ? '✓' : '○'} ${item.name} ×${quantity} — ${fmt(item.price * quantity)}`;
+  return includeNotes && item.notes ? `${line} — ${item.notes}` : line;
+};
+
+export function exportText(items: Item[] = [], formato: ExportTextFormat = 'completo'): string {
+  if (formato === 'resumo') {
+    const stats = globalStats(items);
+    const valorPendente = calcTotal(items.filter((item) => item.status === 'pendente'));
+    return [
+      'NOMADE RAIZ — RESUMO',
+      '',
+      `Itens cadastrados: ${stats.total}`,
+      `Comprados: ${stats.comprados}`,
+      `Pendentes: ${stats.pendentes}`,
+      `Investimento total: ${fmt(stats.valorTotal)}`,
+      `Já investido: ${fmt(stats.valorComprado)}`,
+      `Falta investir: ${fmt(valorPendente)}`,
+    ].join('\n');
+  }
+
+  if (formato === 'compras') {
+    const pendentes = items.filter(
+      (item) => item.status === 'pendente' && normalizedQuantity(item) > 0,
+    );
+    if (!pendentes.length) return 'NOMADE RAIZ — LISTA DE COMPRAS\n\n✅ Nenhuma compra pendente.';
+    return [
+      'NOMADE RAIZ — LISTA DE COMPRAS',
+      '',
+      ...pendentes.map((item) => exportItemLine(item)),
+      '',
+      `Total pendente: ${fmt(calcTotal(pendentes))}`,
+    ].join('\n');
+  }
+
+  if (!items.length) return 'NOMADE RAIZ — INVENTÁRIO COMPLETO\n\nNenhum item cadastrado.';
+  return [
+    'NOMADE RAIZ — INVENTÁRIO COMPLETO',
+    '',
+    ...items.map((item) => exportItemLine(item, true)),
+    '',
+    `Total do inventário: ${fmt(calcTotal(items))}`,
+  ].join('\n');
 }
 
 export function toPersistedState(state: AppState): PersistedState {

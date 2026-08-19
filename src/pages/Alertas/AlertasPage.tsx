@@ -3,6 +3,7 @@ import type { ChangeEvent, CSSProperties, KeyboardEvent } from "react";
 import { useStore } from "../../contexts";
 import { useTheme } from "../../hooks";
 import { MINIMOS_SUGERIDOS } from "../../constants/equipment";
+import { isBelowMinimum, ownedQuantity } from "../../services/equipment.service";
 
 export default function AlertasPage() {
   const { state, setPage, setMinimos } = useStore();
@@ -10,10 +11,7 @@ export default function AlertasPage() {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [editVal, setEditVal] = useState("");
   const minimos: Record<string, number> = state.minimos ?? {};
-  const alertas = state.items.filter(item => {
-    const minimo = minimos[item.id];
-    return minimo != null && item.quantity < minimo;
-  });
+  const alertas = state.items.filter(item => isBelowMinimum(item, minimos[item.id]));
 
   const salvar = (id: string) => {
     const valor = Number.parseInt(editVal, 10);
@@ -64,7 +62,7 @@ export default function AlertasPage() {
               <div key={item.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
                 background:"rgba(255,255,255,.6)", borderRadius:8, padding:"6px 10px", marginBottom:4 }}>
                 <span style={{ color:T.textMain, fontSize:12, fontWeight:600 }}>{item.name}</span>
-                <span style={{ color:T.urgColor, fontSize:11, fontWeight:700 }}>{item.quantity} / mín {minimos[item.id]}</span>
+                <span style={{ color:T.urgColor, fontSize:11, fontWeight:700 }}>{ownedQuantity(item)} disponível / mín {minimos[item.id]}</span>
               </div>
             ))}
           </div>
@@ -82,7 +80,8 @@ export default function AlertasPage() {
           textTransform:"uppercase", margin:"4px 0 0" }}>Definir mínimos por item</p>
         {state.items.map(item => {
           const minimo = minimos[item.id];
-          const abaixo = minimo != null && item.quantity < minimo;
+          const abaixo = isBelowMinimum(item, minimo);
+          const disponivel = ownedQuantity(item);
           const isEditando = editandoId === item.id;
           return (
             <div key={item.id} style={{ background:abaixo ? T.urgBg : T.white,
@@ -93,7 +92,8 @@ export default function AlertasPage() {
                 <p style={{ color:T.textMain, fontWeight:600, fontSize:12, margin:0,
                   whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.name}</p>
                 <p style={{ color:T.textMuted, fontSize:10, margin:"1px 0 0" }}>
-                  Qtd atual: <b style={{ color:abaixo ? T.urgColor : T.doneCheck }}>{item.quantity}</b></p>
+                  Disponível: <b style={{ color:abaixo ? T.urgColor : T.doneCheck }}>{disponivel}</b>
+                  {item.status === "pendente" && item.quantity > 0 ? ` · planejado: ${item.quantity}` : ""}</p>
               </div>
               {isEditando ? (
                 <div style={{ display:"flex", gap:5, alignItems:"center", flexShrink:0 }}>

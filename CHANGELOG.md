@@ -1,6 +1,48 @@
 # Changelog
 
+## 1.0.18 — Toolchain moderno e migração segura para Capacitor 8
+
+- Node.js atualizado de 20.x para 24.19.0 LTS no projeto e no GitHub Actions.
+- Capacitor atualizado de 6.2.1 para 8.5.0, mantendo core, CLI, Android e iOS na mesma versão.
+- React atualizado para 19.2.8 e Vite para 8.2.1; plugin React atualizado para 6.0.5.
+- TypeScript fixado em 5.9.3 nesta etapa; a migração para TypeScript 6 foi adiada de propósito para não misturar duas fontes de breaking changes.
+- GitHub Actions passa a usar Java 21 e recriar `android/` a cada APK, evitando reaproveitar Gradle/SDK de versões antigas do Capacitor.
+- Pipeline valida que o projeto Android gerado usa compile/target SDK 36.
+- SystemBars do Capacitor 8 configurado para injetar safe areas em CSS; shell e navegação inferior passam a consumi-las, com fallback web por `env()` para evitar conteúdo sob barras do sistema.
+- Novo `npm run doctor` detecta Node incorreto e desalinhamento entre versões críticas antes de testes/build.
+- `package-lock.json` antigo foi removido por ser incompatível com a nova árvore de majors; `npm install` gera um lock novo no primeiro ambiente com acesso ao registry.
+
 Todas as mudanças relevantes do Nomade Raiz são registradas aqui e também resumidas dentro da página **Sobre o App**.
+
+## 1.0.17 — PWA offline e APK Android pelo GitHub
+
+- PWA ganhou Service Worker gerado no build com precache automático dos assets versionados do Vite.
+- Manifesto passou a incluir ícones 192/512 e suporte maskable; Apple touch icon também foi adicionado.
+- Dependência externa do Google Fonts foi removida para o shell inicial funcionar integralmente sem rede.
+- Registro do Service Worker ocorre somente na versão web; dentro do Capacitor o app usa os arquivos locais empacotados.
+- Confirmada a configuração existente do Capacitor 6 (`capacitor.config.ts` e dependências); a plataforma Android passa a ser criada automaticamente no CI.
+- Novo workflow `Build Android APK` no GitHub Actions gera `app-debug.apk`, renomeia com a versão do projeto e publica o arquivo como artefato baixável.
+- README recebeu instruções diretas para gerar e baixar o APK pelo GitHub.
+
+## 1.0.16 — Planejamento de grupo e viagem contextual
+
+- Pessoas agora dimensionam a autonomia de alimentação, água e energia no Planejamento.
+- Alimentação calcula o custo necessário para cobrir todo o grupo e destaca o valor aproximado que ainda falta.
+- Tipo de viagem passa a alterar exigência de abrigo e reserva financeira recomendada: bate-volta, cicloviagem, camping e longa duração deixam de ser apenas opções visuais.
+- Reabastecimento de água só recebe status verde quando a reserva cobre o intervalo e há locais previstos informados.
+- Itens essenciais de segurança são reconhecidos por identidade ou nome, evitando falso positivo ao apagar/recriar itens.
+- Autonomia zero agora é tratada como insuficiente, em vez de cair no status intermediário.
+- Cards de Alimentação e Água exibem a autonomia já ajustada ao número de pessoas.
+- Testes de regressão ampliados para grupo, custos, energia, tipos de viagem, abrigo, segurança e abastecimento.
+
+## 1.0.15 — Correções de inventário, alertas e exportação
+
+- Marcas-d’água e desenhos decorativos da Home e de Equipamentos voltaram a ter contraste suficiente, sem o filtro que os deixava praticamente invisíveis.
+- Quantidade `0` agora é respeitada nos totais; ela não é mais convertida silenciosamente em uma unidade.
+- Alertas de reposição usam quantidade realmente disponível: itens pendentes contam como `0` em estoque até serem marcados como comprados.
+- A tela de alertas diferencia quantidade disponível da quantidade planejada para itens ainda pendentes.
+- Exportação ganhou três formatos reais: resumo financeiro, lista apenas de compras pendentes e inventário completo com observações.
+- Testes de regressão adicionados para quantidade zero, mínimos de estoque e formatos de exportação.
 
 ## 1.0.14 — Segunda fase do Design System
 

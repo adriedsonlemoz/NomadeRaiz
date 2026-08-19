@@ -12,11 +12,12 @@ interface AguaCardProps {
   setFrequenciaDias: StateSetter<string>;
   locais: string;
   setLocais: StateSetter<string>;
+  pessoas?: string | number;
 }
 
 export function AguaCard({ litros, setLitros, reabastece, setReabastece, frequenciaDias, setFrequenciaDias,
-  locais, setLocais }: AguaCardProps) {
-  const r = calcAguaInteligente(litros, reabastece, frequenciaDias);
+  locais, setLocais, pessoas = 1 }: AguaCardProps) {
+  const r = calcAguaInteligente(litros, reabastece, frequenciaDias, pessoas);
   return (
     <div className="nr14-42841f2c">
       <CalcField label="Água disponível (carregada)" suffix="litros" placeholder="Ex: 6"
@@ -57,7 +58,7 @@ export function AguaCard({ litros, setLitros, reabastece, setReabastece, frequen
           )}
           <div className="nr14-545bf27b">
             <span className="nr14-ad7dcd81">Consumo recomendado</span>
-            <span className="nr14-81a1cd3e">{CONSUMO_AGUA_RECOMENDADO_L} L/dia</span>
+            <span className="nr14-81a1cd3e">{r.pessoas > 1 ? `${CONSUMO_AGUA_RECOMENDADO_L} L/pessoa · ${r.consumoDia} L/dia grupo` : `${CONSUMO_AGUA_RECOMENDADO_L} L/dia`}</span>
           </div>
           {r.baixo && (
             <div className="nr14-230af478">

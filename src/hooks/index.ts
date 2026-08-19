@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useTheme as useThemeCtx } from "../contexts/ThemeContext";
 import { useStore } from "../contexts/StoreContext";
+import { isBelowMinimum } from "../services/equipment.service";
 
 export const useTheme = () => useThemeCtx();
 
@@ -31,6 +32,6 @@ export function useAlertCount(): number {
   const { state } = useStore();
   return Object.entries(state.minimos).filter(([id, minimo]) => {
     const item = state.items.find((candidate) => candidate.id === id);
-    return Boolean(item && Number(item.quantity || 0) < Number(minimo || 0));
+    return Boolean(item && isBelowMinimum(item, minimo));
   }).length;
 }

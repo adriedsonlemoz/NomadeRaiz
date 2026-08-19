@@ -1,6 +1,6 @@
 # Nomade Raiz
 
-Versão atual: **1.0.14**
+Versão atual: **1.0.18**
 
 Nomade Raiz é um aplicativo offline-first para cicloviagem, bikepacking e vida na estrada. Ele reúne planejamento, equipamentos, autonomia, diário, pontos de apoio e um manual prático da bicicleta em uma interface pensada para funcionar também sem conexão constante.
 
@@ -18,11 +18,11 @@ Nomade Raiz é um aplicativo offline-first para cicloviagem, bikepacking e vida 
 
 ## Tecnologias
 
-- React 18
+- React 19.2
 - TypeScript/TSX em todo o código-fonte (`src`)
 - Vite
-- Capacitor 6
-- Manifesto web com identidade Nomade Raiz
+- Capacitor 8.5 com Android preparado para build automatizado no GitHub
+- PWA instalável com Service Worker, cache offline e ícones próprios
 - Dexie / IndexedDB
 - Design System próprio em CSS (tokens, componentes, formulários e utilitários)
 - PostCSS + Autoprefixer
@@ -53,6 +53,7 @@ npm run dev
 Verificações de qualidade:
 
 ```bash
+npm run doctor
 npm run lint
 npm run typecheck
 npm run test
@@ -60,11 +61,16 @@ npm run check
 npm run build
 ```
 
-O `lint` também verifica imports relativos, uso indevido de `localStorage`, sincronização de versão entre `package.json`, `package-lock.json`, README e changelogs, além de regras estruturais da fundação. O `npm run test` executa a suíte automatizada de regras de negócio e backup; `npm run check` combina lint, TypeScript e testes antes do build.
+O `lint` também verifica imports relativos, uso indevido de `localStorage`, sincronização de versão entre `package.json`, README e changelogs e, quando existir, também valida o `package-lock.json`. O `doctor` confere Node e o alinhamento das versões críticas do toolchain. O `npm run test` executa a suíte automatizada de regras de negócio e backup; `npm run check` combina lint, TypeScript e testes antes do build.
 
-## Capacitor
+## Capacitor / Android
+
+Requisitos desta versão: **Node 24.19+ (linha 24.x)**. Para o Android, o workflow usa **Java 21** e recria a plataforma nativa a partir do template do Capacitor 8.5 para evitar incompatibilidades de Gradle herdadas.
+
+O projeto usa Capacitor 8.5. A pasta `android/` pode ser criada localmente quando necessário com:
 
 ```bash
+npm run build
 npm run cap:add:android
 npm run cap:sync
 npm run cap:open:android
@@ -72,11 +78,27 @@ npm run cap:open:android
 
 A identidade visível do aplicativo é **Nomade Raiz**. O identificador nativo existente foi preservado para não quebrar compatibilidade de instalações futuras.
 
+### Gerar APK pelo GitHub
+
+O workflow `.github/workflows/android-apk.yml` gera um APK de teste instalável sem exigir Android Studio no seu computador:
+
+1. envie os arquivos do projeto para o GitHub;
+2. abra a aba **Actions**;
+3. escolha **Build Android APK**;
+4. clique em **Run workflow**;
+5. ao terminar, abra a execução e baixe o artefato **NomadeRaiz-Android-...**.
+
+O arquivo gerado se chama `NomadeRaiz-X.Y.Z-debug.apk`. O workflow também roda automaticamente quando uma tag `v*` é enviada ao repositório.
+
+## PWA e modo offline
+
+O build gera `dist/sw.js` automaticamente. O Service Worker pré-armazena o shell e os assets versionados do Vite, permitindo reabrir o app web sem conexão depois do primeiro carregamento bem-sucedido. O registro é desativado dentro do Capacitor, pois o APK já carrega os arquivos web empacotados localmente.
+
 ## Versionamento
 
 O projeto segue `MAJOR.MINOR.PATCH`. Toda nova versão deve atualizar:
 
-1. `package.json` e `package-lock.json`;
+1. `package.json` e, quando houver, `package-lock.json`;
 2. `CHANGELOG.md`;
 3. changelog exibido na página **Sobre o App**.
 
@@ -88,4 +110,4 @@ Projeto mantido em `adriedsonlemoz/NomadeRaiz` no GitHub.
 
 ## Estado atual
 
-A versão 1.0.14 amplia o Design System para Home, Planejamento, Calculadora, Equipamentos e Manual da Bike. Nessas cinco áreas, estilos estáticos foram movidos para CSS centralizado e restaram apenas dois estilos inline, ambos usados para cores configuráveis em runtime. A Calculadora também deixou de depender dos tokens de tema em TypeScript, usando o tema exclusivamente por CSS.
+A versão 1.0.18 moderniza o toolchain com Node 24.19 LTS, Capacitor 8.5, React 19.2 e Vite 8.2. O Android do CI é recriado em cada build para não reutilizar arquivos Gradle antigos; o pipeline usa Java 21 e o template atual do Capacitor, com SDK 36.

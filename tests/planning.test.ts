@@ -2,12 +2,16 @@ import assert from 'node:assert/strict';
 import type { TestCase } from './test.types';
 import {
   calcEnergiaAutomatica,
+  calcFinancialReserve,
   gerarRecomendacoes,
+  getTravelPlanningProfile,
+  mapSafetyEssentials,
   piorStatus,
   statusAgua,
   statusBicicleta,
   statusDinheiro,
   statusPercentual,
+  statusRequiredItems,
   statusPorDias,
 } from '../src/services/planning.service';
 import type { Item } from '../src/types';
@@ -30,6 +34,7 @@ export const cases: TestCase[] = [
     assert.equal(statusPorDias(4, 5), 'amarelo');
     assert.equal(statusPorDias(2, 5), 'vermelho');
     assert.equal(statusPorDias(null, 5), 'amarelo');
+    assert.equal(statusPorDias(0, 5), 'vermelho');
   } },
   { name: 'status percentual usa os limites esperados', run: () => {
     assert.equal(statusPercentual(8, 10), 'verde');
@@ -89,5 +94,36 @@ export const cases: TestCase[] = [
     });
     assert.ok(result.filter((r) => r.tipo === 'alerta').length >= 4);
     assert.ok(result.some((r) => r.texto.includes('painel solar')));
+  } },
+
+  { name: 'tipo de viagem altera reserva financeira e exigência de abrigo', run: () => {
+    assert.equal(calcFinancialReserve(100, 'bate-volta'), 5);
+    assert.equal(calcFinancialReserve(100, 'cicloviagem'), 10);
+    assert.equal(calcFinancialReserve(100, 'longa'), 15);
+    assert.equal(getTravelPlanningProfile('camping').abrigo, 'essencial');
+    assert.equal(statusRequiredItems(0, 0, true), 'vermelho');
+    assert.equal(statusRequiredItems(0, 0, false), 'verde');
+  } },
+  { name: 'energia automática dimensiona consumo para o grupo', run: () => {
+    const one = calcEnergiaAutomatica([item('Power Bank')], 1);
+    const two = calcEnergiaAutomatica([item('Power Bank')], 2);
+    assert.equal(one.consumoDiarioWh, 20);
+    assert.equal(two.consumoDiarioWh, 40);
+    assert.ok((two.dias ?? 0) < (one.dias ?? 0));
+  } },
+  { name: 'segurança reconhece item recriado por nome e detecta item apagado', run: () => {
+    const items: Item[] = [
+      { ...item('custom-capacete'), id: 'custom-1', name: 'Capacete MTB' },
+      { ...item('luz-bike'), id: 'luz-bike', name: 'Luzes da bicicleta' },
+      { ...item('colete'), id: 'colete', name: 'Colete refletivo' },
+    ];
+    const essentials = mapSafetyEssentials(items);
+    assert.equal(essentials.find(e => e.key === 'capacete')?.comprado, true);
+    assert.equal(essentials.find(e => e.key === 'primeiros-socorros')?.item, null);
+    assert.equal(essentials.filter(e => !e.comprado).length, 1);
+  } },
+  { name: 'reabastecimento sem local confirmado mantém água em atenção', run: () => {
+    assert.equal(statusAgua({ reabastece: true, suficientePorIntervalo: true, pontosConfirmados: false }, 5), 'amarelo');
+    assert.equal(statusAgua({ reabastece: true, suficientePorIntervalo: true, pontosConfirmados: true }, 5), 'verde');
   } },
 ];

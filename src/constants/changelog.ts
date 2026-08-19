@@ -1,4 +1,33 @@
 export const CHANGELOG=[
+ {versao:'1.0.18',data:'19/08/2026',mudancas:[
+  'Node atualizado para 24.19 LTS e CI passa a validar explicitamente o toolchain',
+  'Capacitor atualizado de 6.2 para 8.5 com Android recriado de forma limpa no GitHub Actions',
+  'Android passa a usar o template atual com SDK 36 e Java 21 no pipeline de APK',
+  'React atualizado para 19.2.8 e Vite para 8.2.1; TypeScript permanece em 5.9.3 para reduzir risco da migração',
+  'Layout passa a consumir as safe areas injetadas pelo SystemBars do Capacitor 8 para evitar conteúdo sob barras do sistema',
+ ]},
+ {versao:'1.0.17',data:'19/08/2026',mudancas:[
+  'PWA passa a gerar Service Worker com cache offline real dos arquivos produzidos pelo Vite',
+  'Manifesto ganha ícones de instalação 192/512, máscara e Apple touch icon',
+  'Fonte externa removida do carregamento inicial para reduzir dependência de rede',
+  'Capacitor existente integrado a um workflow do GitHub Actions que cria a plataforma Android e gera APK',
+  'APK debug é publicado como artefato baixável na aba Actions do GitHub',
+ ]},
+ {versao:'1.0.16',data:'19/08/2026',mudancas:[
+  'Planejamento passa a dimensionar alimentação, água e energia pelo número de pessoas',
+  'Tipo de viagem agora altera exigência de abrigo e reserva financeira recomendada',
+  'Alimentação separa custo informado, custo necessário para o grupo e valor faltante',
+  'Reabastecimento de água exige intervalo suficiente e local previsto para status verde',
+  'Itens essenciais de segurança são reconhecidos por nome mesmo após serem recriados com outro ID',
+  'Autonomia zero passa a ser tratada como insuficiente e novos testes protegem toda a lógica do planejamento',
+ ]},
+ {versao:'1.0.15',data:'19/08/2026',mudancas:[
+  'Desenhos decorativos da Home e de Equipamentos voltaram a ter contraste suficiente após a migração visual',
+  'Quantidade zero agora é respeitada nos totais de investimento e de categorias',
+  'Alertas de reposição passam a considerar apenas quantidade realmente disponível; itens pendentes contam como estoque zero',
+  'Exportação agora separa de verdade Resumo, Compras pendentes e Inventário completo',
+  'Testes de regressão adicionados para totais, mínimos e formatos de exportação',
+ ]},
  {versao:'1.0.14',data:'14/08/2026',mudancas:[
   'Segunda fase do Design System aplicada a Home, Planejamento, Calculadora, Equipamentos e Manual da Bike',
   'Estilos inline estáticos dessas cinco áreas foram centralizados em CSS; apenas cores realmente dinâmicas permanecem inline',

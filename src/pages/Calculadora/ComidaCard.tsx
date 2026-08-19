@@ -62,7 +62,7 @@ function FoodRow({ alimento, entrada, linha, onChange }: FoodRowProps) {
           </div>
         </div>
         <div>
-          <p className="nr14-786efa70">Consumo/dia</p>
+          <p className="nr14-786efa70">Consumo/dia/pessoa</p>
           <input type="number" min="0" step="0.01" value={consumo}
             onChange={e=>onChange({ consumo:e.target.value })}
             className="nr14-cc2ab854"/>
@@ -79,10 +79,11 @@ function FoodRow({ alimento, entrada, linha, onChange }: FoodRowProps) {
 interface ComidaCardProps {
   alimentos: FoodFormState;
   setAlimentos: StateSetter<FoodFormState>;
+  pessoas?: string | number;
 }
 
-export function ComidaCard({ alimentos, setAlimentos }: ComidaCardProps) {
-  const linhas = montarLinhasAlimentacaoInteligente(alimentosConfig, alimentos);
+export function ComidaCard({ alimentos, setAlimentos, pessoas = 1 }: ComidaCardProps) {
+  const linhas = montarLinhasAlimentacaoInteligente(alimentosConfig, alimentos, pessoas);
   const r = calcAlimentacaoInteligente(linhas);
   const linhasPorId = new Map(linhas.map(linha => [linha.id, linha]));
   const update = (id: string, patch: FoodInput) => setAlimentos(al => ({
@@ -113,7 +114,7 @@ export function ComidaCard({ alimentos, setAlimentos }: ComidaCardProps) {
           <div className="nr14-91fbe470">
             <p className="nr14-44ac9f51">{r.dias} dias</p>
             <p className="nr14-4b5f37c9">
-              de autonomia alimentar estimada{r.gargalo ? ` — limitado por ${r.gargalo.nome.toLowerCase()}` : ''}</p>
+              de autonomia alimentar estimada{Number(pessoas) > 1 ? ` para ${Math.max(1, Math.floor(Number(pessoas) || 1))} pessoas` : ''}{r.gargalo ? ` — limitado por ${r.gargalo.nome.toLowerCase()}` : ''}</p>
           </div>
         )}
       </div>

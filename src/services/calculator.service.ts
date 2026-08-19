@@ -60,9 +60,19 @@ export interface WaterResult {
   dias: number;
   autonomiaCarregada: number;
   consumoDia: number;
+  consumoPorPessoaDia: number;
+  pessoas: number;
   suficientePorIntervalo: boolean;
   frequenciaDias: number;
   baixo: boolean;
+  pontosConfirmados?: boolean;
+}
+
+export interface FoodRequirementResult {
+  valido: boolean;
+  valorNecessario: number;
+  valorFaltante: number;
+  itensFaltando: number;
 }
 
 export interface EnergyResult {
@@ -117,7 +127,9 @@ export function calcBicicleta(velocidade: NumericInput, horas: NumericInput, dia
 export function montarLinhasAlimentacaoInteligente(
   config: readonly FoodConfig[] = [],
   data: Record<string, FoodInput> = {},
+  pessoas: NumericInput = 1,
 ): FoodLine[] {
+  const pessoasNum = Math.max(1, Math.floor(parseNum(pessoas) || 1));
   return config.map((alimento) => {
     const raw = data[alimento.id] ?? {};
     const unidade = raw.unidade ?? alimento.unidades?.[0]?.id;
@@ -131,7 +143,7 @@ export function montarLinhasAlimentacaoInteligente(
     const quantidade = parseNum(raw.quantidade);
     const preco = parseNum(raw.preco !== undefined ? raw.preco : unidadeCfg.precoPadrao);
     const consumo = parseNum(raw.consumo !== undefined ? raw.consumo : unidadeCfg.consumoDiarioPadrao);
-    const dias = quantidade > 0 && consumo > 0 ? Math.floor(quantidade / consumo) : null;
+    const dias = quantidade > 0 && consumo > 0 ? Math.floor(quantidade / (consumo * pessoasNum)) : null;
 
     return {
       ...alimento,
@@ -163,14 +175,49 @@ export function calcAlimentacaoInteligente(linhas: readonly FoodLine[] = []): Fo
   };
 }
 
+
+export function calcNecessidadeAlimentacao(
+  linhas: readonly FoodLine[] = [],
+  dias: NumericInput = 0,
+  pessoas: NumericInput = 1,
+): FoodRequirementResult {
+  const diasNum = Math.max(0, parseNum(dias));
+  const pessoasNum = Math.max(1, Math.floor(parseNum(pessoas) || 1));
+  const ativas = linhas.filter((linha) => parseNum(linha.quantidade) > 0 && parseNum(linha.consumo) > 0);
+
+  let valorNecessario = 0;
+  let valorFaltante = 0;
+  let itensFaltando = 0;
+
+  for (const linha of ativas) {
+    const quantidadeAtual = Math.max(0, parseNum(linha.quantidade));
+    const quantidadeNecessaria = Math.max(0, parseNum(linha.consumo)) * pessoasNum * diasNum;
+    const quantidadeFaltante = Math.max(0, quantidadeNecessaria - quantidadeAtual);
+    const preco = Math.max(0, parseNum(linha.preco));
+    valorNecessario += quantidadeNecessaria * preco;
+    valorFaltante += quantidadeFaltante * preco;
+    if (quantidadeFaltante > 0) itensFaltando += 1;
+  }
+
+  return {
+    valido: ativas.length > 0 && diasNum > 0,
+    valorNecessario: Number(valorNecessario.toFixed(2)),
+    valorFaltante: Number(valorFaltante.toFixed(2)),
+    itensFaltando,
+  };
+}
+
 export function calcAguaInteligente(
   litros: NumericInput,
   reabastece = false,
   frequencia: NumericInput = 0,
+  pessoas: NumericInput = 1,
 ): WaterResult {
   const litrosNum = parseNum(litros);
   const frequenciaNum = parseNum(frequencia);
-  const autonomia = litrosNum / CONSUMO_AGUA_RECOMENDADO_L;
+  const pessoasNum = Math.max(1, Math.floor(parseNum(pessoas) || 1));
+  const consumoDia = CONSUMO_AGUA_RECOMENDADO_L * pessoasNum;
+  const autonomia = litrosNum / consumoDia;
   const autonomiaArredondada = Number(autonomia.toFixed(1));
 
   return {
@@ -179,10 +226,12 @@ export function calcAguaInteligente(
     reabastece: Boolean(reabastece),
     dias: autonomiaArredondada,
     autonomiaCarregada: autonomiaArredondada,
-    consumoDia: CONSUMO_AGUA_RECOMENDADO_L,
+    consumoDia,
+    consumoPorPessoaDia: CONSUMO_AGUA_RECOMENDADO_L,
+    pessoas: pessoasNum,
     suficientePorIntervalo: Boolean(reabastece) && frequenciaNum > 0 && autonomia >= frequenciaNum,
     frequenciaDias: frequenciaNum,
-    baixo: litrosNum > 0 && litrosNum < CONSUMO_AGUA_RECOMENDADO_L,
+    baixo: litrosNum > 0 && litrosNum < consumoDia,
   };
 }
 

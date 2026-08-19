@@ -25,10 +25,10 @@ export default function PlanejamentoPage() {
   const [gerado, setGerado] = useState(false);
 
   const analysis = usePlanningAnalysis({
-    items:state.items, dias, kmPrevistos, mediaKmDia, dinheiro, alimentos,
-    litrosAgua, reabastece, frequenciaDias,
+    items:state.items, destino, tipoViagem, pessoas, dias, kmPrevistos, mediaKmDia, dinheiro, alimentos,
+    litrosAgua, reabastece, frequenciaDias, locaisAgua,
   });
-  const podeGerar = analysis.diasNum > 0;
+  const podeGerar = analysis.diasNum > 0 && analysis.pessoasNum > 0;
 
   return <div className="nr14-214c7d1e">
     <div className="nr14-5aef730c">
@@ -41,10 +41,10 @@ export default function PlanejamentoPage() {
 
     <div className="nr14-2678a9ce">
       <div className="nr-content-card"><p className="nr-kicker">Dados da viagem</p><PlanningTripForm destino={destino} setDestino={setDestino} dias={dias} setDias={setDias} pessoas={pessoas} setPessoas={setPessoas} kmPrevistos={kmPrevistos} setKmPrevistos={setKmPrevistos} mediaKmDia={mediaKmDia} setMediaKmDia={setMediaKmDia} dinheiro={dinheiro} setDinheiro={setDinheiro} tipoViagem={tipoViagem} setTipoViagem={setTipoViagem}/></div>
-      <div className="nr-content-card"><p className="nr-kicker">🍱 Alimentação</p><ComidaCard alimentos={alimentos} setAlimentos={setAlimentos}/></div>
-      <div className="nr-content-card"><p className="nr-kicker">💧 Água</p><AguaCard litros={litrosAgua} setLitros={setLitrosAgua} reabastece={reabastece} setReabastece={setReabastece} frequenciaDias={frequenciaDias} setFrequenciaDias={setFrequenciaDias} locais={locaisAgua} setLocais={setLocaisAgua}/></div>
+      <div className="nr-content-card"><p className="nr-kicker">🍱 Alimentação</p><ComidaCard alimentos={alimentos} setAlimentos={setAlimentos} pessoas={pessoas}/></div>
+      <div className="nr-content-card"><p className="nr-kicker">💧 Água</p><AguaCard litros={litrosAgua} setLitros={setLitrosAgua} reabastece={reabastece} setReabastece={setReabastece} frequenciaDias={frequenciaDias} setFrequenciaDias={setFrequenciaDias} locais={locaisAgua} setLocais={setLocaisAgua} pessoas={pessoas}/></div>
       <button onClick={()=>setGerado(true)} disabled={!podeGerar} className="nr-btn nr-btn--primary nr-btn--full nr-planning-generate">🧭 Gerar Planejamento</button>
-      {!podeGerar && <p className="nr14-4bea95be">Informe a quantidade de dias da viagem para gerar a análise.</p>}
+      {!podeGerar && <p className="nr14-4bea95be">Informe pelo menos 1 dia de viagem e 1 pessoa para gerar a análise.</p>}
       {gerado && podeGerar && <PlanningResults analysis={analysis} onOpenManual={target=>{ setManualBikeAlvo(target); setPage('manual-bike'); }}/>} 
     </div>
   </div>;

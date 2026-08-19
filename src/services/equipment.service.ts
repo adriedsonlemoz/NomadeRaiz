@@ -20,9 +20,24 @@ export interface CategoryStats {
 
 type ItemList = readonly Item[] | null | undefined;
 
+export const normalizedQuantity = (item: Pick<Item, 'quantity'>): number =>
+  Math.max(0, parseNum(item.quantity));
+
+export const ownedQuantity = (item: Pick<Item, 'status' | 'quantity'>): number =>
+  item.status === 'comprado' ? normalizedQuantity(item) : 0;
+
+export const isBelowMinimum = (
+  item: Pick<Item, 'status' | 'quantity'>,
+  minimum: number | null | undefined,
+): boolean => {
+  if (minimum == null || !Number.isFinite(minimum)) return false;
+  const normalizedMinimum = Math.max(0, minimum);
+  return ownedQuantity(item) < normalizedMinimum;
+};
+
 export const calcTotal = (items: ItemList): number =>
   (items ?? []).reduce(
-    (sum, item) => sum + parseNum(item.price) * Math.max(0, parseNum(item.quantity) || 1),
+    (sum, item) => sum + parseNum(item.price) * normalizedQuantity(item),
     0,
   );
 
