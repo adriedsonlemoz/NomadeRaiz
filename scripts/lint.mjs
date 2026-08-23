@@ -94,6 +94,7 @@ else {
   const androidWorkflow = fs.readFileSync(androidWorkflowPath,'utf8');
   if (!androidWorkflow.includes('actions/checkout@v6')) errors.push('Android CI: use actions/checkout v6.');
   if (!androidWorkflow.includes('actions/setup-node@v6')) errors.push('Android CI: use actions/setup-node v6.');
+  if (!androidWorkflow.includes('run: npm run build')) errors.push('Android CI: deve executar npm run build para validar check + bundle.');
   if (!androidWorkflow.includes('actions/setup-java@v5')) errors.push('Android CI: use actions/setup-java v5.');
   if (!androidWorkflow.includes('npx cap add android')) errors.push('Android CI: deve criar a plataforma com npx cap add android.');
   if (!androidWorkflow.includes('assembleDebug')) errors.push('Android CI: deve gerar APK debug com Gradle.');
@@ -110,16 +111,6 @@ for (const rel of ['scripts/generate-sw.mjs','public/icons/icon-192.png','public
   if (!fs.existsSync(path.join(root,rel))) errors.push(`${rel}: infraestrutura PWA obrigatória não encontrada.`);
 }
 if (!pkg.scripts?.build?.includes('generate-sw.mjs')) errors.push('package.json: build deve gerar o Service Worker offline após o Vite.');
-
-const ciPath = path.join(root,'.github/workflows/ci.yml');
-if (!fs.existsSync(ciPath)) errors.push('.github/workflows/ci.yml: workflow de CI obrigatório.');
-else {
-  const ci = fs.readFileSync(ciPath,'utf8');
-  if (!ci.includes('run: npm run build')) errors.push('CI: deve executar npm run build para validar check + bundle.');
-  if (ci.includes('run: npm run check')) errors.push('CI: não execute check separadamente; npm run build já o inclui.');
-  if (!ci.includes("node-version: '24.19.0'")) errors.push('CI: deve usar Node 24.19.0 LTS.');
-  if (!ci.includes('actions/checkout@v6') || !ci.includes('actions/setup-node@v6')) errors.push('CI: actions oficiais de checkout/setup-node devem permanecer nos majors estáveis atuais.');
-}
 
 const readmePath = path.join(root,'README.md');
 if (!fs.existsSync(readmePath)) errors.push('README.md: arquivo obrigatório para apresentação do projeto no GitHub.');

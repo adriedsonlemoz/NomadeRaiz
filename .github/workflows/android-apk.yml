@@ -90,7 +90,11 @@ jobs:
           grep -q "gradle-8.14.3-all.zip" android/gradle/wrapper/gradle-wrapper.properties
           grep -q "IMMERSIVE_STICKY" android/app/src/main/java/com/nomade/checklist/MainActivity.java
           grep -q "WindowInsets.Type.statusBars()" android/app/src/main/java/com/nomade/checklist/MainActivity.java
-          echo "Configuração Android e modo tela cheia validados."
+          VERSION=$(node -p "require('./package.json').version")
+          VERSION_CODE=$(node -e "const [a,b,c]=require('./package.json').version.split('.').map(Number); process.stdout.write(String(a*1000000+b*1000+c))")
+          grep -q "versionName \"$VERSION\"" android/app/build.gradle
+          grep -q "versionCode $VERSION_CODE" android/app/build.gradle
+          echo "Configuração Android, modo tela cheia e versão $VERSION ($VERSION_CODE) validados."
 
       - name: Gerar APK debug instalável
         working-directory: android

@@ -1,3 +1,11 @@
+## 1.0.26 — Versão Android sincronizada e pipeline corrigido
+
+- Corrige o erro de TypeScript em Dicas de Viagem causado por uma coleção somente leitura.
+- APK passa a receber internamente o mesmo `versionName` do `package.json`, em vez de permanecer como 1.0.
+- `versionCode` Android passa a ser calculado automaticamente a partir da versão semântica para permitir atualizações sobre instalações anteriores.
+- Workflow `ci.yml` removido; a validação completa permanece no workflow de geração do APK, que já executa `npm run build`.
+- Pipeline valida a versão Android antes de executar o Gradle.
+
 ## 1.0.25 — Home renovada, módulos mais claros e modo tela cheia
 
 - Home ganha painel de jornada com preparo do inventário, alertas, dias na estrada, atalhos e próximo passo sugerido.

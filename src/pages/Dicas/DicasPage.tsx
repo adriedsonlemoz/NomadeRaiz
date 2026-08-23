@@ -11,7 +11,7 @@ interface Dica {
   texto: string;
 }
 
-const dicas: Dica[] = DICAS;
+const dicas: readonly Dica[] = DICAS;
 
 export default function DicasPage() {
   const { state, setPage, toggleFavoritoDica } = useStore();

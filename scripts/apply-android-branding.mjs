@@ -23,6 +23,30 @@ fs.mkdirSync(valuesDir, { recursive: true });
 fs.writeFileSync(path.join(valuesDir, 'ic_launcher_background.xml'), '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#F3E6C8</color>\n</resources>\n');
 
 
+// Sincroniza a versão interna do APK com o package.json. O Capacitor recria
+// app/build.gradle com versionName "1.0" e versionCode 1 a cada build limpo.
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const appVersion = packageJson.version;
+const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(appVersion);
+if (!match) throw new Error(`Versão inválida no package.json: ${appVersion}. Use major.minor.patch.`);
+const [, majorRaw, minorRaw, patchRaw] = match;
+const major = Number(majorRaw);
+const minor = Number(minorRaw);
+const patch = Number(patchRaw);
+if (minor > 999 || patch > 999) throw new Error(`Versão ${appVersion} excede o limite suportado para versionCode.`);
+const androidVersionCode = major * 1_000_000 + minor * 1_000 + patch;
+
+const appBuildGradle = path.join(root, 'android', 'app', 'build.gradle');
+if (!fs.existsSync(appBuildGradle)) throw new Error('android/app/build.gradle não encontrado para sincronizar a versão.');
+let gradle = fs.readFileSync(appBuildGradle, 'utf8');
+if (!/versionName\s+["'][^"']+["']/.test(gradle) || !/versionCode\s+\d+/.test(gradle)) {
+  throw new Error('Não foi possível localizar versionName/versionCode em android/app/build.gradle.');
+}
+gradle = gradle
+  .replace(/versionName\s+["'][^"']+["']/, `versionName "${appVersion}"`)
+  .replace(/versionCode\s+\d+/, `versionCode ${androidVersionCode}`);
+fs.writeFileSync(appBuildGradle, gradle);
+
 // Mantém a experiência realmente imersiva no APK. A pasta Android é recriada
 // pelo workflow, por isso o MainActivity precisa ser reaplicado nesta etapa.
 const mainActivity = path.join(root, 'android', 'app', 'src', 'main', 'java', 'com', 'nomade', 'checklist', 'MainActivity.java');
@@ -76,4 +100,4 @@ public class MainActivity extends BridgeActivity {
 }
 `);
 
-console.log('Branding Android aplicado: launcher, round, foreground adaptativo e modo imersivo.');
+console.log(`Branding Android aplicado: launcher, round, foreground adaptativo, modo imersivo e versão ${appVersion} (${androidVersionCode}).`);

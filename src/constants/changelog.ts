@@ -1,4 +1,10 @@
 export const CHANGELOG=[
+ {versao:'1.0.26',data:'23/08/2026',mudancas:[
+  'Versão interna do APK agora acompanha automaticamente a versão do package.json',
+  'versionCode Android passa a ser calculado automaticamente para permitir atualizações',
+  'Erro de TypeScript das Dicas corrigido para aceitar a lista somente leitura',
+  'Workflow CI duplicado removido; build Android mantém todas as validações necessárias',
+ ]},
  {versao:'1.0.25',data:'23/08/2026',mudancas:[
   'Home renovada com painel de jornada, indicadores, atalhos e próximo passo sugerido',
   'Alimentação agora explica unidades e converte 0,2 kg para 200 g por pessoa/dia',
