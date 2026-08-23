@@ -1,4 +1,11 @@
 export const CHANGELOG=[
+ {versao:'1.0.25',data:'23/08/2026',mudancas:[
+  'Home renovada com painel de jornada, indicadores, atalhos e próximo passo sugerido',
+  'Alimentação agora explica unidades e converte 0,2 kg para 200 g por pessoa/dia',
+  'Autonomia e dicas ganharam mais contexto, explicações e conteúdo prático',
+  'Sobre duplicado removido de Configurações; tela Sobre permanece no menu principal de ferramentas',
+  'Android passa a aplicar modo imersivo para ocultar as barras do sistema durante o uso',
+ ]},
  {versao:'1.0.24',data:'23/08/2026',mudancas:[
   'Corrigida a validação do Adaptive Icon no GitHub Actions',
   'Workflow agora valida a mesma cor clara aplicada pelo script de branding Android',

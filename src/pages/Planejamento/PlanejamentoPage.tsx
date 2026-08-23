@@ -40,6 +40,10 @@ export default function PlanejamentoPage() {
     </div>
 
     <div className="nr14-2678a9ce">
+      <div className="nr-explain-box nr-explain-box--spaced">
+        <p><strong>Como funciona:</strong> informe duração, pessoas, distância e os recursos que pretende levar. O app cruza esses dados com seus equipamentos para mostrar o que está suficiente, o que merece atenção e o que pode limitar a viagem.</p>
+        <p>Os resultados são estimativas de planejamento, não metas rígidas. Ajuste consumo, ritmo e reservas de acordo com clima, terreno e sua experiência.</p>
+      </div>
       <div className="nr-content-card"><p className="nr-kicker">Dados da viagem</p><PlanningTripForm destino={destino} setDestino={setDestino} dias={dias} setDias={setDias} pessoas={pessoas} setPessoas={setPessoas} kmPrevistos={kmPrevistos} setKmPrevistos={setKmPrevistos} mediaKmDia={mediaKmDia} setMediaKmDia={setMediaKmDia} dinheiro={dinheiro} setDinheiro={setDinheiro} tipoViagem={tipoViagem} setTipoViagem={setTipoViagem}/></div>
       <div className="nr-content-card"><p className="nr-kicker">🍱 Alimentação</p><ComidaCard alimentos={alimentos} setAlimentos={setAlimentos} pessoas={pessoas}/></div>
       <div className="nr-content-card"><p className="nr-kicker">💧 Água</p><AguaCard litros={litrosAgua} setLitros={setLitrosAgua} reabastece={reabastece} setReabastece={setReabastece} frequenciaDias={frequenciaDias} setFrequenciaDias={setFrequenciaDias} locais={locaisAgua} setLocais={setLocaisAgua} pessoas={pessoas}/></div>

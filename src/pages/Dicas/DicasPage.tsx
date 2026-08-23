@@ -6,6 +6,7 @@ import { DICAS } from "../../constants/tips";
 interface Dica {
   id: string;
   icon: string;
+  categoria?: string;
   titulo: string;
   texto: string;
 }
@@ -46,6 +47,9 @@ export default function DicasPage() {
       </div>
       <div style={{ flex:1, overflowY:"auto", padding:"11px 13px",
         display:"flex", flexDirection:"column", gap:7 }}>
+        <div className="nr-explain-box" style={{marginBottom:3}}>
+          <p><strong>Guia rápido de estrada:</strong> abra cada dica para entender não apenas o conselho, mas como aplicá-lo durante uma cicloviagem. Favorite o que quiser revisar antes de sair.</p>
+        </div>
         {lista.length===0 && (
           <p style={{ color:T.textMuted, fontSize:12.5, textAlign:"center", padding:"24px 10px" }}>
             Você ainda não marcou nenhuma dica como favorita.</p>
@@ -79,6 +83,7 @@ export default function DicasPage() {
               </button>
               {isOpen && (
                 <div style={{ padding:"0 13px 16px", borderTop:`1px solid ${T.border}`, paddingTop:12 }}>
+                  {d.categoria && <span className="nr-tip-meta">{d.categoria}</span>}
                   <p style={{ color:T.textMain, fontSize:13, lineHeight:1.75, margin:0,
                     whiteSpace:"pre-wrap", wordBreak:"break-word" }}>{d.texto}</p>
                 </div>

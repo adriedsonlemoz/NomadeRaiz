@@ -23,6 +23,8 @@ function FoodRow({ alimento, entrada, linha, onChange }: FoodRowProps) {
   const qtd = entrada?.quantidade ?? '';
   const preco = entrada?.preco ?? String(unidadeCfg.precoPadrao);
   const consumo = entrada?.consumo ?? String(unidadeCfg.consumoDiarioPadrao);
+  const consumoNum = Number(consumo) || 0;
+  const consumoLegivel = unidadeCfg.id === 'kg' ? `${consumoNum} kg (${Math.round(consumoNum * 1000)} g)` : `${consumoNum} ${unidadeCfg.label}`;
 
   const trocarUnidade = (novaUnidade: string) => {
     const cfg = alimento.unidades.find(u => u.id === novaUnidade);
@@ -62,10 +64,11 @@ function FoodRow({ alimento, entrada, linha, onChange }: FoodRowProps) {
           </div>
         </div>
         <div>
-          <p className="nr14-786efa70">Consumo/dia/pessoa</p>
+          <p className="nr14-786efa70">Consumo por pessoa/dia</p>
           <input type="number" min="0" step="0.01" value={consumo}
             onChange={e=>onChange({ consumo:e.target.value })}
             className="nr14-cc2ab854"/>
+          <small className="nr-food-consumption-help">≈ {consumoLegivel} por dia</small>
         </div>
       </div>
       {linha.dias !== null && (
@@ -101,14 +104,18 @@ export function ComidaCard({ alimentos, setAlimentos, pessoas = 1 }: ComidaCardP
             onChange={patch=>update(a.id, patch)}/>
         );
       })}
+      <div className="nr-explain-box">
+        <p><strong>Como ler os números:</strong> valores em kg são convertidos para gramas para facilitar. Ex.: <b>0,2 kg = 200 g por pessoa por dia</b>.</p>
+        <p>A autonomia mostra por quantos dias o alimento informado dura no ritmo de consumo definido. Você pode alterar esse consumo conforme sua realidade.</p>
+      </div>
       <div className="nr14-875daa5f">
         <div className="nr14-dd15bb92">
           <span className="nr14-4f579149">Valor total da alimentação</span>
           <span className="nr14-cdaea852">{fmt(r.valorTotal)}</span>
         </div>
         <div className="nr14-a3d12b9b">
-          <span className="nr14-4f579149">Quantidade total informada</span>
-          <span className="nr14-cdaea852">{r.quantidadeTotal.toFixed(2).replace(/\.00$/,'')}</span>
+          <span className="nr14-4f579149">Itens com quantidade informada</span>
+          <span className="nr14-cdaea852">{linhas.filter(l=>l.quantidade>0).length}</span>
         </div>
         {r.valido && r.dias !== null && (
           <div className="nr14-91fbe470">

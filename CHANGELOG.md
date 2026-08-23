@@ -1,3 +1,13 @@
+## 1.0.25 — Home renovada, módulos mais claros e modo tela cheia
+
+- Home ganha painel de jornada com preparo do inventário, alertas, dias na estrada, atalhos e próximo passo sugerido.
+- Alimentação passa a explicar unidades e conversões, incluindo que 0,2 kg correspondem a 200 g por pessoa/dia.
+- Resumo de alimentação deixa de somar kg, pacotes e unidades em um único total sem significado.
+- Calculadora de autonomia ganha explicação sobre como interpretar os resultados e identificar o recurso limitante.
+- Dicas de Viagem ampliadas com mais conteúdo prático e categorias.
+- Área Sobre duplicada é removida de Configurações; Sobre o App permanece no menu de Ferramentas.
+- APK passa a aplicar modo imersivo nativo, ocultando barras do sistema Android e permitindo exibição temporária por gesto.
+
 ## 1.0.24 — Correção da validação do Adaptive Icon
 
 - Corrige o GitHub Actions que ainda validava a antiga cor verde-escura do fundo adaptativo.

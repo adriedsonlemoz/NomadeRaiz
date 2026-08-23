@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { useStore } from "../../contexts";
-import { useTheme, useDiasNaEstrada } from "../../hooks";
+import { useTheme, useDiasNaEstrada, useAlertCount } from "../../hooks";
 import { globalStats } from "../../services/equipment.service";
 import { fmt } from "../../utils/format";
 import { Ring, Bar } from "../../components/common";
@@ -17,6 +17,7 @@ export default function HomePage() {
   const [verificando, setVerificando] = useState<VerificationModeId | null>(null);
   const [notaAberta, setNotaAberta] = useState(false);
   const dias = useDiasNaEstrada();
+  const alertas = useAlertCount();
 
   if (verificando) {
     return <ChecklistVerificacao modoId={verificando} onVoltar={() => setVerificando(null)} />;
@@ -53,6 +54,28 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <section className="nr-home-journey">
+        <div className="nr-home-journey__copy">
+          <span className="nr-home-journey__eyebrow">Sua jornada, organizada</span>
+          <h2>Planeje melhor. Pedale mais longe.</h2>
+          <p>Tenha uma visão rápida do preparo da viagem, da sua autonomia e do que ainda precisa de atenção antes de seguir estrada.</p>
+        </div>
+        <div className="nr-home-journey__stats">
+          <div><strong>{pct}%</strong><span>inventário pronto</span></div>
+          <div><strong>{alertas}</strong><span>{alertas===1?'alerta ativo':'alertas ativos'}</span></div>
+          <div><strong>{dias || '—'}</strong><span>{dias ? 'dias na estrada' : 'viagem não iniciada'}</span></div>
+        </div>
+        <div className="nr-home-journey__actions">
+          <button onClick={() => setPage('planejamento')}><span>🧭</span><b>Planejar viagem</b><small>Confira se está pronto</small></button>
+          <button onClick={() => setPage('calculadora')}><span>📊</span><b>Ver autonomia</b><small>Água, comida e energia</small></button>
+          <button onClick={() => setPage('pontos')}><span>📍</span><b>Pontos de apoio</b><small>Locais úteis da rota</small></button>
+        </div>
+        <div className="nr-home-next-step">
+          <span>💡</span>
+          <div><b>Próximo passo</b><p>{alertas > 0 ? `Revise ${alertas} ${alertas===1?'item abaixo':'itens abaixo'} do estoque mínimo antes de partir.` : stats.pendentes > 0 ? `Você ainda tem ${stats.pendentes} ${stats.pendentes===1?'equipamento pendente':'equipamentos pendentes'} na lista.` : 'Seu inventário não tem alertas críticos. Use o planejamento para revisar a viagem completa.'}</p></div>
+        </div>
+      </section>
 
       <div className="nr14-de469bf8">
         <div className="nr14-8dc6cacf">

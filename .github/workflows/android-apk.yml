@@ -88,7 +88,9 @@ jobs:
           grep -q "targetSdkVersion = 36" android/variables.gradle
           grep -q "com.android.tools.build:gradle:8.13.0" android/build.gradle
           grep -q "gradle-8.14.3-all.zip" android/gradle/wrapper/gradle-wrapper.properties
-          echo "Configuração Android validada."
+          grep -q "IMMERSIVE_STICKY" android/app/src/main/java/com/nomade/checklist/MainActivity.java
+          grep -q "WindowInsets.Type.statusBars()" android/app/src/main/java/com/nomade/checklist/MainActivity.java
+          echo "Configuração Android e modo tela cheia validados."
 
       - name: Gerar APK debug instalável
         working-directory: android

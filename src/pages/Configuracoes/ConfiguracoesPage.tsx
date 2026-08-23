@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { useStore } from "../../contexts";
 import { useTheme, useDiasNaEstrada } from "../../hooks";
 import { StorageService } from "../../services/storage.service";
-import { APP_NAME, APP_TAGLINE, APP_VERSION } from "../../config/app";
-import { AppButton, BicycleIcon, Card, PageHeader, SectionLabel } from "../../components/common";
+
+import { AppButton, Card, PageHeader, SectionLabel } from "../../components/common";
 import type { FontScale } from "../../types";
 
 interface RowProps { label: string; children: ReactNode; }
@@ -18,7 +18,7 @@ function FontButton({ scale, label, active, onSelect }: FontBtnProps) {
 
 export default function ConfiguracoesPage() {
   const { state, setPage, setSettings } = useStore();
-  const { theme: T, isDark, fontScale } = useTheme();
+  const { isDark, fontScale } = useTheme();
   const dias = useDiasNaEstrada();
 
   const toggleTheme = () => setSettings({ themeMode: isDark ? "light" : "dark" });
@@ -74,13 +74,6 @@ export default function ConfiguracoesPage() {
           <div className="nr-settings-danger"><AppButton variant="danger" fullWidth onClick={apagarDados}>🗑️ Apagar todos os dados</AppButton></div>
         </Card>
 
-        <SectionLabel>Sobre</SectionLabel>
-        <Card className="nr-settings-about">
-          <BicycleIcon size={40} color={T.blue} />
-          <p className="nr-settings-about__name">{APP_NAME}</p>
-          <p className="nr-settings-about__tagline">{APP_TAGLINE}</p>
-          <p className="nr-settings-about__version">v{APP_VERSION} · Offline-first · React + Capacitor</p>
-        </Card>
       </div>
     </div>
   );

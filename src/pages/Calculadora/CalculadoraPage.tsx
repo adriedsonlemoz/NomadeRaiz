@@ -140,6 +140,10 @@ export default function CalculadoraPage() {
       </div>
 
       <div className="nr14-3022deb2">
+        <div className="nr-explain-box nr-explain-box--spaced">
+          <p><strong>O que é autonomia?</strong> É uma estimativa de quanto tempo você consegue seguir com os recursos atuais antes de precisar reabastecer, recarregar, comprar algo ou ajustar o plano.</p>
+          <p>Use cada aba para entender um recurso separadamente e o <b>Resumo</b> para encontrar o principal limitador da viagem.</p>
+        </div>
         {tab==='resumo' && <ResumoCard recursos={recursos} resultadoGeral={resultadoGeral} onSelect={setTab}/>} 
         {tab==='bike' && <BikeCard bike={bike} setBike={setBike}/>} 
         {tab==='comida' && <ComidaCard alimentos={alimentos} setAlimentos={setAlimentos}/>} 
