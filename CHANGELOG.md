@@ -1,3 +1,9 @@
+## 1.0.24 — Correção da validação do Adaptive Icon
+
+- Corrige o GitHub Actions que ainda validava a antiga cor verde-escura do fundo adaptativo.
+- A validação Android agora usa `#F3E6C8`, a mesma cor clara aplicada pelo script de branding da nova arte bikepacking.
+- Mantém os assets do novo ícone e permite que o pipeline avance para a etapa real de geração do APK.
+
 ## 1.0.23 — Ícone bikepacking adaptativo
 
 - Substitui a arte anterior por uma identidade mais clara focada em cicloviagem e vida nômade.

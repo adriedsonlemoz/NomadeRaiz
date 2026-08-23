@@ -74,7 +74,7 @@ jobs:
           test -s android/app/src/main/res/mipmap-mdpi/ic_launcher.png
           test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
           test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
-          grep -q "#17251C" android/app/src/main/res/values/ic_launcher_background.xml
+          grep -q "#F3E6C8" android/app/src/main/res/values/ic_launcher_background.xml
           echo "Ícones Android personalizados validados."
 
       - name: Verificar configuração Android gerada

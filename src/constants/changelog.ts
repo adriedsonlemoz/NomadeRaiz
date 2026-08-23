@@ -1,4 +1,9 @@
 export const CHANGELOG=[
+ {versao:'1.0.24',data:'23/08/2026',mudancas:[
+  'Corrigida a validação do Adaptive Icon no GitHub Actions',
+  'Workflow agora valida a mesma cor clara aplicada pelo script de branding Android',
+  'Pipeline pode avançar normalmente para a geração do APK após aplicar o novo ícone',
+ ]},
  {versao:'1.0.23',data:'23/08/2026',mudancas:[
   'Novo ícone bikepacking integrado ao app, PWA e Android',
   'Arte mais clara com viajante, bicicleta equipada com alforjes e montanha',
