@@ -20,5 +20,5 @@ for (const density of densities) {
 }
 const valuesDir = path.join(androidRes, 'values');
 fs.mkdirSync(valuesDir, { recursive: true });
-fs.writeFileSync(path.join(valuesDir, 'ic_launcher_background.xml'), '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#17251C</color>\n</resources>\n');
+fs.writeFileSync(path.join(valuesDir, 'ic_launcher_background.xml'), '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#F3E6C8</color>\n</resources>\n');
 console.log('Branding Android aplicado: launcher, round e foreground adaptativo.');

@@ -1,3 +1,11 @@
+## 1.0.23 — Ícone bikepacking adaptativo
+
+- Substitui a arte anterior por uma identidade mais clara focada em cicloviagem e vida nômade.
+- Novo ícone com viajante, bicicleta equipada com alforjes, montanha e elementos sutis de bússola.
+- Atualiza launcher Android normal, redondo e foreground do Adaptive Icon em todas as densidades.
+- Atualiza também os ícones PWA, Apple Touch Icon e a marca interna do aplicativo.
+- Fundo do Adaptive Icon ajustado para combinar com a nova paleta clara, sem bordas brancas artificiais.
+
 ## 1.0.22 — Novo ícone Nomade Raiz
 
 - Novo ícone oficial integrado ao aplicativo, com identidade visual de estrada, montanha, bússola e raízes.

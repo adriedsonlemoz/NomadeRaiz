@@ -1,4 +1,10 @@
 export const CHANGELOG=[
+ {versao:'1.0.23',data:'23/08/2026',mudancas:[
+  'Novo ícone bikepacking integrado ao app, PWA e Android',
+  'Arte mais clara com viajante, bicicleta equipada com alforjes e montanha',
+  'Launcher normal, redondo e Adaptive Icon atualizados em todas as densidades Android',
+  'Composição central preserva bicicleta, viajante e montanha nas máscaras do Android',
+ ]},
  {versao:'1.0.22',data:'23/08/2026',mudancas:[
   'Novo ícone oficial Nomade Raiz integrado ao app, PWA e Android',
   'Launcher, round e foreground adaptativo atualizados em todas as densidades Android',
