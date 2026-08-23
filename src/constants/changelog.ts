@@ -1,4 +1,10 @@
 export const CHANGELOG=[
+ {versao:'1.0.22',data:'23/08/2026',mudancas:[
+  'Novo ícone oficial Nomade Raiz integrado ao app, PWA e Android',
+  'Launcher, round e foreground adaptativo atualizados em todas as densidades Android',
+  'Ícone maskable e fundo adaptativo ajustados para evitar bordas claras no launcher',
+  'Pipeline de APK reaplica automaticamente a nova identidade após recriar o Android',
+ ]},
  {versao:'1.0.21',data:'19/08/2026',mudancas:[
   'GitHub Actions deixa de falhar no setup-node quando o projeto não possui package-lock.json',
   'Cache automático do npm foi desativado explicitamente nos workflows enquanto npm install é usado sem lockfile',

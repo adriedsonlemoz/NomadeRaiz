@@ -1,3 +1,11 @@
+## 1.0.22 — Novo ícone Nomade Raiz
+
+- Novo ícone oficial integrado ao aplicativo, com identidade visual de estrada, montanha, bússola e raízes.
+- Favicon, Apple touch icon, ícones PWA, logo interna e variante maskable atualizados.
+- Android recebe launcher, round e foreground adaptativo atualizados em todas as densidades.
+- Fundo do ícone adaptativo usa verde-escuro compatível com a nova arte, evitando bordas claras durante o recorte do launcher.
+- Pipeline de APK continua reaplicando e validando automaticamente os assets após o Capacitor recriar o Android.
+
 ## 1.0.21 — Correção do GitHub Actions
 
 - Corrige o GitHub Actions que parava no `setup-node@v6` quando não havia `package-lock.json`.
