@@ -3,36 +3,15 @@ package com.nomaderaiz.app.data
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.UUID
 
 class AppRepository(context: Context) {
     private val prefs=context.getSharedPreferences("nomade_raiz",Context.MODE_PRIVATE)
-
-    fun purchased():Set<String> = prefs.getStringSet("purchased", emptySet()) ?: emptySet()
-    fun togglePurchased(id:String) {
-        val s=purchased().toMutableSet()
-        if(!s.add(id)) s.remove(id)
-        prefs.edit().putStringSet("purchased",s).apply()
-    }
-
-    fun journal():List<JournalEntry> = try {
-        val a=JSONArray(prefs.getString("journal","[]"))
-        (0 until a.length()).map { i-> a.getJSONObject(i).let { JournalEntry(it.getLong("id"),it.getString("place"),it.getString("weather"),it.getDouble("km"),it.getString("note"),it.getLong("createdAt")) } }
-    } catch(_:Exception){ emptyList() }
-    fun addJournal(e:JournalEntry){ saveJournal(listOf(e)+journal()) }
-    fun deleteJournal(id:Long){ saveJournal(journal().filterNot{it.id==id}) }
-    private fun saveJournal(v:List<JournalEntry>) {
-        val a=JSONArray(); v.forEach { e-> a.put(JSONObject().put("id",e.id).put("place",e.place).put("weather",e.weather).put("km",e.km).put("note",e.note).put("createdAt",e.createdAt)) }
-        prefs.edit().putString("journal",a.toString()).apply()
-    }
-
-    fun points():List<SupportPoint> = try {
-        val a=JSONArray(prefs.getString("points","[]"))
-        (0 until a.length()).map { i-> a.getJSONObject(i).let { SupportPoint(it.getLong("id"),it.getString("type"),it.getString("name"),it.getString("reference"),it.getString("note"),it.getInt("rating"),it.getBoolean("closed")) } }
-    } catch(_:Exception){ emptyList() }
-    fun addPoint(p:SupportPoint){ savePoints(listOf(p)+points()) }
-    fun deletePoint(id:Long){ savePoints(points().filterNot{it.id==id}) }
-    private fun savePoints(v:List<SupportPoint>) {
-        val a=JSONArray(); v.forEach { p-> a.put(JSONObject().put("id",p.id).put("type",p.type).put("name",p.name).put("reference",p.reference).put("note",p.note).put("rating",p.rating).put("closed",p.closed)) }
-        prefs.edit().putString("points",a.toString()).apply()
-    }
+    fun loadItems():List<EquipmentItem>{ val raw=prefs.getString("items",null)?:return seedItems; return runCatching { val a=JSONArray(raw); List(a.length()){i-> val o=a.getJSONObject(i); EquipmentItem(o.getString("id"),o.getString("name"),o.getString("categoryId"),ItemStatus.valueOf(o.getString("status")),Priority.valueOf(o.getString("priority")),o.getInt("quantity"),o.getDouble("price"),o.optString("notes")) } }.getOrElse{seedItems} }
+    fun saveItems(items:List<EquipmentItem>){ val a=JSONArray(); items.forEach{ a.put(JSONObject().put("id",it.id).put("name",it.name).put("categoryId",it.categoryId).put("status",it.status.name).put("priority",it.priority.name).put("quantity",it.quantity).put("price",it.price).put("notes",it.notes))}; prefs.edit().putString("items",a.toString()).apply() }
+    fun loadChecks(mode:String):Map<String,Boolean>{ val o=runCatching{JSONObject(prefs.getString("checks_$mode","{}")!!)}.getOrElse{JSONObject()}; return o.keys().asSequence().associateWith{o.optBoolean(it,false)} }
+    fun saveChecks(mode:String,map:Map<String,Boolean>){ val o=JSONObject(); map.forEach{o.put(it.key,it.value)}; prefs.edit().putString("checks_$mode",o.toString()).apply() }
+    fun loadJournal():List<JournalEntry>{ val raw=prefs.getString("journal","[]")!!; return runCatching{val a=JSONArray(raw);List(a.length()){i->val o=a.getJSONObject(i);JournalEntry(o.getString("id"),o.getString("local"),o.getString("clima"),o.getDouble("km"),o.getString("nota"),o.getLong("createdAt"))}}.getOrElse{emptyList()} }
+    fun saveJournal(v:List<JournalEntry>){val a=JSONArray();v.forEach{a.put(JSONObject().put("id",it.id).put("local",it.local).put("clima",it.clima).put("km",it.km).put("nota",it.nota).put("createdAt",it.createdAt))};prefs.edit().putString("journal",a.toString()).apply()}
+    fun id()=UUID.randomUUID().toString()
 }

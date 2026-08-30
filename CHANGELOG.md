@@ -1,13 +1,14 @@
-# Changelog
+# 1.0.29-kotlin-alpha.3
 
-## 1.0.29-kotlin-alpha.3
-- Equipamentos agora usa os 20 itens-base reais da versão 1.0.26 e permite marcar itens adquiridos com persistência local.
-- Verificar agora contém os cinco modos reais: Antes de sair, Chuva, Noite, Bike e Emergência.
-- Planejamento recebeu tipo de viagem, destino, duração, pessoas e reserva financeira conforme regras do projeto antigo.
-- Calculadora recebeu cálculos reais de bicicleta, água e dinheiro.
-- Diário de Campo agora permite cadastrar, listar e excluir registros persistidos.
-- Pontos de Apoio agora permite cadastro offline, listagem e exclusão persistida.
-- Mantido workflow que publica somente Nomade-Raiz.apk na GitHub Release.
+- Equipamentos agora possuem dados reais, categorias, edição, exclusão, status e persistência local.
+- Checklists completos dos cinco modos do app original com persistência.
+- Diário funcional com criação, listagem, exclusão e persistência.
+- Planejamento recebeu cálculos reais de bicicleta e água.
+- Calculadora recebeu cálculos funcionais iniciais.
+- Home usa estatísticas reais dos equipamentos.
+- Workflow ajustado para publicar somente o arquivo Nomade-Raiz.apk na Release.
+
+# Changelog
 
 ## 1.0.28-kotlin-alpha.2
 - Corrigido build do GitHub Actions.
