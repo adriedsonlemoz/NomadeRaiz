@@ -15,3 +15,7 @@ Primeira etapa da conversão do Nômade Raiz 1.0.26 (React/Capacitor) para Andro
 
 ## Próximas etapas
 Persistência local nativa, CRUD completo de equipamentos, demais verificações, Planejamento, Calculadora, Diário, Pontos, Manual da Bike, Dicas, backup/importação e configurações.
+
+
+## Build GitHub
+O workflow publica somente `Nomade-Raiz.apk` como asset de uma GitHub Release. Não usa `upload-artifact`, portanto não cria pacote ZIP de artifact.
