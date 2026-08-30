@@ -24,3 +24,6 @@ O workflow publica somente `Nomade-Raiz.apk` como asset de uma GitHub Release. N
 ## Estado da migração 1.0.30-kotlin-alpha.4
 Equipamentos, checklists e diário já possuem fluxo funcional e persistência local. Planejamento e Calculadora começaram a receber as regras reais do aplicativo original.
 \n\n## Estado 1.0.30\nPontos de apoio possui CRUD persistente. A Calculadora cobre bicicleta, água, energia, dinheiro, peso e custo da viagem. O workflow publica somente `Nomade-Raiz.apk`.\n
+
+## 1.0.32
+Alertas de reposição e Dicas de Sobrevivência agora são funcionais. Releases usam o versionName na tag/nome e publicam somente `Nomade-Raiz.apk`.

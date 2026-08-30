@@ -17,13 +17,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nomaderaiz.app.data.*
 
-enum class Screen { Home, Gear, Planning, Journal, More, Verify, Calculator, Points }
+enum class Screen { Home, Gear, Planning, Journal, More, Verify, Calculator, Points, Alerts, Tips }
 @Composable fun NomadeRaizApp(){
  val repo=remember{AppRepository(LocalContext.current)}; var screen by remember{mutableStateOf(Screen.Home)}
- var itemsState by remember{mutableStateOf(repo.loadItems())}; var journal by remember{mutableStateOf(repo.loadJournal())}; var points by remember{mutableStateOf(repo.loadPoints())}
+ var itemsState by remember{mutableStateOf(repo.loadItems())}; var journal by remember{mutableStateOf(repo.loadJournal())}; var points by remember{mutableStateOf(repo.loadPoints())}; var minimums by remember{mutableStateOf(repo.loadMinimums())}; var favoriteTips by remember{mutableStateOf(repo.loadFavoriteTips())}
  Scaffold(
   bottomBar = {
-   if (screen !in listOf(Screen.Verify, Screen.Gear, Screen.Calculator, Screen.Points)) {
+   if (screen !in listOf(Screen.Verify, Screen.Gear, Screen.Calculator, Screen.Points, Screen.Alerts, Screen.Tips)) {
     NavigationBar {
      listOf(Screen.Home, Screen.Planning, Screen.Journal, Screen.More).forEach { s ->
       NavigationBarItem(
@@ -42,9 +42,11 @@ enum class Screen { Home, Gear, Planning, Journal, More, Verify, Calculator, Poi
    Screen.Verify->VerifyScreen(repo,{screen=Screen.Home})
    Screen.Planning->PlanningScreen(Modifier.padding(p))
    Screen.Journal->JournalScreen(Modifier.padding(p),journal,{journal=it;repo.saveJournal(it)},repo)
-   Screen.More->MoreScreen(Modifier.padding(p)){ destination -> when(destination) { "Calculadora" -> screen=Screen.Calculator; "Pontos de apoio" -> screen=Screen.Points } }
+   Screen.More->MoreScreen(Modifier.padding(p)){ destination -> when(destination) { "Calculadora" -> screen=Screen.Calculator; "Pontos de apoio" -> screen=Screen.Points; "Alertas" -> screen=Screen.Alerts; "Dicas" -> screen=Screen.Tips } }
    Screen.Calculator->CalculatorScreen({screen=Screen.More})
    Screen.Points->PointsScreen(points,{points=it;repo.savePoints(it)},repo,{screen=Screen.More})
+   Screen.Alerts->AlertsScreen(itemsState,minimums,{minimums=it;repo.saveMinimums(it)},{screen=Screen.More})
+   Screen.Tips->TipsScreen(favoriteTips,{favoriteTips=it;repo.saveFavoriteTips(it)},{screen=Screen.More})
   }
  }
 }
@@ -176,4 +178,35 @@ private fun PointDialog(point:SupportPoint,dismiss:()->Unit,done:(SupportPoint)-
             }
         }
     )
+}
+
+
+@Composable
+private fun AlertsScreen(equipment:List<EquipmentItem>, minimums:Map<String,Int>, save:(Map<String,Int>)->Unit, back:()->Unit) {
+    var editing by remember { mutableStateOf<String?>(null) }
+    var editValue by remember { mutableStateOf("") }
+    fun owned(item:EquipmentItem)=if(item.status==ItemStatus.COMPRADO)item.quantity else 0
+    val alerts=equipment.filter { item -> minimums[item.id]?.let { owned(item)<it } == true }
+    LazyColumn(Modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+        item { Row(verticalAlignment=Alignment.CenterVertically){IconButton(back){Icon(Icons.Default.ArrowBack,null)};Header("Alertas de Reposição","Estoque e mínimos por item")} }
+        item { if(alerts.isEmpty()) Card(Modifier.fillMaxWidth()){Text("✅ Tudo dentro do mínimo",Modifier.padding(16.dp),fontWeight=FontWeight.Bold)} else Card(Modifier.fillMaxWidth()){Column(Modifier.padding(14.dp)){Text("⚠️ ${alerts.size} ${if(alerts.size==1)"item precisa" else "itens precisam"} de reposição",fontWeight=FontWeight.Bold,color=MaterialTheme.colorScheme.error);alerts.forEach{Text("${it.name}: ${owned(it)} disponível / mín ${minimums[it.id]}",fontSize=12.sp)}}} }
+        item { OutlinedButton(onClick={save(minimums + suggestedMinimums.filterKeys{minimums[it]==null})},modifier=Modifier.fillMaxWidth()){Text("💡 APLICAR MÍNIMOS SUGERIDOS")} }
+        items(equipment){ item ->
+            val min=minimums[item.id]; val below=min!=null && owned(item)<min
+            Card(Modifier.fillMaxWidth()) { Row(Modifier.padding(12.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(item.name,fontWeight=FontWeight.SemiBold);Text("Disponível: ${owned(item)}${if(item.status==ItemStatus.PENDENTE && item.quantity>0)" • planejado: ${item.quantity}" else ""}",fontSize=11.sp,color=if(below)MaterialTheme.colorScheme.error else LocalContentColor.current)};if(editing==item.id){OutlinedTextField(editValue,{editValue=it},modifier=Modifier.width(80.dp),singleLine=true);TextButton({val n=editValue.toIntOrNull();if(n!=null&&n>=0)save(minimums+(item.id to n));editing=null}){Text("OK")}}else TextButton({editing=item.id;editValue=(min?:0).toString()}){Text(if(min==null)"+ definir" else "mín $min")}} }
+        }
+    }
+}
+
+@Composable
+private fun TipsScreen(favorites:Set<String>, save:(Set<String>)->Unit, back:()->Unit) {
+    var onlyFavorites by remember { mutableStateOf(false) }
+    var open by remember { mutableStateOf<TravelTip?>(null) }
+    val list=if(onlyFavorites)travelTips.filter{it.id in favorites}else travelTips
+    LazyColumn(Modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+        item { Row(verticalAlignment=Alignment.CenterVertically){IconButton(back){Icon(Icons.Default.ArrowBack,null)};Header("Dicas de Sobrevivência","Conhecimento prático do aplicativo original")} }
+        item { Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){FilterChip(!onlyFavorites,{onlyFavorites=false},{Text("Todas")});FilterChip(onlyFavorites,{onlyFavorites=true},{Text("⭐ Favoritas (${favorites.size})")})} }
+        items(list){tip->Card(Modifier.fillMaxWidth().clickable{open=tip}){Row(Modifier.padding(14.dp),verticalAlignment=Alignment.CenterVertically){Text(tip.icon,fontSize=25.sp);Spacer(Modifier.width(10.dp));Column(Modifier.weight(1f)){Text(tip.category,fontSize=10.sp);Text(tip.title,fontWeight=FontWeight.Bold)};IconButton({save(if(tip.id in favorites)favorites-tip.id else favorites+tip.id)}){Icon(if(tip.id in favorites)Icons.Default.Star else Icons.Default.StarBorder,null)}}}}
+    }
+    open?.let{tip->AlertDialog(onDismissRequest={open=null},confirmButton={TextButton({open=null}){Text("FECHAR")}},title={Text("${tip.icon} ${tip.title}")},text={Text(tip.text)})}
 }

@@ -16,5 +16,9 @@ class AppRepository(context: Context) {
 
     fun loadPoints():List<SupportPoint>{ val raw=prefs.getString("support_points","[]")!!;return runCatching{val a=JSONArray(raw);List(a.length()){i->val o=a.getJSONObject(i);SupportPoint(o.getString("id"),o.getString("tipo"),o.getString("nome"),o.optString("referencia"),o.optString("obs"),o.optInt("avaliacao",2).coerceIn(1,3),o.optBoolean("fechado",false))}}.getOrElse{emptyList()} }
     fun savePoints(v:List<SupportPoint>){val a=JSONArray();v.forEach{a.put(JSONObject().put("id",it.id).put("tipo",it.tipo).put("nome",it.nome).put("referencia",it.referencia).put("obs",it.obs).put("avaliacao",it.avaliacao).put("fechado",it.fechado))};prefs.edit().putString("support_points",a.toString()).apply()}
+    fun loadMinimums():Map<String,Int>{val o=runCatching{JSONObject(prefs.getString("minimums","{}")!!)}.getOrElse{JSONObject()};return o.keys().asSequence().associateWith{o.optInt(it,0)}}
+    fun saveMinimums(v:Map<String,Int>){val o=JSONObject();v.forEach{o.put(it.key,it.value)};prefs.edit().putString("minimums",o.toString()).apply()}
+    fun loadFavoriteTips():Set<String>{return prefs.getStringSet("favorite_tips",emptySet())?.toSet()?:emptySet()}
+    fun saveFavoriteTips(v:Set<String>){prefs.edit().putStringSet("favorite_tips",v).apply()}
     fun id()=UUID.randomUUID().toString()
 }

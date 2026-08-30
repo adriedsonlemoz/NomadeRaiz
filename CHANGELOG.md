@@ -1,3 +1,12 @@
+# Changelog
+
+## 1.0.32-kotlin-alpha.5
+- Release/tag do GitHub agora usa automaticamente o `versionName`, permitindo ao GitHub Manager reconhecer a versão.
+- A Release continua contendo somente `Nomade-Raiz.apk`.
+- Alertas de Reposição migrados com estoque disponível, mínimos por item e mínimos sugeridos do original.
+- Dicas de Sobrevivência migradas com conteúdo original, detalhes e favoritos persistentes.
+- versionCode 100032.
+
 # Changelog\n\n## 1.0.30-kotlin-alpha.4\n- Pontos de apoio funcional: cadastro, edição, exclusão, tipo, localização, observações, avaliação e aberto/fechado.\n- Persistência local dos pontos.\n- Calculadora ampliada: bicicleta, água, energia, dinheiro, peso e custo da viagem.\n- GitHub Actions publica somente `Nomade-Raiz.apk` na Release.\n\n# 1.0.29-kotlin-alpha.3
 
 - Equipamentos agora possuem dados reais, categorias, edição, exclusão, status e persistência local.
@@ -8,7 +17,6 @@
 - Home usa estatísticas reais dos equipamentos.
 - Workflow ajustado para publicar somente o arquivo Nomade-Raiz.apk na Release.
 
-# Changelog
 
 ## 1.0.31-kotlin-alpha.4-fix1
 - Corrigida compilação Kotlin/Compose da tela Calculadora/Pontos de apoio.
