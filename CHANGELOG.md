@@ -10,6 +10,11 @@
 
 # Changelog
 
+## 1.0.31-kotlin-alpha.4-fix1
+- Corrigida compilação Kotlin/Compose da tela Calculadora/Pontos de apoio.
+- Corrigida rota de Pontos de apoio no menu Mais.
+- Mantida publicação de somente `Nomade-Raiz.apk` na Release.
+
 ## 1.0.28-kotlin-alpha.2
 - Corrigido build do GitHub Actions.
 - Java e Kotlin agora usam JVM 17 de forma consistente.
