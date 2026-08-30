@@ -21,5 +21,6 @@ Persistência local nativa, CRUD completo de equipamentos, demais verificações
 O workflow publica somente `Nomade-Raiz.apk` como asset de uma GitHub Release. Não usa `upload-artifact`, portanto não cria pacote ZIP de artifact.
 
 
-## Estado da migração 1.0.29-kotlin-alpha.3
+## Estado da migração 1.0.30-kotlin-alpha.4
 Equipamentos, checklists e diário já possuem fluxo funcional e persistência local. Planejamento e Calculadora começaram a receber as regras reais do aplicativo original.
+\n\n## Estado 1.0.30\nPontos de apoio possui CRUD persistente. A Calculadora cobre bicicleta, água, energia, dinheiro, peso e custo da viagem. O workflow publica somente `Nomade-Raiz.apk`.\n

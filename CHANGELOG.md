@@ -1,4 +1,4 @@
-# 1.0.29-kotlin-alpha.3
+# Changelog\n\n## 1.0.30-kotlin-alpha.4\n- Pontos de apoio funcional: cadastro, edição, exclusão, tipo, localização, observações, avaliação e aberto/fechado.\n- Persistência local dos pontos.\n- Calculadora ampliada: bicicleta, água, energia, dinheiro, peso e custo da viagem.\n- GitHub Actions publica somente `Nomade-Raiz.apk` na Release.\n\n# 1.0.29-kotlin-alpha.3
 
 - Equipamentos agora possuem dados reais, categorias, edição, exclusão, status e persistência local.
 - Checklists completos dos cinco modos do app original com persistência.
