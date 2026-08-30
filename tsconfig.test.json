@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "types": ["node"],
-    "allowImportingTsExtensions": true,
-    "noEmit": true
-  },
-  "include": ["tests/**/*.ts", "scripts/run-tests.ts"]
-}
