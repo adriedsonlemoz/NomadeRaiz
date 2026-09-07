@@ -1,29 +1,55 @@
-# Nômade Raiz — Kotlin Native
+# Nômade Raiz — Android Kotlin + Jetpack Compose
 
-Primeira etapa da conversão do Nômade Raiz 1.0.26 (React/Capacitor) para Android nativo em Kotlin + Jetpack Compose.
+Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-## Já migrado nesta alpha
-- Projeto Android Kotlin/Compose independente de Node/React/Capacitor.
-- Tema visual escuro inspirado nos novos mockups.
-- Home nativa inicial.
-- Equipamentos com as categorias reais do projeto original.
-- Checklist "Antes de sair" com os 5 itens reais.
-- Estrutura de navegação: Início, Planejamento, Diário e Mais.
-- Entradas preservadas para Calculadora, Pontos, Alertas, Manual da Bike, Dicas, Backup, Configurações e Sobre.
-- Ícone Android reaproveitado do projeto original.
-- GitHub Actions para gerar APK debug.
+**Versão atual:** `1.0.33-kotlin-alpha.6`  
+**versionCode:** `100033`  
+**applicationId / namespace:** `com.nomaderaiz.app`
 
-## Próximas etapas
-Persistência local nativa, CRUD completo de equipamentos, demais verificações, Planejamento, Calculadora, Diário, Pontos, Manual da Bike, Dicas, backup/importação e configurações.
+## Estado funcional atual
 
+- Home com progresso do inventário, alertas, dias na estrada, nota rápida, investimento, próximo passo e atalhos.
+- Equipamentos com as 9 categorias e 20 itens-base do original, CRUD, status, quantidade, preço, observações, prioridade, filtros, ordenação e totais financeiros.
+- Cinco modos de checklist. Como no original, apenas `Antes de sair` e `Bike/Manutenção` são persistentes; os demais são temporários.
+- Planejamento com destino, duração, pessoas, distância, média diária, quatro tipos de viagem, alimentação, água, orçamento, reserva financeira, energia automática pelo inventário, abrigo, segurança, estados e recomendações.
+- Calculadora com Resumo Geral, Bike, Comida, Água, Energia, Dinheiro, Peso e Custo da viagem.
+- Diário com cadastro, clima, quilometragem, notas, exclusão e persistência.
+- Pontos de apoio com os tipos originais, cadastro, edição, exclusão, avaliação e estado aberto/fechado.
+- Alertas de reposição com mínimos individuais e sugestões.
+- Dicas com favoritos persistentes.
+- Manual da Bike com 4 áreas, 12 peças, 9 problemas de estrada, 6 dicas rápidas, 15 termos de glossário, 9 ferramentas, busca, diagnóstico, favoritos e habilidades dominadas.
+- Configurações com tema, escala de fonte, contador da viagem e limpeza dos dados.
+- Exportação de listas e backup/restauração JSON, incluindo compatibilidade com backups antigos de equipamentos.
+- Tela Sobre e navegação nativa.
 
-## Build GitHub
-O workflow publica somente `Nomade-Raiz.apk` como asset de uma GitHub Release. Não usa `upload-artifact`, portanto não cria pacote ZIP de artifact.
+## Versão e GitHub Manager
 
+`app/build.gradle.kts` é a fonte principal de versão do projeto.
 
-## Estado da migração 1.0.30-kotlin-alpha.4
-Equipamentos, checklists e diário já possuem fluxo funcional e persistência local. Planejamento e Calculadora começaram a receber as regras reais do aplicativo original.
-\n\n## Estado 1.0.30\nPontos de apoio possui CRUD persistente. A Calculadora cobre bicicleta, água, energia, dinheiro, peso e custo da viagem. O workflow publica somente `Nomade-Raiz.apk`.\n
+O arquivo `github-manager.json`, na raiz, replica os metadados necessários ao GitHub Manager. Sempre que `versionName`, `versionCode`, `applicationId` ou `namespace` forem alterados, execute:
 
-## 1.0.32
-Alertas de reposição e Dicas de Sobrevivência agora são funcionais. Releases usam o versionName na tag/nome e publicam somente `Nomade-Raiz.apk`.
+```bash
+python3 scripts/sync-github-manager.py
+```
+
+O GitHub Actions executa `python3 scripts/sync-github-manager.py --check` e interrompe o build se o JSON estiver diferente do Gradle. Assim, uma Release não é publicada com metadados desencontrados.
+
+## GitHub Actions
+
+O workflow usa Java 17, Kotlin/JVM 17 e `jvmToolchain(17)`.
+
+A Release publica somente:
+
+```text
+Nomade-Raiz.apk
+```
+
+Não é usado `upload-artifact` e o workflow não publica ZIP nem AAB.
+
+## Build local
+
+```bash
+gradle :app:assembleDebug
+```
+
+O APK de debug é gerado em `app/build/outputs/apk/debug/app-debug.apk`.
