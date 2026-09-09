@@ -4,6 +4,14 @@ enum class ItemStatus { PENDENTE, COMPRADO }
 enum class Priority { BAIXO, MEDIO, URGENTE }
 enum class FontScale { SM, MD, LG }
 enum class ThemeMode { LIGHT, DARK }
+enum class AppAccent(val label:String,val hex:Long) {
+    RAIZ("Verde Raiz",0xFF91B51D),
+    AZUL("Azul",0xFF4F8CFF),
+    TURQUESA("Turquesa",0xFF22B8A7),
+    LARANJA("Laranja",0xFFF08A24),
+    ROXO("Roxo",0xFF9B6CFF),
+    VERMELHO("Vermelho",0xFFE25A5A)
+}
 enum class TravelType(val id:String,val label:String,val icon:String,val reservePercent:Double,val shelter:ShelterNeed,val panelAfterDays:Int?,val batteryRecommended:Boolean) {
     CICLOVIAGEM("cicloviagem","Cicloviagem","🚲",0.10,ShelterNeed.CONDICIONAL,4,true),
     CAMPING("camping","Camping","🏕️",0.10,ShelterNeed.ESSENCIAL,3,true),
@@ -32,7 +40,7 @@ data class CheckMode(val id:String,val icon:String,val label:String,val descript
 data class JournalEntry(val id:String,val local:String,val clima:String,val km:Double,val nota:String,val createdAt:Long)
 data class SupportPoint(val id:String,val tipo:String,val nome:String,val referencia:String,val obs:String,val avaliacao:Int,val fechado:Boolean)
 data class TravelTip(val id:String,val icon:String,val category:String,val title:String,val text:String)
-data class AppSettings(val themeMode:ThemeMode=ThemeMode.DARK,val fontScale:FontScale=FontScale.MD,val startDate:Long?=null)
+data class AppSettings(val themeMode:ThemeMode=ThemeMode.DARK,val fontScale:FontScale=FontScale.MD,val startDate:Long?=null,val accent:AppAccent=AppAccent.RAIZ)
 
 data class FoodUnitConfig(val id:String,val label:String,val defaultPrice:Double,val defaultDailyConsumption:Double)
 data class FoodConfig(val id:String,val name:String,val icon:String,val units:List<FoodUnitConfig>)

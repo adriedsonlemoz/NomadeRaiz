@@ -96,11 +96,12 @@ class AppRepository(context: Context) {
     fun loadSettings():AppSettings{
         val mode=runCatching{ThemeMode.valueOf(prefs.getString("theme_mode",ThemeMode.DARK.name)!!)}.getOrDefault(ThemeMode.DARK)
         val scale=runCatching{FontScale.valueOf(prefs.getString("font_scale",FontScale.MD.name)!!)}.getOrDefault(FontScale.MD)
+        val accent=runCatching{AppAccent.valueOf(prefs.getString("app_accent",AppAccent.RAIZ.name)!!)}.getOrDefault(AppAccent.RAIZ)
         val start=if(prefs.contains("start_date"))prefs.getLong("start_date",0L).takeIf{it>0} else null
-        return AppSettings(mode,scale,start)
+        return AppSettings(mode,scale,start,accent)
     }
     fun saveSettings(v:AppSettings){
-        val e=prefs.edit().putString("theme_mode",v.themeMode.name).putString("font_scale",v.fontScale.name)
+        val e=prefs.edit().putString("theme_mode",v.themeMode.name).putString("font_scale",v.fontScale.name).putString("app_accent",v.accent.name)
         if(v.startDate==null)e.remove("start_date") else e.putLong("start_date",v.startDate)
         e.apply()
     }
@@ -132,7 +133,7 @@ class AppRepository(context: Context) {
         data.put("diario",JSONArray(prefs.getString("journal","[]")?:"[]"))
         data.put("pontos",JSONArray(prefs.getString("support_points","[]")?:"[]"))
         data.put("minimos",JSONObject(prefs.getString("minimums","{}")?:"{}"))
-        val settings=loadSettings();data.put("settings",JSONObject().put("themeMode",settings.themeMode.name.lowercase()).put("fontScale",settings.fontScale.name.lowercase()).put("startDate",settings.startDate))
+        val settings=loadSettings();data.put("settings",JSONObject().put("themeMode",settings.themeMode.name.lowercase()).put("fontScale",settings.fontScale.name.lowercase()).put("startDate",settings.startDate).put("accent",settings.accent.name.lowercase()))
         data.put("notaRapida",loadQuickNote())
         data.put("favoritosDicas",JSONArray(loadFavoriteTips().toList()))
         data.put("favoritosTutoriais",JSONArray(loadFavoriteManual().toList()))
@@ -153,7 +154,14 @@ class AppRepository(context: Context) {
         val diario=data.optJSONArray("diario")?:JSONArray();val j=List(diario.length()){i->val o=diario.getJSONObject(i);JournalEntry(o.optString("id",id()),o.optString("local"),o.optString("clima","☀️"),o.optDouble("km",0.0).coerceAtLeast(0.0),o.optString("nota"),o.optLong("createdAt",System.currentTimeMillis()))};saveJournal(j)
         val pontos=data.optJSONArray("pontos")?:JSONArray();val p=List(pontos.length()){i->val o=pontos.getJSONObject(i);SupportPoint(o.optString("id",id()),normalizePointType(o.optString("tipo","outro")),o.optString("nome"),o.optString("referencia"),o.optString("obs"),o.optInt("avaliacao",2).coerceIn(1,3),o.optBoolean("fechado",false))};savePoints(p)
         val mins=data.optJSONObject("minimos")?:JSONObject();saveMinimums(mins.keys().asSequence().associateWith{mins.optInt(it,0).coerceAtLeast(0)})
-        val set=data.optJSONObject("settings")?:JSONObject();saveSettings(AppSettings(if(set.optString("themeMode")=="light")ThemeMode.LIGHT else ThemeMode.DARK,when(set.optString("fontScale")){"sm"->FontScale.SM;"lg"->FontScale.LG;else->FontScale.MD},set.optLong("startDate",0L).takeIf{it>0}))
+        val set=data.optJSONObject("settings")?:JSONObject()
+        val importedAccent=runCatching{AppAccent.valueOf(set.optString("accent",AppAccent.RAIZ.name).uppercase())}.getOrDefault(AppAccent.RAIZ)
+        saveSettings(AppSettings(
+            if(set.optString("themeMode")=="light")ThemeMode.LIGHT else ThemeMode.DARK,
+            when(set.optString("fontScale")){"sm"->FontScale.SM;"lg"->FontScale.LG;else->FontScale.MD},
+            set.optLong("startDate",0L).takeIf{it>0},
+            importedAccent
+        ))
         saveQuickNote(data.optString("notaRapida",""))
         val fav=data.optJSONArray("favoritosDicas")?:JSONArray();saveFavoriteTips((0 until fav.length()).mapNotNull{fav.optString(it).takeIf(String::isNotBlank)}.toSet())
         val favManual=data.optJSONArray("favoritosTutoriais")?:JSONArray();saveFavoriteManual((0 until favManual.length()).mapNotNull{favManual.optString(it).takeIf(String::isNotBlank)}.toSet())

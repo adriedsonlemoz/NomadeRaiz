@@ -35,7 +35,8 @@ internal fun HomeScreen(
     onJournal:()->Unit,
     onCalculator:()->Unit,
     onPoints:()->Unit,
-    onTips:()->Unit
+    onTips:()->Unit,
+    onAlerts:()->Unit
 ){
     val ready=items.count{it.status==ItemStatus.COMPRADO}
     val pct=if(items.isEmpty())0 else ready*100/items.size
@@ -59,7 +60,7 @@ internal fun HomeScreen(
             SectionCard("Sua jornada, organizada"){
                 Text("Planeje melhor. Pedale mais longe.",fontWeight=FontWeight.Bold)
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
-                    Stat("$pct%","inventário",Modifier.weight(1f));Stat("$alerts","alertas",Modifier.weight(1f));Stat(if(days>0)"$days" else "—","dias",Modifier.weight(1f))
+                    Stat("$pct%","inventário",Modifier.weight(1f));Stat("$alerts","alertas",Modifier.weight(1f),onAlerts);Stat(if(days>0)"$days" else "—","dias",Modifier.weight(1f))
                 }
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
                     OutlinedButton(onPlanning,Modifier.weight(1f)){Text("🧭 Planejar")}
@@ -95,8 +96,9 @@ internal fun HomeScreen(
 }
 
 @Composable
-private fun Stat(value:String,label:String,modifier:Modifier){
-    Card(modifier){Column(Modifier.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally){Text(value,fontWeight=FontWeight.Bold,fontSize=19.sp);Text(label,fontSize=10.sp)}}
+private fun Stat(value:String,label:String,modifier:Modifier,onClick:(()->Unit)?=null){
+    val cardModifier=if(onClick!=null)modifier.clickable(onClick=onClick) else modifier
+    Card(cardModifier){Column(Modifier.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally){Text(value,fontWeight=FontWeight.Bold,fontSize=19.sp);Text(label,fontSize=10.sp)}}
 }
 
 @Composable

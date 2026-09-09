@@ -10,8 +10,8 @@ android {
         applicationId = "com.nomaderaiz.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 100033
-        versionName = "1.0.33-kotlin-alpha.6"
+        versionCode = 100034
+        versionName = "1.0.34-kotlin-alpha.7"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

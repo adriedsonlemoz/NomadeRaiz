@@ -20,6 +20,7 @@ fun NomadeRaizApp(){
     val context=LocalContext.current
     val repo=remember(context){AppRepository(context.applicationContext)}
     var screen by remember{mutableStateOf(Screen.Home)}
+    var detailReturnScreen by remember{mutableStateOf(Screen.More)}
     var items by remember{mutableStateOf(repo.loadItems())}
     var journal by remember{mutableStateOf(repo.loadJournal())}
     var points by remember{mutableStateOf(repo.loadPoints())}
@@ -36,8 +37,9 @@ fun NomadeRaizApp(){
         favoriteTips=repo.loadFavoriteTips();settings=repo.loadSettings();quickNote=repo.loadQuickNote();activeCheckMode=repo.loadActiveCheckMode()
         favoriteManual=repo.loadFavoriteManual();masteredSkills=repo.loadMasteredSkills()
     }
+    fun openDetail(target:Screen,returnTo:Screen){detailReturnScreen=returnTo;screen=target}
 
-    NomadeRaizTheme(darkTheme=settings.themeMode==ThemeMode.DARK,fontScale=settings.fontScale){
+    NomadeRaizTheme(darkTheme=settings.themeMode==ThemeMode.DARK,fontScale=settings.fontScale,accent=settings.accent){
         Scaffold(
             bottomBar={
                 if(screen in listOf(Screen.Home,Screen.Planning,Screen.Journal,Screen.More)){
@@ -60,26 +62,28 @@ fun NomadeRaizApp(){
                     onQuickNote={quickNote=it;repo.saveQuickNote(it)},
                     onVerify={mode->activeCheckMode=mode;repo.saveActiveCheckMode(mode);screen=Screen.Verify},
                     onGear={screen=Screen.Gear},onPlanning={screen=Screen.Planning},onJournal={screen=Screen.Journal},
-                    onCalculator={screen=Screen.Calculator},onPoints={screen=Screen.Points},onTips={screen=Screen.Tips}
+                    onCalculator={openDetail(Screen.Calculator,Screen.Home)},onPoints={openDetail(Screen.Points,Screen.Home)},
+                    onTips={openDetail(Screen.Tips,Screen.Home)},onAlerts={openDetail(Screen.Alerts,Screen.Home)}
                 )
                 Screen.Gear->EquipmentScreen(Modifier.padding(padding),items,{items=it;repo.saveItems(it)},{screen=Screen.Home},repo)
                 Screen.Verify->VerifyScreen(repo,activeCheckMode,{mode->activeCheckMode=mode;repo.saveActiveCheckMode(mode)},{screen=Screen.Home})
-                Screen.Planning->PlanningScreen(Modifier.padding(padding),items)
+                Screen.Planning->PlanningScreen(Modifier.padding(padding),items,{openDetail(Screen.Points,Screen.Planning)},{openDetail(Screen.Manual,Screen.Planning)})
                 Screen.Journal->JournalScreen(Modifier.padding(padding),journal,{journal=it;repo.saveJournal(it)},repo)
                 Screen.More->MoreScreen(Modifier.padding(padding)){destination->
-                    screen=when(destination){
+                    val target=when(destination){
                         "Calculadora"->Screen.Calculator;"Pontos de apoio"->Screen.Points;"Alertas"->Screen.Alerts;"Dicas"->Screen.Tips;"Manual da Bike"->Screen.Manual
                         "Exportar / Backup"->Screen.Backup;"Configurações"->Screen.Settings;"Sobre"->Screen.About;else->Screen.More
                     }
+                    if(target==Screen.More)screen=Screen.More else openDetail(target,Screen.More)
                 }
-                Screen.Calculator->CalculatorScreen(items,{screen=Screen.More})
-                Screen.Points->PointsScreen(points,{points=it;repo.savePoints(it)},repo,{screen=Screen.More})
-                Screen.Alerts->AlertsScreen(items,minimums,{minimums=it;repo.saveMinimums(it)},{screen=Screen.More})
-                Screen.Tips->TipsScreen(favoriteTips,{favoriteTips=it;repo.saveFavoriteTips(it)},{screen=Screen.More})
-                Screen.Manual->ManualBikeScreen(items,favoriteManual,masteredSkills,{favoriteManual=it;repo.saveFavoriteManual(it)},{masteredSkills=it;repo.saveMasteredSkills(it)},{screen=Screen.More})
-                Screen.Backup->BackupScreen(repo,items,{reloadPersistentState()},{screen=Screen.More})
-                Screen.Settings->SettingsScreen(settings,items.size,journal.size,points.size,{settings=it;repo.saveSettings(it)},{repo.clearAll();reloadPersistentState();screen=Screen.Home},{screen=Screen.More})
-                Screen.About->AboutScreen{screen=Screen.More}
+                Screen.Calculator->CalculatorScreen(items,{screen=detailReturnScreen})
+                Screen.Points->PointsScreen(points,{points=it;repo.savePoints(it)},repo,{screen=detailReturnScreen})
+                Screen.Alerts->AlertsScreen(items,minimums,{minimums=it;repo.saveMinimums(it)},{screen=detailReturnScreen})
+                Screen.Tips->TipsScreen(favoriteTips,{favoriteTips=it;repo.saveFavoriteTips(it)},{screen=detailReturnScreen})
+                Screen.Manual->ManualBikeScreen(items,favoriteManual,masteredSkills,{favoriteManual=it;repo.saveFavoriteManual(it)},{masteredSkills=it;repo.saveMasteredSkills(it)},{screen=detailReturnScreen})
+                Screen.Backup->BackupScreen(repo,items,{reloadPersistentState()},{screen=detailReturnScreen})
+                Screen.Settings->SettingsScreen(settings,items.size,journal.size,points.size,{settings=it;repo.saveSettings(it)},{repo.clearAll();reloadPersistentState();screen=Screen.Home},{screen=detailReturnScreen})
+                Screen.About->AboutScreen{screen=detailReturnScreen}
             }
         }
     }

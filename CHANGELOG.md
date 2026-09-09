@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.34-kotlin-alpha.7
+
+- Adicionada opção **Cor do aplicativo** em Configurações, com seis cores globais: Verde Raiz, Azul, Turquesa, Laranja, Roxo e Vermelho.
+- A cor selecionada altera os componentes Material 3 do aplicativo, permanece salva localmente e é incluída no backup/restauração.
+- Adicionado botão para restaurar a aparência padrão sem apagar os demais dados.
+- Diário ampliado para CRUD completo: agora é possível editar registros existentes; adicionados totais de registros e quilômetros.
+- Home: contador de alertas agora abre diretamente a tela Alertas de Reposição.
+- Corrigido o retorno de navegação: telas abertas pela Home, Planejamento ou Mais agora voltam para a origem correta.
+- Planejamento: adicionados atalhos funcionais para Pontos de apoio durante o planejamento de água e para o Manual da Bike na revisão de segurança.
+- Exportar/Backup: além de copiar, agora é possível salvar listas `.txt`, salvar backup `.json` e abrir/restaurar um backup diretamente do armazenamento Android.
+- Tela Sobre agora mostra `versionName`, `versionCode` e `applicationId` reais da build.
+- Removida anotação Compose duplicada encontrada na tela de Configurações.
+- `app/build.gradle.kts` atualizado para `1.0.34-kotlin-alpha.7` / `versionCode 100034`.
+- `github-manager.json` regenerado e validado a partir do Gradle.
+- GitHub Actions permanece configurado para publicar somente `Nomade-Raiz.apk`.
+
 ## 1.0.33-kotlin-alpha.6
 
 - Corrigidos os erros de compilação Compose reportados no log 8:
