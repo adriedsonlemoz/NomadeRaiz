@@ -2,8 +2,8 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.34-kotlin-alpha.7`  
-**versionCode:** `100034`  
+**Versão atual:** `1.0.36-kotlin-alpha.9`  
+**versionCode:** `100036`  
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Estado funcional atual
@@ -14,13 +14,15 @@ Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android
 - Planejamento com destino, duração, pessoas, distância, média diária, quatro tipos de viagem, alimentação, água, orçamento, reserva financeira, energia automática pelo inventário, abrigo, segurança, estados, recomendações e atalhos para Pontos de apoio/Manual da Bike.
 - Calculadora com Resumo Geral, Bike, Comida, Água, Energia, Dinheiro, Peso e Custo da viagem.
 - Diário com cadastro, edição, clima, quilometragem, notas, exclusão, totais e persistência.
-- Pontos de apoio com os tipos originais, cadastro, edição, exclusão, avaliação e estado aberto/fechado.
+- Pontos de apoio com os tipos originais, filtro por tipo, cadastro, edição, confirmação de exclusão, avaliação e estado aberto/fechado.
 - Alertas de reposição com mínimos individuais e sugestões.
 - Dicas com favoritos persistentes.
 - Manual da Bike com 4 áreas, 12 peças, 9 problemas de estrada, 6 dicas rápidas, 15 termos de glossário, 9 ferramentas, busca, diagnóstico, favoritos e habilidades dominadas.
 - Configurações com tema claro/escuro, escala de fonte, cor global do aplicativo (6 opções), contador da viagem e limpeza dos dados.
 - Exportação de listas e backup/restauração JSON, com copiar, salvar arquivo, abrir arquivo do dispositivo e compatibilidade com backups antigos de equipamentos.
-- Tela Sobre e navegação nativa com retorno correto à tela de origem para ferramentas abertas por atalhos.
+- Tela Mais leve e isolada dos módulos internos, com as nove ferramentas do original, descrições e contador real de alertas.
+- Tela Sobre e navegação nativa tipada, com pilha de retorno e retorno correto à tela de origem para ferramentas abertas por atalhos.
+- Geração de exportações e leitura/gravação de backups executadas fora da thread da interface.
 
 ## Versão e GitHub Manager
 
@@ -49,7 +51,15 @@ Não é usado `upload-artifact` e o workflow não publica ZIP nem AAB.
 ## Build local
 
 ```bash
-gradle :app:assembleDebug
+gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
 O APK de debug é gerado em `app/build/outputs/apk/debug/app-debug.apk`.
+
+### APK direto no GitHub
+
+O workflow **não usa GitHub Actions Artifacts**, porque o painel Artifacts entrega downloads em ZIP. Após compilar, `Nomade-Raiz.apk` é publicado diretamente como **asset da GitHub Release** e o próprio workflow valida pela API que o APK existe. O resumo da execução também recebe um link direto para o `.apk`.
+
+Antes do build, o workflow executa os testes unitários da navegação. A validação final exige que a Release tenha exatamente um asset próprio e que ele se chame `Nomade-Raiz.apk`.
+
+Os itens automáticos “Source code (zip)” e “Source code (tar.gz)” são criados pelo próprio GitHub para toda Release e não fazem parte dos assets do aplicativo. O GitHub Manager deve usar o asset `Nomade-Raiz.apk`.

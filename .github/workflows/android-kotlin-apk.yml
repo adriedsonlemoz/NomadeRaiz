@@ -48,18 +48,70 @@ jobs:
       - name: Verify GitHub Manager metadata
         run: python3 scripts/sync-github-manager.py --check
 
+      - name: Test navigation and business rules
+        run: gradle :app:testDebugUnitTest --stacktrace
+
       - name: Build APK
         run: gradle :app:assembleDebug --stacktrace
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk Nomade-Raiz.apk
+      - name: Prepare APK only
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$SOURCE_APK"
+          cp "$SOURCE_APK" "Nomade-Raiz.apk"
+          test -s "Nomade-Raiz.apk"
+          echo "APK pronto: $(du -h Nomade-Raiz.apk | cut -f1)"
 
-      - name: Publish APK only
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Nômade Raiz v${{ steps.version.outputs.version }}
-          body: "APK Android — versão ${{ steps.version.outputs.version }} (code ${{ steps.version.outputs.version_code }})"
-          files: Nomade-Raiz.apk
-          fail_on_unmatched_files: true
-          make_latest: true
+      - name: Publish direct APK in GitHub Release
+        id: publish
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          VERSION_CODE: ${{ steps.version.outputs.version_code }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          TITLE="Nômade Raiz v${VERSION}"
+          NOTES="APK Android — versão ${VERSION} (code ${VERSION_CODE})"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq '.assets[].name' |
+              while IFS= read -r ASSET_NAME; do
+                if test -n "$ASSET_NAME" && test "$ASSET_NAME" != "Nomade-Raiz.apk"; then
+                  gh release delete-asset "$TAG" "$ASSET_NAME" --yes
+                fi
+              done
+            gh release upload "$TAG" Nomade-Raiz.apk --clobber
+            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES" --latest
+          else
+            gh release create "$TAG" Nomade-Raiz.apk \
+              --title "$TITLE" \
+              --notes "$NOTES" \
+              --latest \
+              --target "$GITHUB_SHA"
+          fi
+
+          APK_URL=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" \
+            --jq '.assets[] | select(.name == "Nomade-Raiz.apk") | .browser_download_url')
+          test -n "$APK_URL"
+          echo "apk_url=$APK_URL" >> "$GITHUB_OUTPUT"
+          echo "### APK direto" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Baixar Nomade-Raiz.apk]($APK_URL)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify release contains APK
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          ASSET_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq '.assets | length')
+          APK_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" \
+            --jq '[.assets[] | select(.name == "Nomade-Raiz.apk")] | length')
+          test "$ASSET_COUNT" = "1"
+          test "$APK_COUNT" = "1"
+          echo "Release validada: somente Nomade-Raiz.apk foi publicado como asset."

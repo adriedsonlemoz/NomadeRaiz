@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.0.36-kotlin-alpha.9
+
+- Corrigido o travamento ao abrir **Mais**: o menu e cada ferramenta foram separados do antigo arquivo Compose monolítico, evitando carregar e verificar todos os módulos na UI thread no primeiro acesso.
+- Substituída a navegação baseada em textos e em um único destino de retorno por destinos tipados e uma pilha determinística, com suporte ao botão Voltar do Android.
+- Adicionados testes de repetição para `Home → Mais → módulo → voltar`, cobrindo todos os destinos e impedindo crescimento indevido da pilha.
+- Geração de listas/JSON e leitura, gravação e restauração de arquivos de Backup movidas para processamento fora da thread da interface.
+- Corrigido o conflito entre o estado chamado `error` e a função Kotlin `error()` dentro da tela de Backup.
+- Restaurada a equivalência do menu Mais com o original: Planejamento, títulos, descrições e contador real de Alertas.
+- Restaurado em Pontos de apoio o filtro por tipo do aplicativo original e adicionada confirmação antes de excluir.
+- Corrigido o `versionCode` desatualizado no README.
+- Workflow passa a executar os testes antes da compilação e valida que a Release contém exatamente um asset próprio: `Nomade-Raiz.apk`.
+- `github-manager.json` sincronizado a partir de `app/build.gradle.kts`.
+
+## 1.0.35-kotlin-alpha.8
+- Workflow ajustado para não usar GitHub Actions Artifacts, evitando download em ZIP.
+- `Nomade-Raiz.apk` passa a ser publicado e validado como asset direto da GitHub Release.
+- O workflow falha se o APK não existir antes da Release ou se o asset não aparecer na API da Release.
+- Adicionado link direto do APK ao resumo da execução do workflow.
+- `github-manager.json` sincronizado com `app/build.gradle.kts`.
+
+
 ## 1.0.34-kotlin-alpha.7
 
 - Adicionada opção **Cor do aplicativo** em Configurações, com seis cores globais: Verde Raiz, Azul, Turquesa, Laranja, Roxo e Vermelho.

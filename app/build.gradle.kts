@@ -10,8 +10,8 @@ android {
         applicationId = "com.nomaderaiz.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 100034
-        versionName = "1.0.34-kotlin-alpha.7"
+        versionCode = 100036
+        versionName = "1.0.36-kotlin-alpha.9"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -32,5 +32,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    testImplementation("junit:junit:4.13.2")
 }
