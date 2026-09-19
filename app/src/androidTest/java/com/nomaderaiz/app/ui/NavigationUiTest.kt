@@ -70,19 +70,16 @@ class NavigationUiTest {
         enter("Água por pessoa/dia","3")
         enter("Consumo de energia do grupo","25")
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        // A tag identifica o próprio chip e a tela publica explicitamente o estado
-        // Selected nessa mesma semântica. Isso evita depender de como a implementação
-        // interna do Material3 combina testTag e selectable no Android 15.
+        // A margem é um controle discreto: ao selecionar +20% o estado deve mudar
+        // na própria UI e ser persistido imediatamente, sem depender do debounce
+        // usado apenas para campos de digitação contínua.
         compose.onNodeWithTag("planning-margin-20").performClick()
-        // A persistência do rascunho usa debounce de 300 ms. Espere a própria
-        // fonte persistente refletir +20% antes de validar a semântica visual;
-        // waitForIdle() sozinho não aguarda corrotinas deliberadamente atrasadas.
+        compose.waitForIdle()
+        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
         val context=InstrumentationRegistry.getInstrumentation().targetContext
         compose.waitUntil(timeoutMillis=5_000){
             AppRepository(context).loadPlanningSession().draft.safetyMarginPercent==20
         }
-        compose.waitForIdle()
-        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
         enter("Dinheiro disponível","1.500,50")

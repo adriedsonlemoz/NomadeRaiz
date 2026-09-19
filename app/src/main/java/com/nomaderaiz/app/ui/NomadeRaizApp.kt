@@ -153,6 +153,15 @@ fun NomadeRaizApp(){
                         val current=planning
                         planning=current.copy(draft=transform(current.draft))
                     },
+                    updateDraftImmediate={transform->
+                        // Controles discretos (ex.: margem de segurança) devem sobreviver
+                        // imediatamente a navegação/recriação. Mantemos a digitação numérica
+                        // no debounce para não reintroduzir gravações a cada tecla.
+                        val current=planning
+                        val updated=current.copy(draft=transform(current.draft))
+                        planning=updated
+                        repo.savePlanningSession(updated)
+                    },
                     commitCurrent={
                         val snapshot=planning.draft.snapshotForPlanning()
                         val updated=planning.copy(draft=snapshot,lastGenerated=snapshot)

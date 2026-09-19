@@ -2,36 +2,28 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.45-kotlin-alpha.18`
+**Versão atual:** `1.0.46-kotlin-alpha.19`
 
-**versionCode:** `100045`
+**versionCode:** `100046`
 
 ### Correção desta entrega
 
-A versão `1.0.45-kotlin-alpha.18` mantém o teste de margem `+20%` e torna o estado selecionado do chip explícito na semântica Compose. O teste instrumentado também aguarda a persistência real do valor antes de conferir a seleção visual, sem remover as validações após navegação e recriação da Activity.
+A versão `1.0.46-kotlin-alpha.19` corrige a falha real observada nos logs da `1.0.45`: o teste Android 15 não falhou mais na asserção semântica, e sim expirou aguardando o valor `+20%` aparecer no armazenamento persistente. A margem deixou de depender do autosave com debounce e agora é persistida imediatamente por ser uma escolha discreta. O seletor também deixou de usar `FilterChip` com semântica sobreposta e passou a usar um controle `selectable` próprio, em que clique, estado selecionado e tag pertencem ao mesmo nó semântico.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- Os logs `Android-Kotlin-APK-16-logs.zip` confirmaram testes unitários e compilação do APK com sucesso; no Android 15, 4 de 5 testes passaram e 1 falhou no novo `assertIsSelected()` executado imediatamente após o clique em `+20%`.
-- O teste foi corrigido para aguardar a recomposição e consultar novamente a semântica do chip antes da asserção, sem remover a verificação de seleção.
-- Após recriar a Activity, o mesmo teste agora também confirma que `+20%` continua selecionado na interface, além das verificações já existentes no repositório.
-- Tela **Planejar** reformulada como assistente de viagem: o fluxo principal agora pergunta destino, distância, pessoas, velocidade média e horas de pedal por dia.
-- A estimativa é atualizada enquanto o usuário digita e mostra km/dia, horas efetivas de pedal, dias previstos e horas do último dia.
-- Nova margem de segurança de `0%`, `+10%` ou `+20%`, tratada como tempo adicional de planejamento sem alterar a distância real.
-- Três cenários rápidos (`Leve`, `Equilibrado` e `Longo`) permitem comparar 4 h, 6 h e 8 h de pedal por dia mantendo velocidade e margem.
-- Data de saída opcional calcula a data estimada de chegada usando dias corridos do planejamento.
-- Recursos essenciais foram simplificados no Planejamento: alimentação por pessoa/dia, água por pessoa/dia e consumo de energia do grupo por dia geram os totais da viagem automaticamente.
-- O antigo resumo grande de estados deixou de dominar o topo. O último planejamento agora aparece de forma compacta; checklist, inventário, alimentação detalhada, água carregada, reabastecimento, tipo de viagem, orçamento e campos legados ficam em detalhes opcionais.
-- Dados de versões anteriores continuam preservados. O schema local do rascunho passou para `2`, mas rascunhos antigos mantêm `dias`/`km por dia` e não recebem velocidade ou horas inventadas durante a migração.
-- A imagem hero da tela Planejar deixou de ser composta, reduzindo decodificação de bitmap e trabalho visual nessa tela. Nenhuma imagem ou mockup novo foi criado ou adicionado.
-- Campos numéricos continuam usando apresentação pt-BR automática (`100000` → `100.000`, dinheiro com `R$` e unidades no próprio campo).
-- Persistência de Planejamento e Calculadora continua agrupada por 300 ms e executada fora da thread da UI; estado em edição permanece em `SavedState`.
-- A tela **Sobre** foi atualizada com as mudanças desta versão.
-- O módulo **Backup** não foi alterado.
+- Os logs `Android-Kotlin-APK-18-logs.zip` confirmaram `:app:testDebugUnitTest` e `:app:assembleDebug` com sucesso na `1.0.45-kotlin-alpha.18`.
+- No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha mudou: não foi `Selected = true`; ocorreu `ComposeTimeoutException: Condition still not satisfied after 5000 ms` enquanto o teste aguardava `safetyMarginPercent == 20` no `AppRepository`.
+- A margem `0% / +10% / +20%` agora usa um controle seletivo próprio com `Modifier.selectable`, mantendo clique, estado `Selected`, papel de radio button e `testTag` no mesmo nó semântico.
+- Por ser uma escolha de baixa frequência, a margem é salva imediatamente no repositório. Campos numéricos continuam com debounce de 300 ms para preservar desempenho durante digitação.
+- O teste instrumentado continua exigindo seleção visual, persistência real, navegação, geração do plano e restauração após `Activity.recreate()`; nenhuma verificação foi removida.
+- Assistente de viagem, formatação automática pt-BR, cenários, alimentação, água, energia e compatibilidade de dados foram preservados.
+- A tela **Sobre** foi atualizada e o módulo **Backup** não foi alterado.
 
-**Validação desta entrega:** os arquivos puros de regra de negócio (`Models`, entrada numérica, planejamento, calculadora, cenários e resultados) foram compilados juntos com `kotlinc` com sucesso. A validação Android completa depende de Gradle/Android SDK e está detalhada em `VALIDACAO.md`; nenhum teste Android é declarado como aprovado sem execução.
+**Validação desta entrega:** os novos logs da versão-base foram analisados e a sincronização de metadados foi verificada localmente. Este ambiente não possui Gradle/Android SDK configurado para executar novamente o build completo; a `1.0.46` ainda precisa passar pelo GitHub Actions. Nenhum teste Android desta nova versão é declarado como aprovado sem execução.
 
 ## Estado funcional atual
 

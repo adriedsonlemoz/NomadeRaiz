@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.46-kotlin-alpha.19
+
+### Margem do Planejamento: clique e persistência determinísticos
+
+- Analisado `Android-Kotlin-APK-18-logs.zip`, correspondente à versão `1.0.45-kotlin-alpha.18`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 50s`) e `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 13s`).
+- Os testes instrumentados no Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha desta vez foi `ComposeTimeoutException: Condition still not satisfied after 5000 ms` na espera por `AppRepository(...).loadPlanningSession().draft.safetyMarginPercent == 20`. Portanto, o gargalo observado está no caminho clique → estado/persistência, e não apenas na leitura de `Selected` da semântica.
+- A seleção da margem deixou de depender de `FilterChip` com semântica adicional. Foi substituída por um controle Material baseado em `Surface + Modifier.selectable`, de modo que clique, `Selected`, papel de radio button e `testTag` ficam no mesmo nó semântico.
+- A margem é uma escolha discreta e agora usa atualização com persistência imediata. O debounce de 300 ms continua reservado aos campos de digitação contínua, evitando voltar a gravar `SharedPreferences` a cada tecla.
+- O teste continua exigindo `assertIsSelected()`, persistência real em `AppRepository`, geração do plano, navegação e restauração após `Activity.recreate()`. Nenhuma validação foi removida ou relaxada.
+- Assistente de viagem, formatação pt-BR, dados legados, `applicationId`/`namespace` e fluxo de Release foram preservados.
+- O módulo Backup não foi alterado.
+- Versão e metadados sincronizados: `1.0.46-kotlin-alpha.19` / `100046`.
+
 ## 1.0.45-kotlin-alpha.18
 
 ### Margem +20%: semântica e validação Android 15

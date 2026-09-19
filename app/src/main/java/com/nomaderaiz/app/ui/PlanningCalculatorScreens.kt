@@ -1,7 +1,9 @@
 package com.nomaderaiz.app.ui
 
 import android.app.DatePickerDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -14,9 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,8 +29,9 @@ import kotlin.math.ceil
 @Composable
 internal fun PlanningScreen(
     modifier:Modifier,equipment:List<EquipmentItem>,session:PlanningSession,
-    updateDraft:((PlanningDraft)->PlanningDraft)->Unit,commitCurrent:()->Unit,
-    onPoints:()->Unit,onManual:()->Unit,back:(()->Unit)?=null
+    updateDraft:((PlanningDraft)->PlanningDraft)->Unit,
+    updateDraftImmediate:((PlanningDraft)->PlanningDraft)->Unit,
+    commitCurrent:()->Unit,onPoints:()->Unit,onManual:()->Unit,back:(()->Unit)?=null
 ){
     val draft=session.draft
     val issues=remember(draft){draft.issues}
@@ -74,10 +75,17 @@ internal fun PlanningScreen(
                 }
             }
             item{
-                PlanningRideFields(draft){transform->
-                    saveFeedback=false
-                    updateDraft(transform)
-                }
+                PlanningRideFields(
+                    draft=draft,
+                    change={transform->
+                        saveFeedback=false
+                        updateDraft(transform)
+                    },
+                    changeImmediate={transform->
+                        saveFeedback=false
+                        updateDraftImmediate(transform)
+                    }
+                )
             }
             item{LivePlanCard(draft,estimate)}
             if(scenarios.isNotEmpty()){
@@ -221,7 +229,11 @@ private fun PlanningTripFields(draft:PlanningDraft,change:((PlanningDraft)->Plan
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PlanningRideFields(draft:PlanningDraft,change:((PlanningDraft)->PlanningDraft)->Unit){
+private fun PlanningRideFields(
+    draft:PlanningDraft,
+    change:((PlanningDraft)->PlanningDraft)->Unit,
+    changeImmediate:((PlanningDraft)->PlanningDraft)->Unit
+){
     SectionCard("2. Como quer pedalar?",Icons.Outlined.DirectionsBike){
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
             NumericField(draft.speedKmh,{value->change{it.copy(speedKmh=value)}},"Velocidade média",Modifier.weight(1f),positive=true,unit="km/h")
@@ -229,23 +241,36 @@ private fun PlanningRideFields(draft:PlanningDraft,change:((PlanningDraft)->Plan
         }
         Text("Use a velocidade média que você espera manter enquanto estiver pedalando. Paradas entram na margem, não na velocidade.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
         Text("Margem de segurança",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
-        FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)){
+        FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
             listOf(0 to "Sem margem",10 to "+10%",20 to "+20%").forEach{(value,label)->
-                val isSelected=draft.safetyMarginPercent==value
-                FilterChip(
-                    selected=isSelected,
-                    onClick={change{it.copy(safetyMarginPercent=value)}},
-                    modifier=Modifier
-                        .testTag("planning-margin-$value")
-                        .semantics {
-                            selected=isSelected
-                            stateDescription=if(isSelected) "$label selecionado" else "$label não selecionado"
-                        },
-                    label={Text(label)}
+                PlanningMarginChoice(
+                    value=value,
+                    label=label,
+                    selected=draft.safetyMarginPercent==value,
+                    onSelect={changeImmediate{it.copy(safetyMarginPercent=value)}}
                 )
             }
         }
         Text("A margem acrescenta tempo ao planejamento para imprevistos, sem alterar a distância real da rota.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+
+@Composable
+private fun PlanningMarginChoice(value:Int,label:String,selected:Boolean,onSelect:()->Unit){
+    Surface(
+        modifier=Modifier
+            .heightIn(min=44.dp)
+            .testTag("planning-margin-$value")
+            .selectable(selected=selected,onClick=onSelect,role=Role.RadioButton),
+        shape=MaterialTheme.shapes.small,
+        color=if(selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+        contentColor=if(selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+        border=BorderStroke(1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+    ){
+        Box(Modifier.padding(horizontal=14.dp,vertical=10.dp),contentAlignment=Alignment.Center){
+            Text(label,fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,fontSize=13.sp)
+        }
     }
 }
 

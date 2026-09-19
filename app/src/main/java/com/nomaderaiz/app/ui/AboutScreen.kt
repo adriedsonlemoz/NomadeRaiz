@@ -29,11 +29,11 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigida a validação da margem +20% no Android 15 sem remover a verificação de estado.")
-                Text("• O chip de margem agora publica explicitamente seu estado selecionado na semântica, melhorando testes e acessibilidade.")
-                Text("• O teste aguarda a persistência real do +20% antes de validar a seleção visual e continua conferindo o valor após recriar a Activity.")
-                Text("• Testes unitários e build da versão anterior passaram; a execução instrumentada ficou em 4/5 e esta correção ainda precisa ser revalidada no GitHub Actions.")
-                Text("• O assistente de viagem, a formatação automática dos números e a persistência serializada foram preservados.")
+                Text("• Corrigida a falha de persistência da margem +20% observada nos testes Android 15.")
+                Text("• A margem agora é uma escolha seletiva própria: clique e estado selecionado ficam no mesmo nó semântico.")
+                Text("• 0%, +10% e +20% são salvos imediatamente; o debounce continua somente nos campos digitados para manter a tela leve.")
+                Text("• Os logs da versão anterior tiveram testes unitários e APK aprovados, com 4/5 testes Android 15; esta versão ainda precisa de nova validação.")
+                Text("• Assistente de viagem, formatação automática e compatibilidade dos dados foram preservados.")
             }
         }
         item{
