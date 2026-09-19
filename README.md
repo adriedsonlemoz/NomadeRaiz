@@ -2,36 +2,36 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.40-kotlin-alpha.13`
+**Versão atual:** `1.0.42-kotlin-alpha.15`
 
-**versionCode:** `100040`
+**versionCode:** `100042`
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- Calculadora simplificada: removido o excesso visual de Bike, inventário de alimentos, dinheiro, peso e custos detalhados; a tela agora prioriza alimentação, água e energia. Os dados antigos continuam preservados na persistência para compatibilidade.
-- Confirmada em código a remoção da dependência de `WindowInsets.isImeVisible`; a barra inferior é renderizada sempre que o destino atual é uma tela principal.
+- Tela **Planejar** reformulada como assistente de viagem: o fluxo principal agora pergunta destino, distância, pessoas, velocidade média e horas de pedal por dia.
+- A estimativa é atualizada enquanto o usuário digita e mostra km/dia, horas efetivas de pedal, dias previstos e horas do último dia.
+- Nova margem de segurança de `0%`, `+10%` ou `+20%`, tratada como tempo adicional de planejamento sem alterar a distância real.
+- Três cenários rápidos (`Leve`, `Equilibrado` e `Longo`) permitem comparar 4 h, 6 h e 8 h de pedal por dia mantendo velocidade e margem.
+- Data de saída opcional calcula a data estimada de chegada usando dias corridos do planejamento.
+- Recursos essenciais foram simplificados no Planejamento: alimentação por pessoa/dia, água por pessoa/dia e consumo de energia do grupo por dia geram os totais da viagem automaticamente.
+- O antigo resumo grande de estados deixou de dominar o topo. O último planejamento agora aparece de forma compacta; checklist, inventário, alimentação detalhada, água carregada, reabastecimento, tipo de viagem, orçamento e campos legados ficam em detalhes opcionais.
+- Dados de versões anteriores continuam preservados. O schema local do rascunho passou para `2`, mas rascunhos antigos mantêm `dias`/`km por dia` e não recebem velocidade ou horas inventadas durante a migração.
+- A imagem hero da tela Planejar deixou de ser composta, reduzindo decodificação de bitmap e trabalho visual nessa tela. Nenhuma imagem ou mockup novo foi criado ou adicionado.
+- Campos numéricos continuam usando apresentação pt-BR automática (`100000` → `100.000`, dinheiro com `R$` e unidades no próprio campo).
+- Persistência de Planejamento e Calculadora continua agrupada por 300 ms e executada fora da thread da UI; estado em edição permanece em `SavedState`.
+- A tela **Sobre** foi atualizada com as mudanças desta versão.
+- O módulo **Backup** não foi alterado.
 
-- Barra inferior sem altura fixa de 70 dp, com tratamento dos espaços do sistema e do teclado. As barras do Android acompanham o tema do aplicativo.
-- Planejamento salva automaticamente o rascunho e mantém o último planejamento gerado separado das edições em andamento. Calculadora também conserva seus campos ao sair e reabrir.
-- Campos numéricos aceitam vírgula ou ponto decimal, usam teclado numérico e mostram erros. Cadastros de equipamentos e Diário impedem salvar valores inválidos.
-- Média da viagem calculada por distância/duração; a meta nos dias de pedal continua editável, permitindo dias de descanso e sinalizando metas insuficientes.
-- Botão de gerar planejamento acessível ao final da tela, com explicação dos campos obrigatórios. Alimentação usa linhas expansíveis que mantêm todos os campos anteriores.
-- Retorno ao abrir Planejamento por Mais e retorno do Android dentro das categorias de Equipamentos corrigidos.
-- Alertas distingue mínimos não configurados de estoque suficiente. Edição do mínimo valida o número antes de salvar.
-- Paleta Material 3 completa, seis cores em duas linhas, ícones vetoriais nos menus e ferramentas, texto secundário mais legível e totais financeiros reunidos.
-
-**Validação desta entrega:** revisão estática, sincronização de metadados, integridade dos recursos e comparação com a base 1.0.37 realizadas localmente. A compilação Kotlin/Android e os testes JUnit/instrumentados **não foram executados neste ambiente**, pois os downloads de Gradle/SDK foram bloqueados. O workflow executará essas etapas antes de publicar o APK. Veja `VALIDACAO.md`.
-
-**Backup fora do escopo:** a tela, as rotinas de exportação/importação e o schema do Backup foram preservados. Os novos rascunhos são locais e não são incluídos no Backup JSON existente. As cores e os espaços do sistema são ajustes globais compartilhados pelas telas.
+**Validação desta entrega:** os arquivos puros de regra de negócio (`Models`, entrada numérica, planejamento, calculadora, cenários e resultados) foram compilados juntos com `kotlinc` com sucesso. A validação Android completa depende de Gradle/Android SDK e está detalhada em `VALIDACAO.md`; nenhum teste Android é declarado como aprovado sem execução.
 
 ## Estado funcional atual
 
 - Home visual para cicloviagem com imagem de abertura, progresso real do inventário, alertas clicáveis, nota rápida, diário e atalhos.
 - Equipamentos com as 9 categorias e 20 itens-base do original, CRUD, status, quantidade, preço, observações, prioridade, filtros, ordenação e totais financeiros.
 - Cinco modos de checklist. Como no original, apenas `Antes de sair` e `Bike/Manutenção` são persistentes; os demais são temporários.
-- Planejamento com destino, duração, pessoas, distância, média calculada, meta de pedal, quatro tipos de viagem, alimentação, água, orçamento, reserva financeira, energia automática pelo inventário, abrigo, segurança, estados, recomendações e atalhos para Pontos de apoio/Manual da Bike.
+- Planejamento como assistente de viagem: destino, distância, pessoas, velocidade média, horas/dia, margem de segurança, data de saída opcional, estimativa instantânea de dias/horas/km por dia, comparação de cenários e cálculo simples de alimentação, água e energia; controles detalhados antigos continuam acessíveis numa seção opcional.
 - Calculadora simplificada para uso na estrada: gasto diário com alimentação, água carregada/consumo diário e energia disponível/consumo diário, com autonomia e totais quando aplicáveis.
 - Diário com cadastro, edição, clima, quilometragem, notas, exclusão, totais e persistência.
 - Pontos de apoio com os tipos originais, filtro por tipo, cadastro, edição, confirmação de exclusão, avaliação e estado aberto/fechado.

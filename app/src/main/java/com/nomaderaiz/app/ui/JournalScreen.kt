@@ -49,10 +49,10 @@ import java.util.Locale
 internal fun JournalScreen(modifier:Modifier,entries:List<JournalEntry>,save:(List<JournalEntry>)->Unit,repo:AppRepository){
     var add by remember{mutableStateOf(false)}
     var editing by remember{mutableStateOf<JournalEntry?>(null)}
-    val totalKm=entries.sumOf{it.km}
+    val totalKm=remember(entries){entries.sumOf{it.km}}
     val dateFormat=remember{SimpleDateFormat("dd/MM/yyyy",Locale("pt","BR"))}
     val monthFormat=remember{SimpleDateFormat("MMMM yyyy",Locale("pt","BR"))}
-    val latest=entries.maxByOrNull{it.createdAt}
+    val latest=remember(entries){entries.maxByOrNull{it.createdAt}}
 
     LazyColumn(
         modifier.fillMaxSize().padding(horizontal=14.dp),
@@ -73,8 +73,8 @@ internal fun JournalScreen(modifier:Modifier,entries:List<JournalEntry>,save:(Li
                     Text(latest?.let{dateFormat.format(Date(it.createdAt))}?:"Guarde locais, clima, distância e memórias.",fontSize=12.sp,color=Color.White.copy(alpha=.82f))
                     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
                         Metric(entries.size.toString(),"registros",Modifier.weight(1f),Color.White)
-                        Metric("%.1f km".format(totalKm),"distância",Modifier.weight(1f),Color.White)
-                        Metric(latest?.km?.let{"%.1f km".format(it)}?:"—","último dia",Modifier.weight(1f),Color.White)
+                        Metric("${decimal(totalKm)} km","distância",Modifier.weight(1f),Color.White)
+                        Metric(latest?.km?.let{"${decimal(it)} km"}?:"—","último dia",Modifier.weight(1f),Color.White)
                     }
                 }
             }
@@ -82,7 +82,7 @@ internal fun JournalScreen(modifier:Modifier,entries:List<JournalEntry>,save:(Li
         item{
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
                 JournalStatCard(entries.size.toString(),"registros",Modifier.weight(1f))
-                JournalStatCard("%.1f km".format(totalKm),"pedalados",Modifier.weight(1f))
+                JournalStatCard("${decimal(totalKm)} km","pedalados",Modifier.weight(1f))
             }
         }
         item{Button(onClick={add=true},modifier=Modifier.fillMaxWidth()){Icon(Icons.Default.Add,null);Text(" NOVO REGISTRO")}}
@@ -131,7 +131,7 @@ private fun JournalDialog(entry:JournalEntry?,dismiss:()->Unit,done:(String,Stri
         text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
             OutlinedTextField(local,{local=it},label={Text("Local")},modifier=Modifier.fillMaxWidth())
             Row(Modifier.horizontalScroll(rememberScrollState())){weathers.forEach{w->FilterChip(selected=weather==w,onClick={weather=w},label={Text(w)},modifier=Modifier.padding(end=4.dp))}}
-            NumericField(km,{km=it},"Km pedalados")
+            NumericField(km,{km=it},"Distância pedalada",unit="km")
             OutlinedTextField(note,{note=it},label={Text("Nota")},modifier=Modifier.fillMaxWidth(),minLines=3)
         }}
     )

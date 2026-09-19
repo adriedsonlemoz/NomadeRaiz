@@ -42,11 +42,11 @@ internal fun HomeScreen(
     onTips:()->Unit,
     onAlerts:()->Unit
 ){
-    val ready=items.count{it.status==ItemStatus.COMPRADO}
-    val pct=if(items.isEmpty())0 else ready*100/items.size
-    val alerts=items.count{item->minimums[item.id]?.let{min->(if(item.status==ItemStatus.COMPRADO)item.quantity else 0)<min}==true}
-    val totalInvestment=items.sumOf{it.price*it.quantity.coerceAtLeast(0)}
-    val pending=items.count{it.status==ItemStatus.PENDENTE}
+    val ready=remember(items){items.count{it.status==ItemStatus.COMPRADO}}
+    val pct=remember(items,ready){if(items.isEmpty())0 else ready*100/items.size}
+    val alerts=remember(items,minimums){items.count{item->minimums[item.id]?.let{min->(if(item.status==ItemStatus.COMPRADO)item.quantity else 0)<min}==true}}
+    val totalInvestment=remember(items){items.sumOf{it.price*it.quantity.coerceAtLeast(0)}}
+    val pending=remember(items){items.count{it.status==ItemStatus.PENDENTE}}
     val days=settings.startDate?.let{max(1,((System.currentTimeMillis()-it)/(24*60*60*1000L)).toInt()+1)}?:0
     var noteOpen by remember{mutableStateOf(false)}
     var noteDraft by remember(quickNote){mutableStateOf(quickNote)}
@@ -188,9 +188,26 @@ internal fun EquipmentScreen(modifier:Modifier,equipment:List<EquipmentItem>,sav
     var editing by remember{mutableStateOf<EquipmentItem?>(null)}
     var add by remember{mutableStateOf(false)}
     BackHandler(enabled=categoryId!=null&&editing==null&&!add){categoryId=null}
-    val total=equipment.sumOf{it.price*it.quantity.coerceAtLeast(0)}
-    val bought=equipment.filter{it.status==ItemStatus.COMPRADO}.sumOf{it.price*it.quantity.coerceAtLeast(0)}
-    val pending=equipment.filter{it.status==ItemStatus.PENDENTE}.sumOf{it.price*it.quantity.coerceAtLeast(0)}
+    val totals=remember(equipment){
+        Triple(
+            equipment.sumOf{it.price*it.quantity.coerceAtLeast(0)},
+            equipment.asSequence().filter{it.status==ItemStatus.COMPRADO}.sumOf{it.price*it.quantity.coerceAtLeast(0)},
+            equipment.asSequence().filter{it.status==ItemStatus.PENDENTE}.sumOf{it.price*it.quantity.coerceAtLeast(0)}
+        )
+    }
+    val total=totals.first;val bought=totals.second;val pending=totals.third
+    val equipmentByCategory=remember(equipment){equipment.groupBy{it.categoryId}}
+    val visible=remember(equipment,categoryId,filter,sort){
+        if(categoryId==null) emptyList() else equipment.asSequence()
+            .filter{it.categoryId==categoryId}
+            .filter{when(filter){GearFilter.TODOS->true;GearFilter.PENDENTES->it.status==ItemStatus.PENDENTE;GearFilter.COMPRADOS->it.status==ItemStatus.COMPRADO}}
+            .toList()
+            .let{list->when(sort){
+                GearSort.PRIORIDADE->list.sortedWith(compareBy<EquipmentItem>{when(it.priority){Priority.URGENTE->0;Priority.MEDIO->1;Priority.BAIXO->2}}.thenBy{it.name})
+                GearSort.PRECO_ASC->list.sortedBy{it.price*it.quantity}
+                GearSort.PRECO_DESC->list.sortedByDescending{it.price*it.quantity}
+            }}
+    }
 
     LazyColumn(
         modifier.fillMaxSize().padding(horizontal=14.dp),
@@ -213,7 +230,7 @@ internal fun EquipmentScreen(modifier:Modifier,equipment:List<EquipmentItem>,sav
         }
         if(categoryId==null){
             items(equipmentCategories,key={it.id}){cat->
-                val list=equipment.filter{it.categoryId==cat.id};val ready=list.count{it.status==ItemStatus.COMPRADO}
+                val list=equipmentByCategory[cat.id].orEmpty();val ready=list.count{it.status==ItemStatus.COMPRADO}
                 val progress=if(list.isEmpty())0f else ready.toFloat()/list.size
                 Card(
                     Modifier.fillMaxWidth().clickable{categoryId=cat.id},
@@ -251,18 +268,11 @@ internal fun EquipmentScreen(modifier:Modifier,equipment:List<EquipmentItem>,sav
                     AssistChip(onClick={sort=GearSort.PRECO_DESC},label={Text(if(sort==GearSort.PRECO_DESC)"✓ Maior preço" else "Maior preço")})
                 }
             }
-            val visible=equipment.filter{it.categoryId==categoryId}.filter{when(filter){GearFilter.TODOS->true;GearFilter.PENDENTES->it.status==ItemStatus.PENDENTE;GearFilter.COMPRADOS->it.status==ItemStatus.COMPRADO}}.let{list->
-                when(sort){
-                    GearSort.PRIORIDADE->list.sortedWith(compareBy<EquipmentItem>{when(it.priority){Priority.URGENTE->0;Priority.MEDIO->1;Priority.BAIXO->2}}.thenBy{it.name})
-                    GearSort.PRECO_ASC->list.sortedBy{it.price*it.quantity}
-                    GearSort.PRECO_DESC->list.sortedByDescending{it.price*it.quantity}
-                }
-            }
             items(visible,key={it.id}){item->
                 Card(Modifier.fillMaxWidth().clickable{editing=item}){
                     Row(Modifier.padding(12.dp),verticalAlignment=Alignment.CenterVertically){
                         Checkbox(checked=item.status==ItemStatus.COMPRADO,onCheckedChange={checked->save(equipment.map{if(it.id==item.id)it.copy(status=if(checked)ItemStatus.COMPRADO else ItemStatus.PENDENTE,updatedAt=System.currentTimeMillis()) else it})})
-                        Column(Modifier.weight(1f)){Text(item.name,fontWeight=FontWeight.SemiBold);Text("${priorityLabel(item.priority)} • Qtd. ${item.quantity} • ${money(item.price*item.quantity)}",fontSize=12.sp);if(item.notes.isNotBlank())Text(item.notes,fontSize=12.sp)}
+                        Column(Modifier.weight(1f)){Text(item.name,fontWeight=FontWeight.SemiBold);Text("${priorityLabel(item.priority)} • Qtd. ${integer(item.quantity)} • ${money(item.price*item.quantity)}",fontSize=12.sp);if(item.notes.isNotBlank())Text(item.notes,fontSize=12.sp)}
                         IconButton(onClick={save(equipment.filterNot{it.id==item.id})}){Icon(Icons.Default.Delete,contentDescription="Excluir")}
                     }
                 }
@@ -298,7 +308,7 @@ private fun ItemDialog(item:EquipmentItem,dismiss:()->Unit,done:(EquipmentItem)-
             item{Box{OutlinedButton(onClick={catMenu=true},modifier=Modifier.fillMaxWidth()){Text(equipmentCategories.firstOrNull{it.id==category}?.label?:"Categoria")};DropdownMenu(expanded=catMenu,onDismissRequest={catMenu=false}){equipmentCategories.forEach{cat->DropdownMenuItem(text={Text(cat.label)},leadingIcon={Icon(categoryIcon(cat.id),null)},onClick={category=cat.id;catMenu=false})}}}}
             item{Text("Prioridade",fontWeight=FontWeight.SemiBold);Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){Priority.entries.forEach{p->FilterChip(selected=priority==p,onClick={priority=p},label={Text(priorityLabel(p))})}}}
             item{NumericField(qty,{qty=it},"Quantidade",whole=true)}
-            item{NumericField(price,{price=it},"Preço unitário")}
+            item{NumericField(price,{price=it},"Preço unitário",money=true)}
             item{OutlinedTextField(notes,{notes=it},label={Text("Observações")},modifier=Modifier.fillMaxWidth(),minLines=2)}
         }}
     )

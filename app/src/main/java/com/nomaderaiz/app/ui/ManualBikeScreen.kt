@@ -23,7 +23,8 @@ import com.nomaderaiz.app.R
 import com.nomaderaiz.app.data.*
 import java.text.Normalizer
 
-private fun norm(value:String)=Normalizer.normalize(value,Normalizer.Form.NFD).replace("\\p{Mn}+".toRegex(),"").lowercase()
+private val combiningMarks=Regex("\\p{Mn}+")
+private fun norm(value:String)=Normalizer.normalize(value,Normalizer.Form.NFD).replace(combiningMarks,"").lowercase()
 private fun containsTerm(term:String,vararg values:Any):Boolean = values.any{value->when(value){is String->norm(value).contains(term);is List<*>->value.filterIsInstance<String>().any{norm(it).contains(term)};else->false}}
 
 @OptIn(ExperimentalLayoutApi::class)

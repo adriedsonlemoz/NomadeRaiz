@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -19,6 +20,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.nomaderaiz.app.data.*
 import com.nomaderaiz.app.ui.theme.NomadeRaizTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 private val NavigationStateSaver = listSaver<NavigationState, String>(
     save = { state -> listOf(state.current.name) + state.backStack.map { it.name } },
@@ -29,6 +33,16 @@ private val NavigationStateSaver = listSaver<NavigationState, String>(
             backStack = screens.drop(1)
         )
     }
+)
+
+private val PlanningSessionSaver = Saver<PlanningSession,String>(
+    save = { TravelFormJson.encodePlanning(it) },
+    restore = { TravelFormJson.decodePlanning(it) }
+)
+
+private val CalculatorDraftSaver = Saver<CalculatorDraft,String>(
+    save = { TravelFormJson.encodeCalculator(it) },
+    restore = { TravelFormJson.decodeCalculator(it) }
 )
 
 @Composable
@@ -46,9 +60,22 @@ fun NomadeRaizApp(){
     var activeCheckMode by remember{mutableStateOf(repo.loadActiveCheckMode())}
     var favoriteManual by remember{mutableStateOf(repo.loadFavoriteManual())}
     var masteredSkills by remember{mutableStateOf(repo.loadMasteredSkills())}
-    var planning by remember{mutableStateOf(repo.loadPlanningSession())}
-    var calculator by remember{mutableStateOf(repo.loadCalculatorDraft())}
+    var planning by rememberSaveable(stateSaver=PlanningSessionSaver){mutableStateOf(repo.loadPlanningSession())}
+    var calculator by rememberSaveable(stateSaver=CalculatorDraftSaver){mutableStateOf(repo.loadCalculatorDraft())}
     val savedScreens=rememberSaveableStateHolder()
+
+    // Planejamento e Calculadora têm digitação contínua. O estado visual e o SavedState
+    // são atualizados imediatamente; a serialização persistente é agrupada e executada
+    // fora da thread da UI. Assim a Activity pode ser recriada sem perder o que foi
+    // digitado e sem gravar SharedPreferences a cada tecla.
+    LaunchedEffect(planning){
+        delay(300)
+        withContext(Dispatchers.IO){repo.savePlanningSession(planning)}
+    }
+    LaunchedEffect(calculator){
+        delay(300)
+        withContext(Dispatchers.IO){repo.saveCalculatorDraft(calculator)}
+    }
 
     fun reloadPersistentState(){
         items=repo.loadItems();journal=repo.loadJournal();points=repo.loadPoints();minimums=repo.loadMinimums()
@@ -109,16 +136,16 @@ fun NomadeRaizApp(){
                 Screen.Verify->VerifyScreen(repo,activeCheckMode,{mode->activeCheckMode=mode;repo.saveActiveCheckMode(mode)},{back()})
                 Screen.Planning->PlanningScreen(
                     modifier=Modifier,equipment=items,session=planning,
-                    save={planning=it;repo.savePlanningSession(it)},onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},
+                    save={planning=it},commit={planning=it;repo.savePlanningSession(it)},
+                    onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},
                     back=if(navigation.canGoBack)({back()})else null
                 )
                 Screen.Journal->JournalScreen(Modifier,journal,{journal=it;repo.saveJournal(it)},repo)
-                Screen.More->MoreScreen(
-                    modifier=Modifier,
-                    alertCount=items.count{item->minimums[item.id]?.let{minimum->(if(item.status==ItemStatus.COMPRADO)item.quantity else 0)<minimum}==true},
-                    open={open(it)}
-                )
-                Screen.Calculator->CalculatorScreen(items,calculator,{calculator=it;repo.saveCalculatorDraft(it)},{back()})
+                Screen.More->{
+                    val alertCount=remember(items,minimums){items.count{item->minimums[item.id]?.let{minimum->(if(item.status==ItemStatus.COMPRADO)item.quantity else 0)<minimum}==true}}
+                    MoreScreen(modifier=Modifier,alertCount=alertCount,open={open(it)})
+                }
+                Screen.Calculator->CalculatorScreen(calculator,{calculator=it},{back()})
                 Screen.Points->PointsScreen(points,{points=it;repo.savePoints(it)},repo,{back()})
                 Screen.Alerts->AlertsScreen(items,minimums,{minimums=it;repo.saveMinimums(it)},{back()})
                 Screen.Tips->TipsScreen(favoriteTips,{favoriteTips=it;repo.saveFavoriteTips(it)},{back()})

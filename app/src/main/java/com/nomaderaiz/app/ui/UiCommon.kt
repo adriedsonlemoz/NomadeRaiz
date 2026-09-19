@@ -23,13 +23,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.nomaderaiz.app.data.PlanningStatus
+import com.nomaderaiz.app.data.normalizeNumericInput
 import com.nomaderaiz.app.data.numberError
 
 @Composable
@@ -144,19 +149,54 @@ internal fun RasterThumbnail(@DrawableRes imageRes:Int,description:String,modifi
     )
 }
 
+private object PtBrGroupedNumberTransformation:VisualTransformation {
+    override fun filter(text:AnnotatedString):TransformedText {
+        val source=text.text
+        if(source.isEmpty()) return TransformedText(text,OffsetMapping.Identity)
+        val separatorIndex=source.indexOfFirst{it==','||it=='.'}.let{if(it<0)source.length else it}
+        val transformed=StringBuilder(source.length+source.length/3)
+        val originalToTransformed=IntArray(source.length+1)
+        val transformedToOriginal=mutableListOf(0)
+
+        source.forEachIndexed{i,char->
+            if(i<separatorIndex&&i>0&&(separatorIndex-i)%3==0){
+                transformed.append('.')
+                transformedToOriginal.add(i)
+            }
+            originalToTransformed[i]=transformed.length
+            transformed.append(if(i==separatorIndex) ',' else char)
+            transformedToOriginal.add(i+1)
+        }
+        originalToTransformed[source.length]=transformed.length
+
+        val mapping=object:OffsetMapping{
+            override fun originalToTransformed(offset:Int):Int=originalToTransformed[offset.coerceIn(0,source.length)]
+            override fun transformedToOriginal(offset:Int):Int=transformedToOriginal[offset.coerceIn(0,transformedToOriginal.lastIndex)]
+        }
+        return TransformedText(AnnotatedString(transformed.toString()),mapping)
+    }
+}
+
 @Composable
 internal fun NumericField(
     value:String,onValueChange:(String)->Unit,label:String,modifier:Modifier=Modifier.fillMaxWidth(),
-    whole:Boolean=false,positive:Boolean=false,helper:String?=null
+    whole:Boolean=false,positive:Boolean=false,helper:String?=null,money:Boolean=false,unit:String?=null
 ){
     val focus=LocalFocusManager.current
     val error=numberError(value,whole,positive)
     OutlinedTextField(
-        value=value,onValueChange=onValueChange,label={Text(label)},modifier=modifier,singleLine=true,
+        value=value,
+        onValueChange={onValueChange(normalizeNumericInput(it,whole,value))},
+        label={Text(label)},
+        modifier=modifier,
+        singleLine=true,
         isError=error!=null,
         supportingText=if(error!=null||helper!=null){{Text(error?:helper.orEmpty())}}else null,
         keyboardOptions=KeyboardOptions(keyboardType=if(whole)KeyboardType.Number else KeyboardType.Decimal,imeAction=ImeAction.Next),
-        keyboardActions=KeyboardActions(onNext={if(!focus.moveFocus(FocusDirection.Down))focus.clearFocus()},onDone={focus.clearFocus()})
+        keyboardActions=KeyboardActions(onNext={if(!focus.moveFocus(FocusDirection.Down))focus.clearFocus()},onDone={focus.clearFocus()}),
+        visualTransformation=PtBrGroupedNumberTransformation,
+        prefix=if(money){{Text("R$ ")}}else null,
+        suffix=if(unit!=null){{Text(unit.orEmpty())}}else null
     )
 }
 
@@ -167,5 +207,9 @@ internal fun StatusBadge(status:PlanningStatus){
     Text(text=text,color=color,fontWeight=FontWeight.Bold,fontSize=12.sp)
 }
 
-internal fun money(value:Double)=String.format(java.util.Locale("pt","BR"),"R$ %.2f",value)
-internal fun decimal(value:Double)=java.text.DecimalFormat("0.#",java.text.DecimalFormatSymbols(java.util.Locale("pt","BR"))).format(value)
+private val moneyFormatter=ThreadLocal.withInitial{java.text.DecimalFormat("R$ #,##0.00",java.text.DecimalFormatSymbols(java.util.Locale("pt","BR")))}
+private val decimalFormatter=ThreadLocal.withInitial{java.text.DecimalFormat("#,##0.#",java.text.DecimalFormatSymbols(java.util.Locale("pt","BR")))}
+private val integerFormatter=ThreadLocal.withInitial{java.text.DecimalFormat("#,##0",java.text.DecimalFormatSymbols(java.util.Locale("pt","BR")))}
+internal fun money(value:Double)=moneyFormatter.get().format(value)
+internal fun decimal(value:Double)=decimalFormatter.get().format(value)
+internal fun integer(value:Int)=integerFormatter.get().format(value)

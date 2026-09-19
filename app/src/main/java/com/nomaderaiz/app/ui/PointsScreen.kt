@@ -64,8 +64,9 @@ internal fun PointsScreen(points:List<SupportPoint>,save:(List<SupportPoint>)->U
     var deleting by remember{mutableStateOf<SupportPoint?>(null)}
     var typeFilter by rememberSaveable{mutableStateOf<String?>(null)}
     val visiblePoints=remember(points,typeFilter){typeFilter?.let{type->points.filter{it.tipo==type}}?:points}
-    val openPoints=points.count{!it.fechado}
-    val usedTypes=points.map{it.tipo}.distinct().size
+    val pointStats=remember(points){points.count{!it.fechado} to points.asSequence().map{it.tipo}.distinct().count()}
+    val openPoints=pointStats.first
+    val usedTypes=pointStats.second
 
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal=14.dp),

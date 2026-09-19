@@ -44,9 +44,9 @@ internal fun FoodEditor(form:Map<String,FoodFormValue>,onChange:(Map<String,Food
                             if(food.units.size>1)FlowRow(horizontalArrangement=Arrangement.spacedBy(4.dp)){
                                 food.units.forEach{unit->FilterChip(selected=selected.id==unit.id,onClick={onChange(form+(food.id to current.copy(unitId=unit.id,price="",consumption="")))},label={Text(unit.label)})}
                             }
-                            NumericField(current.quantity,{onChange(form+(food.id to current.copy(quantity=it)))},"Quantidade (${selected.label})")
-                            NumericField(current.price,{onChange(form+(food.id to current.copy(price=it)))},"Preço por unidade (R$)",helper="Em branco: ${money(selected.defaultPrice)} por ${selected.label}.")
-                            NumericField(current.consumption,{onChange(form+(food.id to current.copy(consumption=it)))},"Consumo por pessoa/dia",positive=true,helper="Em branco: ${decimal(selected.defaultDailyConsumption)} ${selected.label} por pessoa/dia.")
+                            NumericField(current.quantity,{onChange(form+(food.id to current.copy(quantity=it)))},"Quantidade",unit=selected.label)
+                            NumericField(current.price,{onChange(form+(food.id to current.copy(price=it)))},"Preço por unidade",helper="Em branco: ${money(selected.defaultPrice)} por ${selected.label}.",money=true)
+                            NumericField(current.consumption,{onChange(form+(food.id to current.copy(consumption=it)))},"Consumo por pessoa/dia",positive=true,helper="Em branco: ${decimal(selected.defaultDailyConsumption)} ${selected.label} por pessoa/dia.",unit=selected.label)
                             if(people>1)Text("Consumo calculado para $people pessoas.",fontSize=12.sp)
                         }
                     }

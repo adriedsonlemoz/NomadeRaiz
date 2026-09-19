@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.0.42-kotlin-alpha.15
+
+### Planejamento por ritmo e recursos essenciais
+
+- Reformulada a tela Planejar para priorizar o fluxo `destino → distância → ritmo → estimativa → recursos`, em vez de começar por um resumo extenso do inventário.
+- Adicionados velocidade média (`km/h`) e horas pedalando por dia; o app calcula em tempo real distância diária, horas efetivas de pedal, quantidade de dias e duração do último dia.
+- Adicionada margem de segurança de 0%, 10% ou 20%, aplicada como reserva de tempo sem alterar os quilômetros reais da rota.
+- Adicionados três cenários comparáveis de duração diária (4 h, 6 h e 8 h), tocáveis para aplicar rapidamente o cenário escolhido.
+- Data de saída opcional passa a produzir previsão de chegada em dias corridos.
+- Alimentação, água e energia ganharam entradas rápidas: gasto de alimentação por pessoa/dia, água por pessoa/dia e Wh/dia do grupo. Os totais acompanham automaticamente a duração estimada.
+- Último planejamento foi compactado; checklist e recomendações ficam recolhidos. Alimentação item a item, água carregada/reabastecimento, orçamento, tipo de viagem e campos antigos foram movidos para detalhes opcionais, sem excluir dados ou funções existentes.
+- Rascunho de Planejamento passou ao schema local 2. Dados antigos são migrados sem inventar velocidade/horas; a duração manual antiga continua válida até o usuário configurar o novo ritmo.
+- O cálculo detalhado usa a nova duração estimada quando disponível e mantém a duração antiga como fallback para planos legados.
+- A imagem hero deixou de ser usada na tela Planejar para reduzir custo de primeira composição em aparelhos básicos. Nenhuma imagem ou mockup novo foi criado.
+- Tela Sobre e documentação atualizadas.
+- Testes unitários foram ampliados para ritmo, margem, data de chegada, recursos essenciais e migração do schema antigo; teste instrumentado de Planejamento foi atualizado para cobrir o novo fluxo sem remover os demais cenários.
+- Módulo Backup preservado sem alterações.
+- Versão e metadados sincronizados: `1.0.42-kotlin-alpha.15` / `100042`.
+
+## 1.0.41-kotlin-alpha.14
+
+### Desempenho e campos numéricos brasileiros
+
+- Corrigido o principal ponto de lentidão encontrado na digitação do Planejamento e da Calculadora: cada tecla atualizava o estado raiz, serializava o rascunho e iniciava uma gravação em `SharedPreferences` pela thread da interface. A persistência desses dois rascunhos agora é agrupada por 300 ms e executada em `Dispatchers.IO`, mantendo o valor atual em `SavedState` para sobreviver à recriação da Activity.
+- Reduzidos cálculos repetidos durante recomposições em Home, Equipamentos, Diário, Pontos de apoio e Mais com `remember` para totais, filtros, agrupamentos e estatísticas que só dependem dos dados alterados.
+- A busca do Manual da Bike deixou de recompilar a expressão regular de normalização a cada termo pesquisado.
+- Removido da Calculadora o parâmetro de inventário que já não era utilizado, reduzindo recomposições sem relação com a tela.
+- Todos os `NumericField` passam a manter o valor cru no estado e aplicar agrupamento de milhares apenas na apresentação. Exemplo: `100000` é exibido como `100.000`, sem mudar o número persistido.
+- Campos monetários agora exibem prefixo `R$`; campos com unidade mostram sufixos como `km`, `km/dia`, `L`, `L/dia`, `Wh`, `Wh/dia` e `dias` quando aplicável.
+- Colagem de valores localizados como `1.500,50` e `1.000.000` é normalizada sem perder o valor; ponto ou vírgula decimal digitados continuam aceitos.
+- Resultados monetários e numéricos também passaram a usar separação de milhares em pt-BR.
+- Testes de entrada numérica foram ampliados e os testes instrumentados tiveram os rótulos atualizados sem remover cenários existentes.
+- Nenhuma imagem ou mockup foi criado/modificado e o módulo Backup não foi alterado.
+- Corrigido também o empacotamento: a pasta raiz do ZIP passa a usar o nome da versão atual, evitando carregar internamente o nome da versão anterior.
+- Versão e metadados sincronizados: `1.0.41-kotlin-alpha.14` / `100041`.
+
 ## 1.0.40-kotlin-alpha.13
 
 ### Calculadora enxuta para a cicloviagem

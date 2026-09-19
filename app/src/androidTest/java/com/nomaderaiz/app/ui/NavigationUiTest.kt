@@ -53,7 +53,7 @@ class NavigationUiTest {
         }
     }
 
-    @Test fun planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation(){
+    @Test fun planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation(){
         compose.onNodeWithTag("nav-More").performClick()
         openMoreModule("Planning")
         compose.onNodeWithTag("generate-plan").assertIsNotEnabled()
@@ -63,10 +63,17 @@ class NavigationUiTest {
             compose.onNode(matcher).performTextReplacement(value)
         }
         enter("Destino (opcional)","Serra do Rio do Rastro")
-        enter("Dias","20")
-        enter("Distância prevista (km)","500")
-        enter("Meta nos dias de pedal (km/dia)","50")
-        enter("Dinheiro disponível (R$)","1.500,50")
+        enter("Distância prevista","500")
+        enter("Velocidade média","20")
+        enter("Horas/dia","7")
+        enter("Alimentação por pessoa/dia","40")
+        enter("Água por pessoa/dia","3")
+        enter("Consumo de energia do grupo","25")
+        compose.onNodeWithTag("planning-list").performScrollToNode(hasText("+20%"))
+        compose.onNodeWithText("+20%").performClick()
+        compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
+        compose.onNodeWithTag("planning-advanced-toggle").performClick()
+        enter("Dinheiro disponível","1.500,50")
         compose.onNodeWithTag("generate-plan").assertIsEnabled().performClick()
         compose.waitForIdle()
         back()
@@ -79,7 +86,14 @@ class NavigationUiTest {
         val saved=repo.loadPlanningSession()
         assertEquals("Serra do Rio do Rastro",saved.draft.destination)
         assertEquals(1500.5,saved.draft.availableMoney.numberOrNull()!!,0.0)
-        assertEquals(25.0,saved.draft.pace.average!!,0.0)
+        assertEquals(20.0,saved.draft.speedKmh.numberOrNull()!!,0.0)
+        assertEquals(7.0,saved.draft.hoursPerDay.numberOrNull()!!,0.0)
+        assertEquals(20,saved.draft.safetyMarginPercent)
+        assertEquals(5,saved.draft.tripEstimate!!.days)
+        assertEquals("5",saved.draft.days)
+        assertEquals(40.0,saved.draft.foodDailyCost.numberOrNull()!!,0.0)
+        assertEquals(3.0,saved.draft.waterDailyPerPerson.numberOrNull()!!,0.0)
+        assertEquals(25.0,saved.draft.energyDailyWh.numberOrNull()!!,0.0)
         assertEquals(saved.draft,saved.lastGenerated)
         compose.onNodeWithTag("planning-list").performScrollToIndex(0)
         compose.onNodeWithContentDescription("Voltar").performClick()

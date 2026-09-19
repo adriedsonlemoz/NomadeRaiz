@@ -34,9 +34,10 @@ object Calculator {
         return BikeResult(valid,kmDay,kmDay*days.coerceAtLeast(0.0),days.coerceAtLeast(0.0))
     }
 
-    fun water(liters:Double,refill:Boolean,frequency:Double,people:Int=1,pointsConfirmed:Boolean?=null):WaterResult {
+    fun water(liters:Double,refill:Boolean,frequency:Double,people:Int=1,pointsConfirmed:Boolean?=null,litersPerPersonDay:Double=WATER_PER_PERSON_DAY):WaterResult {
         val peopleSafe=people.coerceAtLeast(1)
-        val daily=WATER_PER_PERSON_DAY*peopleSafe
+        val perPerson=litersPerPersonDay.takeIf{it.isFinite()&&it>0.0}?:WATER_PER_PERSON_DAY
+        val daily=perPerson*peopleSafe
         val autonomy=if(daily>0)liters.coerceAtLeast(0.0)/daily else 0.0
         val rounded=round1(autonomy)
         return WaterResult(
@@ -46,7 +47,7 @@ object Calculator {
             dias=rounded,
             autonomiaCarregada=rounded,
             consumoDia=daily,
-            consumoPorPessoaDia=WATER_PER_PERSON_DAY,
+            consumoPorPessoaDia=perPerson,
             pessoas=peopleSafe,
             suficientePorIntervalo=refill&&frequency>0&&autonomy>=frequency,
             frequenciaDias=frequency.coerceAtLeast(0.0),
