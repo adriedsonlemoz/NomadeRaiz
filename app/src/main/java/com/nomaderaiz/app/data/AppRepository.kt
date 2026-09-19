@@ -109,6 +109,11 @@ class AppRepository(context: Context) {
     fun loadQuickNote():String=prefs.getString("quick_note","")?:""
     fun saveQuickNote(v:String){prefs.edit().putString("quick_note",v).apply()}
 
+    fun loadPlanningSession():PlanningSession = TravelFormJson.decodePlanning(prefs.getString("planning_session_v1",null))
+    fun savePlanningSession(v:PlanningSession){prefs.edit().putString("planning_session_v1",TravelFormJson.encodePlanning(v)).apply()}
+    fun loadCalculatorDraft():CalculatorDraft = TravelFormJson.decodeCalculator(prefs.getString("calculator_draft_v1",null))
+    fun saveCalculatorDraft(v:CalculatorDraft){prefs.edit().putString("calculator_draft_v1",TravelFormJson.encodeCalculator(v)).apply()}
+
     fun exportText(items:List<EquipmentItem>,format:String):String{
         val totalValue=items.sumOf{it.price*it.quantity.coerceAtLeast(0)}
         val bought=items.filter{it.status==ItemStatus.COMPRADO}

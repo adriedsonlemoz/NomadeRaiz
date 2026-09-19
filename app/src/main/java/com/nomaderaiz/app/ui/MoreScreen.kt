@@ -1,29 +1,38 @@
 package com.nomaderaiz.app.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.draw.alpha
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.testTag
+import com.nomaderaiz.app.R
 
 internal data class MoreMenuEntry(
     val destination: Screen,
@@ -50,29 +59,50 @@ internal val moreMenuEntries = listOf(
  */
 @Composable
 internal fun MoreScreen(modifier:Modifier,alertCount:Int,open:(Screen)->Unit){
-    LazyColumn(
-        modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement=Arrangement.spacedBy(8.dp)
-    ){
-        item{Header("Mais","Ferramentas do Nômade Raiz")}
-        items(moreMenuEntries,key={it.destination}){entry->
-            val description=if(entry.destination==Screen.Alerts&&alertCount>0){
-                "⚠️ $alertCount ${if(alertCount==1)"item abaixo" else "itens abaixo"} do mínimo"
-            }else entry.description
-            Card(Modifier.fillMaxWidth().clickable{open(entry.destination)}){
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal=14.dp,vertical=12.dp),
-                    verticalAlignment=Alignment.CenterVertically
+    Box(modifier.fillMaxSize()){
+        Image(
+            painter=painterResource(R.drawable.nr_fundo_montanhas_escuro),
+            contentDescription=null,
+            contentScale=ContentScale.Crop,
+            alignment=Alignment.BottomCenter,
+            modifier=Modifier.fillMaxSize().alpha(.34f)
+        )
+        LazyVerticalGrid(
+            modifier=Modifier.testTag("more-grid"),
+            columns=GridCells.Fixed(3),
+            contentPadding=PaddingValues(start=14.dp,end=14.dp,top=6.dp,bottom=24.dp),
+            horizontalArrangement=Arrangement.spacedBy(8.dp),
+            verticalArrangement=Arrangement.spacedBy(8.dp)
+        ){
+            item(span={GridItemSpan(maxLineSpan)}){
+                ScreenHeader("Mais","Todas as ferramentas da sua cicloviagem")
+            }
+            items(moreMenuEntries,key={it.destination}){entry->
+                Card(
+                    Modifier.fillMaxWidth().heightIn(min=118.dp).testTag("more-${entry.destination.name}").clickable{open(entry.destination)},
+                    colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.90f))
                 ){
-                    Text(entry.icon,fontSize=24.sp,modifier=Modifier.width(38.dp))
-                    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
-                        Text(entry.title,fontWeight=FontWeight.Bold)
-                        Text(description,fontSize=11.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                    Box(Modifier.fillMaxWidth().heightIn(min=118.dp).padding(9.dp)){
+                        Column(
+                            Modifier.align(Alignment.Center),
+                            horizontalAlignment=Alignment.CenterHorizontally,
+                            verticalArrangement=Arrangement.spacedBy(7.dp)
+                        ){
+                            if(entry.destination==Screen.Backup)Text(entry.icon,fontSize=27.sp)
+                            else Icon(destinationIcon(entry.destination),null,Modifier.size(27.dp),tint=MaterialTheme.colorScheme.primary)
+                            Text(
+                                entry.title.replace(" da Viagem","").replace(" de Autonomia","").replace(" de Reposição",""),
+                                fontSize=12.sp,
+                                lineHeight=15.sp,
+                                fontWeight=FontWeight.Bold,
+                                textAlign=androidx.compose.ui.text.style.TextAlign.Center,
+                                maxLines=3
+                            )
+                        }
+                        if(entry.destination==Screen.Alerts&&alertCount>0){
+                            Badge(Modifier.align(Alignment.TopEnd)){Text(alertCount.toString())}
+                        }
                     }
-                    if(entry.destination==Screen.Alerts&&alertCount>0){
-                        Badge(Modifier.padding(horizontal=8.dp)){Text(alertCount.toString())}
-                    }
-                    Icon(Icons.Default.ChevronRight,contentDescription="Abrir ${entry.title}",modifier=Modifier.size(20.dp))
                 }
             }
         }

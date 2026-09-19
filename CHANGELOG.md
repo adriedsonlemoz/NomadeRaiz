@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.0.38-kotlin-alpha.11
+
+- Corrigidas a altura fixa da navegação inferior e a aplicação/consumo dos espaços das barras do Android e do teclado; aparência das barras sincronizada com o tema escolhido.
+- Planejamento passou a salvar rascunho e último plano gerado separadamente; Calculadora passou a salvar campos, alimentação e pesos. Nenhuma chave anterior de dados foi substituída.
+- Entradas com vírgula e ponto decimal são interpretadas corretamente. Valores inválidos têm mensagem e bloqueiam geração/salvamento, em vez de virarem zero silenciosamente.
+- Distância/duração fornecem a média real da viagem; a antiga média editável foi identificada como meta nos dias de pedal. Mantida a possibilidade de descanso, com aviso quando a meta não cobre o percurso.
+- Botão de gerar acessível com indicação dos requisitos; alimentação compactada em linhas expansíveis. Todos os campos, cálculos e detalhamentos anteriores continuam acessíveis.
+- Resultados do planejamento calculados somente quando o plano gerado ou inventário muda. Busca do Manual e resultados da Calculadora memorizados por suas entradas; lista de pesos renderizada por item.
+- Corrigidos o retorno visível de Planejamento aberto por Mais e o retorno do Android dentro de categorias de Equipamentos. Estado de rolagem das telas preservado.
+- Alertas passou a diferenciar ausência de mínimos de estoque suficiente; mínimo zero desativa o acompanhamento do item, com edição validada.
+- Aplicada a cor escolhida também aos cartões, seletores e diálogos Material 3; cores de Configurações em duas linhas; ícones vetoriais e melhor legibilidade das informações secundárias.
+- Totais financeiros de Equipamentos reunidos em uma faixa. Home identifica o progresso como inventário adquirido, evitando confusão com o checklist de segurança.
+- Calculadora vazia não conta o consumo padrão de energia como recurso já preenchido. Comparações incompletas são identificadas como parciais.
+- Adicionados testes JUnit de números, recursos, estado de estoque e serialização; testes instrumentados de navegação repetida, rascunhos, categorias, outras telas e preservação de preferências.
+- Workflow preparado para exigir testes unitários, compilação e testes Android 15 antes de publicar somente `Nomade-Raiz.apk`.
+- Backup mantido fora das alterações: tela, exportação/importação e schema preservados; os novos rascunhos locais não foram adicionados ao JSON de backup.
+- Sem imagens novas ou alteração dos recursos visuais existentes.
+- Versão e metadados sincronizados: `1.0.38-kotlin-alpha.11` / `100038`.
+- Validação local limitada a revisão estática e integridade. Build e testes Android/JUnit ainda pendentes de execução no GitHub Actions por bloqueio de downloads neste ambiente; não se afirma ausência de travamentos em aparelho sem esses testes.
+
+## 1.0.37-kotlin-alpha.10
+
+- Implantada a identidade visual do mockup nas 12 áreas principais, mantendo os dados e recursos reais do aplicativo em vez de números demonstrativos.
+- Adicionados e otimizados dez recursos visuais locais para Home, Planejamento, Diário, Mais, Pontos, Manual da Bike e Dicas; o uso permanece totalmente offline.
+- Home reorganizada com abertura para cicloviagem, verificação imediata, progresso real do inventário, acesso ao Diário e atalhos funcionais.
+- Equipamentos ganhou hierarquia por categoria, percentual de conclusão e apresentação compacta, preservando CRUD, filtros, preços, prioridades e ordenação.
+- Planejamento, Calculadora, Diário, Alertas, Pontos de apoio, Verificar e Configurações receberam cabeçalhos, resumos e cartões compatíveis com o novo visual sem perder as funções existentes.
+- Dicas recebeu filtros por categoria e miniaturas; Manual da Bike foi reorganizado em Visão geral, Manutenção e Ajustes, mantendo busca, diagnósticos, favoritos e domínio.
+- Mais passou a usar uma grade leve sobre fundo local, preservando os nove destinos originais e o contador real de alertas.
+- Corrigido um fechamento de escopo no novo Manual da Bike identificado pela compilação Kotlin.
+- Confirmados por testes os ciclos `Home → Mais → módulo → voltar`, todos os nove destinos, 100 ciclos por módulo e 1.000 aberturas/fechamentos de Mais sem crescimento da pilha.
+- Mantido o processamento de Backup fora da UI thread e preservada a persistência/compatibilidade dos dados existentes.
+- GitHub Actions permanece restrito ao asset de Release `Nomade-Raiz.apk`, sem `upload-artifact`, AAB ou ZIP de APK.
+
 ## 1.0.36-kotlin-alpha.9
 
 - Corrigido o travamento ao abrir **Mais**: o menu e cada ferramenta foram separados do antigo arquivo Compose monolítico, evitando carregar e verificar todos os módulos na UI thread no primeiro acesso.

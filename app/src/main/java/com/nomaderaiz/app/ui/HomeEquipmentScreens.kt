@@ -10,11 +10,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nomaderaiz.app.R
 import com.nomaderaiz.app.data.*
 import kotlin.math.max
 
@@ -47,41 +51,101 @@ internal fun HomeScreen(
     var noteOpen by remember{mutableStateOf(false)}
     var noteDraft by remember(quickNote){mutableStateOf(quickNote)}
 
-    LazyColumn(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
+    LazyColumn(
+        modifier.fillMaxSize().padding(horizontal=14.dp),
+        contentPadding=PaddingValues(top=8.dp,bottom=18.dp),
+        verticalArrangement=Arrangement.spacedBy(10.dp)
+    ){
         item{
-            Row(verticalAlignment=Alignment.CenterVertically){
-                Column(Modifier.weight(1f)){Header("NÔMADE RAIZ","Qual é a missão?")}
+            Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
+                Column(Modifier.weight(1f)){
+                    Text("NÔMADE",fontSize=22.sp,fontWeight=FontWeight.Black,letterSpacing=1.sp)
+                    Text("RAIZ",fontSize=12.sp,fontWeight=FontWeight.Black,color=MaterialTheme.colorScheme.primary,letterSpacing=1.6.sp)
+                }
                 if(days>0)AssistChip(onClick={},label={Text("$days dias")})
-                IconButton(onClick={onTips}){Icon(Icons.Default.Lightbulb,contentDescription="Dicas")}
                 IconButton(onClick={noteOpen=true}){Icon(Icons.Default.EditNote,contentDescription="Nota rápida")}
+                Box{
+                    IconButton(onClick=onAlerts){Icon(Icons.Default.NotificationsNone,contentDescription="Alertas")}
+                    if(alerts>0)Badge(Modifier.align(Alignment.TopEnd)){Text(alerts.toString())}
+                }
             }
         }
         item{
-            SectionCard("Sua jornada, organizada"){
-                Text("Planeje melhor. Pedale mais longe.",fontWeight=FontWeight.Bold)
-                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
-                    Stat("$pct%","inventário",Modifier.weight(1f));Stat("$alerts","alertas",Modifier.weight(1f),onAlerts);Stat(if(days>0)"$days" else "—","dias",Modifier.weight(1f))
+            HeroCard(
+                imageRes=R.drawable.nr_hero_home_cicloviajante,
+                height=292.dp,
+                alignment=Alignment.Center
+            ){
+                Column(
+                    Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(16.dp),
+                    verticalArrangement=Arrangement.spacedBy(7.dp)
+                ){
+                    Text("Bora, cicloviajante!",fontSize=23.sp,fontWeight=FontWeight.Black,color=Color.White)
+                    Text("Antes de seguir, verifique tudo e viaje com mais segurança.",fontSize=12.sp,color=Color(0xFFE7ECE7))
+                    Button(onClick={onVerify("antes-sair")},modifier=Modifier.fillMaxWidth()){
+                        Icon(Icons.Default.VerifiedUser,contentDescription=null)
+                        Spacer(Modifier.width(7.dp))
+                        Text("VERIFICAR AGORA",fontWeight=FontWeight.Bold)
+                    }
                 }
-                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
-                    OutlinedButton(onPlanning,Modifier.weight(1f)){Text("🧭 Planejar")}
-                    OutlinedButton(onCalculator,Modifier.weight(1f)){Text("📊 Autonomia")}
-                }
-                OutlinedButton(onPoints,Modifier.fillMaxWidth()){Text("📍 Pontos de apoio")}
-                val next=when{alerts>0->"Revise $alerts ${if(alerts==1)"item abaixo" else "itens abaixo"} do estoque mínimo antes de partir.";pending>0->"Você ainda tem $pending ${if(pending==1)"equipamento pendente" else "equipamentos pendentes"} na lista.";else->"Seu inventário não tem alertas críticos. Use o planejamento para revisar a viagem completa."}
-                Text("💡 Próximo passo",fontWeight=FontWeight.Bold);Text(next,fontSize=13.sp)
             }
         }
         item{
-            SectionCard("Inventário"){
-                Text("$ready/${items.size} itens adquiridos • $pct% pronto")
-                LinearProgressIndicator(progress={pct/100f},modifier=Modifier.fillMaxWidth())
-                Text("Investimento total: ${money(totalInvestment)}",fontWeight=FontWeight.SemiBold)
-                Button(onGear,Modifier.fillMaxWidth()){Text("ABRIR EQUIPAMENTOS")}
+            Card(
+                Modifier.fillMaxWidth().clickable(onClick=onGear),
+                colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.78f))
+            ){
+                Column(Modifier.padding(14.dp),verticalArrangement=Arrangement.spacedBy(7.dp)){
+                    Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
+                        Column(Modifier.weight(1f)){
+                            SectionLabel("Inventário da viagem")
+                            Text("$ready de ${items.size} itens adquiridos",fontSize=12.sp)
+                        }
+                        Text("$pct%",fontWeight=FontWeight.Black,color=MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.ChevronRight,contentDescription="Abrir equipamentos")
+                    }
+                    LinearProgressIndicator(progress={pct/100f},modifier=Modifier.fillMaxWidth())
+                }
             }
         }
-        item{Text("Verificações rápidas",fontWeight=FontWeight.Bold,fontSize=16.sp)}
-        items(checkModes){mode->ActionCard("${mode.icon} ${mode.label}","${mode.items.size} itens • ${mode.description}"){onVerify(mode.id)}}
-        item{ActionCard("📖 Diário da viagem","Registre quilômetros, clima, local e notas.",onJournal)}
+        item{
+            Card(
+                Modifier.fillMaxWidth().clickable(onClick=onJournal),
+                colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.78f))
+            ){
+                Row(Modifier.padding(14.dp),verticalAlignment=Alignment.CenterVertically){
+                    Icon(Icons.Default.MenuBook,contentDescription=null,tint=MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(11.dp))
+                    Column(Modifier.weight(1f)){
+                        SectionLabel("Diário da viagem")
+                        Text(if(quickNote.isBlank())"Continue registrando sua aventura" else quickNote,maxLines=2,fontSize=12.sp)
+                    }
+                    Icon(Icons.Default.ChevronRight,contentDescription="Abrir diário")
+                }
+            }
+        }
+        item{SectionLabel("Sua viagem")}
+        item{
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                ActionCard("Planejar","Rota e recursos",Modifier.weight(1f),Icons.Default.Map,onPlanning)
+                ActionCard("Autonomia","Faça os cálculos",Modifier.weight(1f),Icons.Default.Calculate,onCalculator)
+            }
+        }
+        item{
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                ActionCard("Pontos","Água e oficinas",Modifier.weight(1f),Icons.Default.Place,onPoints)
+                ActionCard("Dicas","Conhecimento",Modifier.weight(1f),Icons.Default.Lightbulb,onTips)
+            }
+        }
+        item{
+            val next=when{alerts>0->"Revise $alerts ${if(alerts==1)"item abaixo" else "itens abaixo"} do estoque mínimo antes de partir.";pending>0->"Você ainda tem $pending ${if(pending==1)"equipamento pendente" else "equipamentos pendentes"} na lista.";stockStatus(items,minimums).monitoredCount==0->"Defina os mínimos em Alertas para acompanhar a reposição do estoque.";else->"Os itens monitorados estão dentro do estoque mínimo."}
+            SectionCard("Próximo passo"){
+                Text(next,fontSize=12.sp)
+                Text("Investimento registrado: ${money(totalInvestment)}",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item{SectionLabel("Verificações rápidas")}
+        items(checkModes){mode->ActionCard(mode.label,"${mode.items.size} itens",Modifier.fillMaxWidth(),Icons.Default.FactCheck){onVerify(mode.id)}}
     }
 
     if(noteOpen){
@@ -98,14 +162,19 @@ internal fun HomeScreen(
 @Composable
 private fun Stat(value:String,label:String,modifier:Modifier,onClick:(()->Unit)?=null){
     val cardModifier=if(onClick!=null)modifier.clickable(onClick=onClick) else modifier
-    Card(cardModifier){Column(Modifier.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally){Text(value,fontWeight=FontWeight.Bold,fontSize=19.sp);Text(label,fontSize=10.sp)}}
+    Card(cardModifier){Column(Modifier.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally){Text(value,fontWeight=FontWeight.Bold,fontSize=19.sp);Text(label,fontSize=12.sp)}}
 }
 
 @Composable
-private fun ActionCard(title:String,body:String,onClick:()->Unit){
-    Card(Modifier.fillMaxWidth().clickable(onClick=onClick)){
-        Row(Modifier.padding(15.dp),verticalAlignment=Alignment.CenterVertically){
-            Column(Modifier.weight(1f)){Text(title,fontWeight=FontWeight.Bold);Text(body,fontSize=12.sp)}
+private fun ActionCard(title:String,body:String,modifier:Modifier=Modifier,icon:androidx.compose.ui.graphics.vector.ImageVector,onClick:()->Unit){
+    Card(
+        modifier.clickable(onClick=onClick),
+        colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.78f))
+    ){
+        Row(Modifier.padding(horizontal=12.dp,vertical=13.dp),verticalAlignment=Alignment.CenterVertically){
+            Icon(icon,contentDescription=null,tint=MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(9.dp))
+            Column(Modifier.weight(1f)){Text(title,fontWeight=FontWeight.Bold,fontSize=13.sp);Text(body,fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)}
             Icon(Icons.Default.ChevronRight,contentDescription=null)
         }
     }
@@ -113,32 +182,57 @@ private fun ActionCard(title:String,body:String,onClick:()->Unit){
 
 @Composable
 internal fun EquipmentScreen(modifier:Modifier,equipment:List<EquipmentItem>,save:(List<EquipmentItem>)->Unit,back:()->Unit,repo:AppRepository){
-    var categoryId by remember{mutableStateOf<String?>(null)}
-    var filter by remember{mutableStateOf(GearFilter.TODOS)}
-    var sort by remember{mutableStateOf(GearSort.PRIORIDADE)}
+    var categoryId by rememberSaveable{mutableStateOf<String?>(null)}
+    var filter by rememberSaveable{mutableStateOf(GearFilter.TODOS)}
+    var sort by rememberSaveable{mutableStateOf(GearSort.PRIORIDADE)}
     var editing by remember{mutableStateOf<EquipmentItem?>(null)}
     var add by remember{mutableStateOf(false)}
+    BackHandler(enabled=categoryId!=null&&editing==null&&!add){categoryId=null}
     val total=equipment.sumOf{it.price*it.quantity.coerceAtLeast(0)}
     val bought=equipment.filter{it.status==ItemStatus.COMPRADO}.sumOf{it.price*it.quantity.coerceAtLeast(0)}
     val pending=equipment.filter{it.status==ItemStatus.PENDENTE}.sumOf{it.price*it.quantity.coerceAtLeast(0)}
 
-    LazyColumn(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
+    LazyColumn(
+        modifier.fillMaxSize().padding(horizontal=14.dp),
+        contentPadding=PaddingValues(top=6.dp,bottom=18.dp),
+        verticalArrangement=Arrangement.spacedBy(8.dp)
+    ){
         item{
-            Row(verticalAlignment=Alignment.CenterVertically){
-                IconButton(onClick={if(categoryId==null) back() else categoryId=null}){Icon(Icons.Default.ArrowBack,contentDescription="Voltar")}
-                Header(if(categoryId==null)"Equipamentos" else equipmentCategories.firstOrNull{it.id==categoryId}?.label?:"Equipamentos")
-            }
+            ScreenHeader(
+                title=if(categoryId==null)"Equipamentos" else equipmentCategories.firstOrNull{it.id==categoryId}?.label?:"Equipamentos",
+                subtitle=if(categoryId==null)"Organize a carga para a estrada" else "Itens, prioridades e custos",
+                back={if(categoryId==null)back() else categoryId=null}
+            )
         }
         item{
-            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
-                Stat(money(total),"Total",Modifier.weight(1f));Stat(money(bought),"Adquirido",Modifier.weight(1f));Stat(money(pending),"Falta",Modifier.weight(1f))
+            Card(Modifier.fillMaxWidth()){
+                Row(Modifier.fillMaxWidth().padding(horizontal=8.dp,vertical=10.dp),horizontalArrangement=Arrangement.spacedBy(6.dp)){
+                    FinanceMetric(total,"Total",Modifier.weight(1f));FinanceMetric(bought,"Adquirido",Modifier.weight(1f));FinanceMetric(pending,"Falta",Modifier.weight(1f))
+                }
             }
         }
         if(categoryId==null){
-            items(equipmentCategories){cat->
+            items(equipmentCategories,key={it.id}){cat->
                 val list=equipment.filter{it.categoryId==cat.id};val ready=list.count{it.status==ItemStatus.COMPRADO}
-                Card(Modifier.fillMaxWidth().clickable{categoryId=cat.id}){
-                    Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically){Text(cat.icon,fontSize=26.sp);Spacer(Modifier.width(12.dp));Text(cat.label,Modifier.weight(1f),fontWeight=FontWeight.Bold);Text("$ready/${list.size}")}
+                val progress=if(list.isEmpty())0f else ready.toFloat()/list.size
+                Card(
+                    Modifier.fillMaxWidth().clickable{categoryId=cat.id},
+                    colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.78f))
+                ){
+                    Row(Modifier.padding(horizontal=12.dp,vertical=10.dp),verticalAlignment=Alignment.CenterVertically){
+                        Icon(categoryIcon(cat.id),null,Modifier.size(27.dp),tint=MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(3.dp)){
+                            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
+                                Text(cat.label,Modifier.weight(1f),fontWeight=FontWeight.Bold)
+                                Text("${(progress*100).toInt()}%",fontSize=12.sp,fontWeight=FontWeight.Bold,color=MaterialTheme.colorScheme.primary)
+                            }
+                            Text("$ready de ${list.size} itens",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                            LinearProgressIndicator(progress={progress},modifier=Modifier.fillMaxWidth())
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Default.ChevronRight,contentDescription="Abrir ${cat.label}")
+                    }
                 }
             }
             item{Button(onClick={add=true},modifier=Modifier.fillMaxWidth()){Icon(Icons.Default.Add,contentDescription=null);Text(" ADICIONAR ITEM")}}
@@ -164,11 +258,11 @@ internal fun EquipmentScreen(modifier:Modifier,equipment:List<EquipmentItem>,sav
                     GearSort.PRECO_DESC->list.sortedByDescending{it.price*it.quantity}
                 }
             }
-            items(visible){item->
+            items(visible,key={it.id}){item->
                 Card(Modifier.fillMaxWidth().clickable{editing=item}){
                     Row(Modifier.padding(12.dp),verticalAlignment=Alignment.CenterVertically){
                         Checkbox(checked=item.status==ItemStatus.COMPRADO,onCheckedChange={checked->save(equipment.map{if(it.id==item.id)it.copy(status=if(checked)ItemStatus.COMPRADO else ItemStatus.PENDENTE,updatedAt=System.currentTimeMillis()) else it})})
-                        Column(Modifier.weight(1f)){Text(item.name,fontWeight=FontWeight.SemiBold);Text("${priorityLabel(item.priority)} • Qtd. ${item.quantity} • ${money(item.price*item.quantity)}",fontSize=12.sp);if(item.notes.isNotBlank())Text(item.notes,fontSize=11.sp)}
+                        Column(Modifier.weight(1f)){Text(item.name,fontWeight=FontWeight.SemiBold);Text("${priorityLabel(item.priority)} • Qtd. ${item.quantity} • ${money(item.price*item.quantity)}",fontSize=12.sp);if(item.notes.isNotBlank())Text(item.notes,fontSize=12.sp)}
                         IconButton(onClick={save(equipment.filterNot{it.id==item.id})}){Icon(Icons.Default.Delete,contentDescription="Excluir")}
                     }
                 }
@@ -180,7 +274,15 @@ internal fun EquipmentScreen(modifier:Modifier,equipment:List<EquipmentItem>,sav
     if(add){ItemDialog(EquipmentItem(repo.id(),"",categoryId?:"mobilidade"),{add=false}){new->save(equipment+new);add=false}}
 }
 
-private fun priorityLabel(p:Priority)=when(p){Priority.URGENTE->"🔴 Urgente";Priority.MEDIO->"🟡 Médio";Priority.BAIXO->"🟢 Baixo"}
+private fun priorityLabel(p:Priority)=when(p){Priority.URGENTE->"Urgente";Priority.MEDIO->"Médio";Priority.BAIXO->"Baixo"}
+
+@Composable
+private fun FinanceMetric(value:Double,label:String,modifier:Modifier){
+    Column(modifier,horizontalAlignment=Alignment.CenterHorizontally){
+        Text(money(value),fontWeight=FontWeight.Bold,fontSize=14.sp,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
+        Text(label,fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
 
 @Composable
 private fun ItemDialog(item:EquipmentItem,dismiss:()->Unit,done:(EquipmentItem)->Unit){
@@ -188,14 +290,14 @@ private fun ItemDialog(item:EquipmentItem,dismiss:()->Unit,done:(EquipmentItem)-
     var priority by remember{mutableStateOf(item.priority)};var category by remember{mutableStateOf(item.categoryId)};var catMenu by remember{mutableStateOf(false)}
     AlertDialog(
         onDismissRequest=dismiss,
-        confirmButton={Button(enabled=name.isNotBlank(),onClick={done(item.copy(name=name.trim(),categoryId=category,priority=priority,quantity=qty.toIntOrNull()?.coerceAtLeast(0)?:0,price=price.toDoubleOrNull()?.coerceAtLeast(0.0)?:0.0,notes=notes,updatedAt=System.currentTimeMillis()))}){Text("SALVAR")}},
+        confirmButton={Button(enabled=name.isNotBlank()&&qty.wholeNumberOrNull()!=null&&numberError(price)==null,onClick={done(item.copy(name=name.trim(),categoryId=category,priority=priority,quantity=qty.wholeNumberOrNull()?:0,price=price.numberOrNull()?:0.0,notes=notes,updatedAt=System.currentTimeMillis()))}){Text("SALVAR")}},
         dismissButton={TextButton(onClick=dismiss){Text("CANCELAR")}},
         title={Text(if(item.name.isBlank())"Novo item" else "Editar item")},
         text={LazyColumn(verticalArrangement=Arrangement.spacedBy(8.dp)){
             item{OutlinedTextField(name,{name=it},label={Text("Nome")},modifier=Modifier.fillMaxWidth())}
-            item{Box{OutlinedButton(onClick={catMenu=true},modifier=Modifier.fillMaxWidth()){Text(equipmentCategories.firstOrNull{it.id==category}?.let{"${it.icon} ${it.label}"}?:"Categoria")};DropdownMenu(expanded=catMenu,onDismissRequest={catMenu=false}){equipmentCategories.forEach{cat->DropdownMenuItem(text={Text("${cat.icon} ${cat.label}")},onClick={category=cat.id;catMenu=false})}}}}
+            item{Box{OutlinedButton(onClick={catMenu=true},modifier=Modifier.fillMaxWidth()){Text(equipmentCategories.firstOrNull{it.id==category}?.label?:"Categoria")};DropdownMenu(expanded=catMenu,onDismissRequest={catMenu=false}){equipmentCategories.forEach{cat->DropdownMenuItem(text={Text(cat.label)},leadingIcon={Icon(categoryIcon(cat.id),null)},onClick={category=cat.id;catMenu=false})}}}}
             item{Text("Prioridade",fontWeight=FontWeight.SemiBold);Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){Priority.entries.forEach{p->FilterChip(selected=priority==p,onClick={priority=p},label={Text(priorityLabel(p))})}}}
-            item{NumericField(qty,{qty=it},"Quantidade")}
+            item{NumericField(qty,{qty=it},"Quantidade",whole=true)}
             item{NumericField(price,{price=it},"Preço unitário")}
             item{OutlinedTextField(notes,{notes=it},label={Text("Observações")},modifier=Modifier.fillMaxWidth(),minLines=2)}
         }}

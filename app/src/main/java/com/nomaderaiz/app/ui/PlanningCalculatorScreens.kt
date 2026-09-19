@@ -1,119 +1,171 @@
 package com.nomaderaiz.app.ui
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nomaderaiz.app.R
 import com.nomaderaiz.app.data.*
-
-private data class FoodFormValue(val unitId:String?=null,val quantity:String="",val price:String="",val consumption:String="")
-private fun foodInputs(form:Map<String,FoodFormValue>):Map<String,FoodInput> = form.mapValues{(_,v)->FoodInput(v.unitId,v.quantity.toDoubleOrNull()?:0.0,v.price.toDoubleOrNull(),v.consumption.toDoubleOrNull())}
+import kotlinx.coroutines.launch
 
 @Composable
-private fun FoodEditor(form:Map<String,FoodFormValue>,onChange:(Map<String,FoodFormValue>)->Unit,people:Int){
-    Column(verticalArrangement=Arrangement.spacedBy(10.dp)){
-        foodConfigs.forEach{food->
-            val current=form[food.id]?:FoodFormValue(unitId=food.units.first().id)
-            val selected=food.units.firstOrNull{it.id==current.unitId}?:food.units.first()
-            Card(Modifier.fillMaxWidth()){
-                Column(Modifier.padding(10.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
-                    Text("${food.icon} ${food.name}",fontWeight=FontWeight.Bold)
-                    if(food.units.size>1){Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(4.dp)){food.units.forEach{unit->FilterChip(selected=selected.id==unit.id,onClick={onChange(form+(food.id to current.copy(unitId=unit.id,price="",consumption="")))},label={Text(unit.label)})}}}
-                    NumericField(current.quantity,{onChange(form+(food.id to current.copy(quantity=it)))},"Quantidade (${selected.label})")
-                    Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){
-                        NumericField(current.price,{onChange(form+(food.id to current.copy(price=it)))},"Preço/un. (padrão ${money(selected.defaultPrice)})",Modifier.weight(1f))
-                        NumericField(current.consumption,{onChange(form+(food.id to current.copy(consumption=it)))},"Consumo/dia (padrão ${selected.defaultDailyConsumption})",Modifier.weight(1f))
+internal fun PlanningScreen(
+    modifier:Modifier,equipment:List<EquipmentItem>,session:PlanningSession,save:(PlanningSession)->Unit,
+    onPoints:()->Unit,onManual:()->Unit,back:(()->Unit)?=null
+){
+    val draft=session.draft
+    val issues=remember(draft){draft.issues}
+    val pace=remember(draft.km,draft.days,draft.dailyKm){draft.pace}
+    val saved=session.lastGenerated
+    val result=remember(saved,equipment){saved?.takeIf{it.issues.isEmpty()}?.let{buildPlanningResult(it,equipment)}}
+    val scroll=rememberLazyListState()
+    val scope=rememberCoroutineScope()
+    val focus=LocalFocusManager.current
+
+    Column(modifier.fillMaxSize()){
+        LazyColumn(
+            Modifier.weight(1f).fillMaxWidth().padding(horizontal=14.dp).testTag("planning-list"),
+            state=scroll,contentPadding=PaddingValues(top=6.dp,bottom=16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)
+        ){
+            item{ScreenHeader("Planejamento","Rota, recursos e segurança",back)}
+            item{
+                HeroCard(R.drawable.nr_hero_planejamento_estrada,height=205.dp){
+                    Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(14.dp),verticalArrangement=Arrangement.spacedBy(7.dp)){
+                        Text("PRÓXIMA VIAGEM",fontSize=12.sp,fontWeight=FontWeight.Bold,color=Color.White)
+                        Text(draft.destination.ifBlank{"Defina seu destino"},fontSize=20.sp,fontWeight=FontWeight.Black,color=Color.White,maxLines=2)
+                        Row(Modifier.fillMaxWidth()){
+                            Metric(draft.km.numberOrNull()?.let{"${decimal(it)} km"}?:"—","distância",Modifier.weight(1f),Color.White)
+                            Metric(draft.days.numberOrNull()?.let(::decimal)?:"—","dias",Modifier.weight(1f),Color.White)
+                            Metric(pace.average?.let{"${decimal(it)} km"}?:"—","média/dia",Modifier.weight(1f),Color.White)
+                        }
                     }
-                    if(people>1)Text("Consumo calculado para $people pessoas.",fontSize=11.sp)
+                }
+            }
+            if(saved!=null&&result!=null){
+                item{
+                    SectionCard("Último planejamento",Icons.Outlined.Assignment){
+                        Text("${saved.destination.ifBlank{"Viagem"}} • ${saved.days} dia(s) • ${saved.people} pessoa(s)",fontWeight=FontWeight.SemiBold)
+                        Text(if(draft!=saved)"Você alterou os dados. Gere novamente para atualizar este resumo." else "Planejamento salvo neste dispositivo.",fontSize=12.sp)
+                        Text("Os recursos consideram o inventário atual.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                        result.summary.forEach{s->
+                            Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                                AppSymbol(s.icon);Text(s.label,Modifier.weight(1f));StatusBadge(s.status)
+                            }
+                        }
+                    }
+                }
+                item{PlanningResultDetails(saved,result,onManual)}
+            }
+            item{PlanningTripFields(draft,{save(session.copy(draft=it))})}
+            item{
+                val people=draft.people.wholeNumberOrNull()?:1
+                val food=remember(draft.foodForm,people){Calculator.food(Calculator.buildFoodLines(foodConfigs,foodInputs(draft.foodForm),people))}
+                SectionCard("Alimentação",Icons.Outlined.Restaurant){
+                    FoodEditor(draft.foodForm,{save(session.copy(draft=draft.copy(foodForm=it)))},people)
+                    if(foodFormErrors(draft.foodForm).isEmpty()&&food.valid)Text("Autonomia: ${food.days?:0} dia(s) • Valor carregado: ${money(food.totalValue)}",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
+                }
+            }
+            item{PlanningWaterFields(draft,{save(session.copy(draft=it))},onPoints)}
+        }
+        Surface(tonalElevation=2.dp,shadowElevation=2.dp){
+            Column(Modifier.fillMaxWidth().padding(horizontal=14.dp,vertical=8.dp),verticalArrangement=Arrangement.spacedBy(4.dp)){
+                Text(issues.firstOrNull()?:"Rascunho salvo automaticamente.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                Button(
+                    onClick={focus.clearFocus();save(session.copy(lastGenerated=draft));scope.launch{scroll.animateScrollToItem(0)}},
+                    enabled=issues.isEmpty(),modifier=Modifier.fillMaxWidth().testTag("generate-plan")
+                ){Icon(Icons.Outlined.Explore,null);Spacer(Modifier.width(7.dp));Text("GERAR PLANEJAMENTO")}
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PlanningTripFields(draft:PlanningDraft,change:(PlanningDraft)->Unit){
+    SectionCard("Dados da viagem",Icons.Outlined.Explore){
+        OutlinedTextField(draft.destination,{change(draft.copy(destination=it))},label={Text("Destino (opcional)")},modifier=Modifier.fillMaxWidth())
+        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
+            NumericField(draft.days,{change(draft.copy(days=it))},"Dias",Modifier.weight(1f),positive=true)
+            NumericField(draft.people,{change(draft.copy(people=it))},"Pessoas",Modifier.weight(1f),whole=true,positive=true)
+        }
+        NumericField(draft.km,{change(draft.copy(km=it))},"Distância prevista (km)")
+        NumericField(draft.dailyKm,{change(draft.copy(dailyKm=it))},"Meta nos dias de pedal (km/dia)",positive=true,helper="Opcional. Deixe em branco para usar a média calculada.")
+        val pace=draft.pace
+        pace.average?.let{Text("Média da viagem: ${decimal(it)} km/dia, incluindo dias de descanso.",fontSize=12.sp)}
+        pace.ridingDays?.let{
+            Text("Na sua meta: ${decimal(it)} dia(s) de pedal para cobrir a distância.",fontSize=12.sp,color=if(pace.fits==false)MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            if(pace.fits==false)Text("A meta de pedal não cobre a distância no prazo previsto.",color=MaterialTheme.colorScheme.error,fontSize=12.sp)
+        }
+        NumericField(draft.availableMoney,{change(draft.copy(availableMoney=it))},"Dinheiro disponível (R$)")
+        Text("Tipo de viagem",fontWeight=FontWeight.SemiBold)
+        FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)){
+            TravelType.entries.forEach{travel->FilterChip(selected=draft.type==travel,onClick={change(draft.copy(type=travel))},label={Text(travel.label)})}
+        }
+    }
+}
+
+@Composable
+private fun PlanningWaterFields(draft:PlanningDraft,change:(PlanningDraft)->Unit,onPoints:()->Unit){
+    val water=remember(draft.waterLiters,draft.refill,draft.refillFrequency,draft.people){
+        Calculator.water(draft.waterLiters.numberOrNull()?:0.0,draft.refill,draft.refillFrequency.numberOrNull()?:0.0,draft.people.wholeNumberOrNull()?:1)
+    }
+    SectionCard("Água",Icons.Outlined.WaterDrop){
+        NumericField(draft.waterLiters,{change(draft.copy(waterLiters=it))},"Água carregada (L)")
+        Row(verticalAlignment=Alignment.CenterVertically){Switch(draft.refill,{change(draft.copy(refill=it))});Text(" Planejo reabastecer")}
+        if(draft.refill){
+            NumericField(draft.refillFrequency,{change(draft.copy(refillFrequency=it))},"Intervalo entre reabastecimentos (dias)",positive=true)
+            OutlinedTextField(draft.waterPlaces,{change(draft.copy(waterPlaces=it))},label={Text("Locais previstos para água")},modifier=Modifier.fillMaxWidth())
+            OutlinedButton(onClick=onPoints,modifier=Modifier.fillMaxWidth()){Icon(Icons.Outlined.Place,null);Text(" PONTOS DE APOIO")}
+        }
+        if(numberError(draft.waterLiters)==null&&draft.people.wholeNumberOrNull()?.let{it>0}==true)Text("Consumo do grupo: ${decimal(water.consumoDia)} L/dia • autonomia carregada: ${decimal(water.dias)} dia(s)",fontSize=13.sp)
+    }
+}
+
+@Composable
+private fun PlanningResultDetails(draft:PlanningDraft,result:PlanningResult,onManual:()->Unit){
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable{mutableStateOf(false)}
+    Column(verticalArrangement=Arrangement.spacedBy(10.dp)){
+        OutlinedButton(onClick={expanded=!expanded},modifier=Modifier.fillMaxWidth()){Text(if(expanded)"RECOLHER DETALHES" else "VER CUSTOS E RECOMENDAÇÕES")}
+        if(expanded){
+            SectionCard("Custos e reservas",Icons.Outlined.Payments){
+                Text("Equipamentos pendentes: ${money(result.pendingCost)}")
+                Text("Alimentação necessária: ${money(result.foodRequired)}")
+                if(result.foodNeed.missingValue>0)Text("Falta comprar em alimentação: ${money(result.foodNeed.missingValue)}")
+                Text("Reserva financeira (${(draft.type.reservePercent*100).toInt()}%): ${money(result.reserve)}")
+                Text("Custo total estimado: ${money(result.totalCost)}",fontWeight=FontWeight.Bold)
+            }
+            SectionCard("Energia automática",Icons.Outlined.Bolt){
+                val energy=result.energy
+                Text("Painel: ${if(energy.hasPanel)"sim" else "não"} • reserva: ${if(energy.hasBattery)"sim" else "não"}")
+                Text("Consumo: ${decimal(energy.dailyConsumptionWh)} Wh/dia • geração: ${decimal(energy.dailyGenerationWh)} Wh/dia")
+                Text(if(energy.selfSustaining)"Sistema autossustentável" else "Autonomia estimada: ${decimal(energy.days?:0.0)} dia(s)")
+            }
+            SectionCard("Segurança e abrigo",Icons.Outlined.Shield){
+                result.safety.forEach{essential->
+                    Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                        Icon(if(essential.bought)Icons.Outlined.CheckCircle else Icons.Outlined.WarningAmber,null)
+                        Text(essential.label)
+                    }
+                }
+                Text("Abrigo: ${if(!result.shelterRequired)"dispensável para este perfil" else "${result.boughtShelter}/${result.shelterCount} adquirido(s)"}")
+                OutlinedButton(onClick=onManual,modifier=Modifier.fillMaxWidth()){Text("ABRIR MANUAL DA BIKE")}
+            }
+            SectionCard("Recomendações",Icons.Outlined.Lightbulb){
+                result.recommendations.forEach{r->
+                    Text("• ${r.text}",color=if(r.type==RecommendationType.ALERTA)MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
-    }
-}
-
-@Composable
-internal fun PlanningScreen(modifier:Modifier,equipment:List<EquipmentItem>,onPoints:()->Unit,onManual:()->Unit){
-    var destination by remember{mutableStateOf("")};var days by remember{mutableStateOf("")};var people by remember{mutableStateOf("1")};var km by remember{mutableStateOf("")};var dailyKm by remember{mutableStateOf("")};var availableMoney by remember{mutableStateOf("")}
-    var type by remember{mutableStateOf(TravelType.CICLOVIAGEM)};var foodForm by remember{mutableStateOf<Map<String,FoodFormValue>>(emptyMap())};var waterLiters by remember{mutableStateOf("")};var refill by remember{mutableStateOf(false)};var refillFrequency by remember{mutableStateOf("")};var waterPlaces by remember{mutableStateOf("")};var generated by remember{mutableStateOf(false)}
-    val dayN=days.toDoubleOrNull()?.coerceAtLeast(0.0)?:0.0;val peopleN=people.toIntOrNull()?.coerceAtLeast(1)?:1;val kmN=km.toDoubleOrNull()?.coerceAtLeast(0.0)?:0.0;val dailyN=dailyKm.toDoubleOrNull()?.coerceAtLeast(0.0)?:0.0;val moneyN=availableMoney.toDoubleOrNull()?.coerceAtLeast(0.0)?:0.0
-    val lines=Calculator.buildFoodLines(foodConfigs,foodInputs(foodForm),peopleN);val food=Calculator.food(lines);val foodNeed=Calculator.foodRequirement(lines,dayN,peopleN)
-    val water=Calculator.water(waterLiters.toDoubleOrNull()?:0.0,refill,refillFrequency.toDoubleOrNull()?:0.0,peopleN,!refill||waterPlaces.trim().isNotEmpty())
-    val energy=PlanningEngine.automaticEnergy(equipment,peopleN);val pendingCost=equipment.filter{it.status==ItemStatus.PENDENTE}.sumOf{it.price*it.quantity.coerceAtLeast(0)};val foodRequired=if(foodNeed.valid)foodNeed.requiredValue else food.totalValue;val baseCost=pendingCost+foodRequired;val reserve=PlanningEngine.financialReserve(baseCost,type);val totalCost=baseCost+reserve
-    val safety=PlanningEngine.safetyEssentials(equipment);val safetyMissing=safety.filter{!it.bought};val shelterItems=equipment.filter{it.categoryId=="abrigo"};val boughtShelter=shelterItems.count{it.status==ItemStatus.COMPRADO&&it.quantity>0};val shelterRequired=PlanningEngine.requiresShelter(type,dayN)
-    val bikeStatus=PlanningEngine.worst(PlanningEngine.bikeStatus(kmN,dailyN,dayN),PlanningEngine.percentageStatus(safety.size-safetyMissing.size,safety.size))
-    val summary=listOf(
-        PlanningSummaryItem("bike","🚲","Bicicleta",bikeStatus),PlanningSummaryItem("food","🍱","Alimentação",PlanningEngine.statusByDays(food.days?.toDouble(),dayN)),PlanningSummaryItem("water","💧","Água",PlanningEngine.waterStatus(water,dayN)),PlanningSummaryItem("energy","⚡","Energia",if(energy.selfSustaining)PlanningStatus.VERDE else PlanningEngine.statusByDays(energy.days,dayN)),PlanningSummaryItem("shelter","🏕️","Abrigo",PlanningEngine.requiredItemsStatus(boughtShelter,shelterItems.size,shelterRequired)),PlanningSummaryItem("money","💰","Dinheiro",PlanningEngine.moneyStatus(moneyN,totalCost))
-    )
-    val recommendations=PlanningEngine.recommendations(dayN,food.days,water,moneyN,totalCost,energy,safetyMissing,type,shelterRequired,boughtShelter,destination,peopleN)
-
-    LazyColumn(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
-        item{Header("Planejamento da Viagem","Preencha os dados para cruzar recursos, equipamentos e duração.")}
-        item{SectionCard("Dados da viagem"){
-            OutlinedTextField(destination,{destination=it},label={Text("📍 Destino (opcional)")},modifier=Modifier.fillMaxWidth())
-            Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){NumericField(days,{days=it},"📅 Dias",Modifier.weight(1f));NumericField(people,{people=it},"👥 Pessoas",Modifier.weight(1f))}
-            Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){NumericField(km,{km=it},"🚲 Km previstos",Modifier.weight(1f));NumericField(dailyKm,{dailyKm=it},"🚴 Média km/dia",Modifier.weight(1f))}
-            NumericField(availableMoney,{availableMoney=it},"💰 Dinheiro disponível")
-            Text("🏕️ Tipo de viagem",fontWeight=FontWeight.SemiBold);Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(5.dp)){TravelType.entries.forEach{travel->FilterChip(selected=type==travel,onClick={type=travel},label={Text("${travel.icon} ${travel.label}")})}}
-        }}
-        item{SectionCard("🍱 Alimentação"){FoodEditor(foodForm,{foodForm=it},peopleN);if(food.valid)Text("Autonomia: ${food.days?:0} dia(s) • Valor carregado: ${money(food.totalValue)}",fontWeight=FontWeight.SemiBold)}}
-        item{SectionCard("💧 Água"){
-            NumericField(waterLiters,{waterLiters=it},"Água carregada (L)")
-            Row(verticalAlignment=Alignment.CenterVertically){Switch(refill,{refill=it});Text(" Planejo reabastecer")}
-            if(refill){
-                NumericField(refillFrequency,{refillFrequency=it},"Intervalo entre reabastecimentos (dias)")
-                OutlinedTextField(waterPlaces,{waterPlaces=it},label={Text("Locais previstos para água")},modifier=Modifier.fillMaxWidth())
-                OutlinedButton(onClick=onPoints,modifier=Modifier.fillMaxWidth()){Text("📍 ABRIR PONTOS DE APOIO")}
-            }
-            Text("Consumo do grupo: ${water.consumoDia} L/dia • autonomia: ${water.dias} dia(s)")
-        }}
-        item{Button(onClick={generated=true},enabled=dayN>0&&peopleN>0,modifier=Modifier.fillMaxWidth()){Text("🧭 GERAR PLANEJAMENTO")}}
-        if(generated&&dayN>0){
-            item{SectionCard("Resumo"){summary.forEach{s->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${s.icon} ${s.label}");StatusBadge(s.status)}}}}
-            item{SectionCard("Custos e reservas"){
-                Text("Equipamentos pendentes: ${money(pendingCost)}");Text("Alimentação necessária: ${money(foodRequired)}");if(foodNeed.missingValue>0)Text("Falta comprar em alimentação: ${money(foodNeed.missingValue)}");Text("Reserva financeira (${(type.reservePercent*100).toInt()}%): ${money(reserve)}");Text("Custo total estimado: ${money(totalCost)}",fontWeight=FontWeight.Bold)
-            }}
-            item{SectionCard("Energia automática"){
-                Text("Painel: ${if(energy.hasPanel)"sim" else "não"} • reserva: ${if(energy.hasBattery)"sim" else "não"}");Text("Consumo: ${energy.dailyConsumptionWh} Wh/dia • geração: ${energy.dailyGenerationWh} Wh/dia");Text(if(energy.selfSustaining)"Sistema autossustentável" else "Autonomia estimada: ${energy.days?:0.0} dia(s)")
-            }}
-            item{SectionCard("Segurança e abrigo"){
-                safety.forEach{essential->Text("${if(essential.bought)"✅" else "❌"} ${essential.label}")}
-                Text("Abrigo: ${if(!shelterRequired)"dispensável para este perfil" else "$boughtShelter/${shelterItems.size} adquirido(s)"}")
-                OutlinedButton(onClick=onManual,modifier=Modifier.fillMaxWidth()){Text("🔧 ABRIR MANUAL DA BIKE")}
-            }}
-            item{SectionCard("Recomendações"){
-                recommendations.forEach{r->Text("${when(r.type){RecommendationType.OK->"✅";RecommendationType.ATENCAO->"⚠️";RecommendationType.ALERTA->"🔴"}} ${r.text}")}
-            }}
-        }
-    }
-}
-
-@Composable
-internal fun CalculatorScreen(equipment:List<EquipmentItem>,back:()->Unit){
-    var speed by remember{mutableStateOf("")};var hours by remember{mutableStateOf("")};var days by remember{mutableStateOf("")};var people by remember{mutableStateOf("1")};var foodForm by remember{mutableStateOf<Map<String,FoodFormValue>>(emptyMap())}
-    var waterLiters by remember{mutableStateOf("")};var refill by remember{mutableStateOf(false)};var freq by remember{mutableStateOf("")};var panel by remember{mutableStateOf("")};var sun by remember{mutableStateOf("")};var battery by remember{mutableStateOf("")};var powerbank by remember{mutableStateOf("")};var available by remember{mutableStateOf("")};var dailyExpense by remember{mutableStateOf("")};var foodDailyCost by remember{mutableStateOf("")};var transport by remember{mutableStateOf("")};var maintenance by remember{mutableStateOf("")};var other by remember{mutableStateOf("")};var weightData by remember{mutableStateOf<Map<String,String>>(emptyMap())}
-    val dayN=days.toDoubleOrNull()?.coerceAtLeast(0.0)?:0.0;val peopleN=people.toIntOrNull()?.coerceAtLeast(1)?:1
-    val bike=Calculator.bike(speed.toDoubleOrNull()?:0.0,hours.toDoubleOrNull()?:0.0,dayN);val lines=Calculator.buildFoodLines(foodConfigs,foodInputs(foodForm),peopleN);val food=Calculator.food(lines);val need=Calculator.foodRequirement(lines,dayN,peopleN);val water=Calculator.water(waterLiters.toDoubleOrNull()?:0.0,refill,freq.toDoubleOrNull()?:0.0,peopleN);val energy=Calculator.energy(panel.toDoubleOrNull()?:0.0,sun.toDoubleOrNull()?:0.0,battery.toDoubleOrNull()?:0.0,powerbank.toDoubleOrNull()?:0.0,listOf(EnergyEquipment("celular","Celular",12.0),EnergyEquipment("luzes","Luzes",8.0),EnergyEquipment("gps","GPS",5.0,false)));val cash=Calculator.money(available.toDoubleOrNull()?:0.0,dailyExpense.toDoubleOrNull()?:0.0);val weight=Calculator.weight(equipment.map{it.quantity.toDouble() to (weightData[it.id]?.toDoubleOrNull()?:0.0)});val tripCost=Calculator.tripCost(dayN,foodDailyCost.toDoubleOrNull()?:0.0,transport.toDoubleOrNull()?:0.0,maintenance.toDoubleOrNull()?:0.0,other.toDoubleOrNull()?:0.0)
-    val general=Calculator.generalIndex(listOf(GeneralResource("Bike",if(bike.valido)bike.dias else null),GeneralResource("Comida",food.days?.toDouble()),GeneralResource("Água",if(water.valido)water.dias else null),GeneralResource("Energia",if(energy.valido)energy.dias else null,energy.autossustentavel),GeneralResource("Dinheiro",if(cash.valido)cash.dias else null)))
-
-    LazyColumn(Modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
-        item{Row(verticalAlignment=Alignment.CenterVertically){IconButton(back){Icon(Icons.Default.ArrowBack,"Voltar")};Header("Calculadora","Resumo, bike, comida, água, energia, dinheiro, peso e custo")}}
-        item{SectionCard("📊 Resumo geral"){if(general.bottleneck==null)Text("Preencha os recursos abaixo para calcular a autonomia geral.") else {Text("Menor autonomia: ${general.days} dia(s)",fontWeight=FontWeight.Bold);Text("Recurso limitante: ${general.bottleneck.name}")}}}
-        item{SectionCard("🚲 Bike"){NumericField(speed,{speed=it},"Velocidade média (km/h)");NumericField(hours,{hours=it},"Horas pedalando/dia");NumericField(days,{days=it},"Dias");Text("Distância/dia: %.1f km • Total: %.1f km".format(bike.kmDia,bike.distanciaTotal),fontWeight=FontWeight.SemiBold)}}
-        item{SectionCard("🍱 Comida"){NumericField(people,{people=it},"Pessoas");FoodEditor(foodForm,{foodForm=it},peopleN);if(food.valid){Text("Autonomia: ${food.days} dia(s) • Valor: ${money(food.totalValue)}");if(need.valid)Text("Para $dayN dias: ${money(need.requiredValue)} • faltante: ${money(need.missingValue)} (${need.missingItems} item(ns))")}}}
-        item{SectionCard("💧 Água"){NumericField(waterLiters,{waterLiters=it},"Água carregada (L)");Row(verticalAlignment=Alignment.CenterVertically){Checkbox(refill,{refill=it});Text("Haverá reabastecimento")};if(refill)NumericField(freq,{freq=it},"Intervalo entre pontos (dias)");Text("Consumo: ${water.consumoDia} L/dia • Autonomia: ${water.dias} dia(s)");if(refill)Text(if(water.suficientePorIntervalo)"Água suficiente até o próximo ponto." else "Água insuficiente para o intervalo.")}}
-        item{SectionCard("⚡ Energia"){NumericField(panel,{panel=it},"Painel solar (W)");NumericField(sun,{sun=it},"Horas de sol/dia");NumericField(battery,{battery=it},"Bateria (Wh)");NumericField(powerbank,{powerbank=it},"Power bank (Wh)");Text("Geração: %.1f Wh/dia • Consumo: %.1f Wh/dia".format(energy.geracaoDiariaWh,energy.consumoDiarioWh));Text(if(energy.autossustentavel)"Sistema autossustentável" else "Autonomia estimada: ${energy.dias} dia(s)")}}
-        item{SectionCard("💰 Dinheiro"){NumericField(available,{available=it},"Disponível (R$)");NumericField(dailyExpense,{dailyExpense=it},"Gasto por dia (R$)");Text("Autonomia financeira: ${cash.dias} dia(s)")}}
-        item{SectionCard("⚖️ Peso"){Text("Informe o peso unitário dos itens do inventário.",fontSize=12.sp);equipment.forEach{item->Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){Text("${item.name} ×${item.quantity}",Modifier.weight(1f),fontSize=12.sp);NumericField(weightData[item.id]?:"",{weightData=weightData+(item.id to it)},"kg",Modifier.width(100.dp))}};Text("Carga total: %.1f kg / limite 25 kg".format(weight.total),fontWeight=FontWeight.Bold);if(weight.acimaDoLimite)Text("Acima do limite de referência.",color=MaterialTheme.colorScheme.error)}}
-        item{SectionCard("🧾 Custo da viagem"){NumericField(foodDailyCost,{foodDailyCost=it},"Alimentação por dia (R$)");NumericField(transport,{transport=it},"Transporte (R$)");NumericField(maintenance,{maintenance=it},"Manutenção (R$)");NumericField(other,{other=it},"Outros (R$)");Text("Custo estimado: ${money(tripCost.total)}",fontWeight=FontWeight.Bold)}}
     }
 }

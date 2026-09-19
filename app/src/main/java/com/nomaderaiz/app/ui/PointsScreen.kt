@@ -1,6 +1,7 @@
 package com.nomaderaiz.app.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,11 +36,15 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nomaderaiz.app.R
 import com.nomaderaiz.app.data.AppRepository
 import com.nomaderaiz.app.data.SupportPoint
 
@@ -56,11 +62,40 @@ internal fun PointsScreen(points:List<SupportPoint>,save:(List<SupportPoint>)->U
     var editing by remember{mutableStateOf<SupportPoint?>(null)}
     var adding by remember{mutableStateOf<SupportPoint?>(null)}
     var deleting by remember{mutableStateOf<SupportPoint?>(null)}
-    var typeFilter by remember{mutableStateOf<String?>(null)}
+    var typeFilter by rememberSaveable{mutableStateOf<String?>(null)}
     val visiblePoints=remember(points,typeFilter){typeFilter?.let{type->points.filter{it.tipo==type}}?:points}
+    val openPoints=points.count{!it.fechado}
+    val usedTypes=points.map{it.tipo}.distinct().size
 
-    LazyColumn(Modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
-        item{Row(verticalAlignment=Alignment.CenterVertically){IconButton(back){Icon(Icons.Default.ArrowBack,"Voltar")};Header("Pontos de apoio","Referências úteis da rota")}}
+    LazyColumn(
+        Modifier.fillMaxSize().padding(horizontal=14.dp),
+        contentPadding=androidx.compose.foundation.layout.PaddingValues(top=6.dp,bottom=20.dp),
+        verticalArrangement=Arrangement.spacedBy(8.dp)
+    ){
+        item{ScreenHeader("Pontos de apoio","Água, comida, saúde e manutenção",back)}
+        item{
+            Card(
+                Modifier.fillMaxWidth(),
+                colors=androidx.compose.material3.CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.78f))
+            ){
+                Row(Modifier.padding(14.dp),verticalAlignment=Alignment.CenterVertically){
+                    Image(
+                        painter=painterResource(R.drawable.nr_badge_explorador),
+                        contentDescription="Emblema explorador",
+                        contentScale=ContentScale.Fit,
+                        modifier=Modifier.size(96.dp)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){
+                        SectionLabel("Mapa pessoal")
+                        Text("${points.size} ${if(points.size==1)"local salvo" else "locais salvos"}",fontSize=21.sp,fontWeight=FontWeight.Black)
+                        Text("$openPoints disponíveis • $usedTypes tipos",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Seus dados ficam disponíveis mesmo sem conexão.",fontSize=12.sp)
+                    }
+                }
+            }
+        }
+        item{SectionLabel("Filtrar pontos")}
         item{
             Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(5.dp)){
                 FilterChip(selected=typeFilter==null,onClick={typeFilter=null},label={Text("Todos")})
@@ -74,10 +109,10 @@ internal fun PointsScreen(points:List<SupportPoint>,save:(List<SupportPoint>)->U
         items(visiblePoints,key={it.id}){point->
             Card(Modifier.fillMaxWidth().clickable{editing=point}){
                 Row(Modifier.padding(14.dp),verticalAlignment=Alignment.Top){
-                    Text(supportTypes.firstOrNull{it.first==point.tipo}?.second?.substringBefore(" ")?:"📍",fontSize=24.sp)
+                    AppSymbol(supportTypes.firstOrNull{it.first==point.tipo}?.second?.substringBefore(" ")?:"📍")
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)){
-                        Row{Text(point.nome,fontWeight=FontWeight.Bold);if(point.fechado)Text(" • Fechado",color=MaterialTheme.colorScheme.error,fontSize=11.sp)}
+                        Row{Text(point.nome,fontWeight=FontWeight.Bold);if(point.fechado)Text(" • Fechado",color=MaterialTheme.colorScheme.error,fontSize=12.sp)}
                         if(point.referencia.isNotBlank())Text("📌 ${point.referencia}",fontSize=12.sp)
                         if(point.obs.isNotBlank())Text(point.obs,fontSize=12.sp)
                         Text("⭐".repeat(point.avaliacao),fontSize=12.sp)

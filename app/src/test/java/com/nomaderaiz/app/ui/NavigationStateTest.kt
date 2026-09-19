@@ -7,6 +7,17 @@ import org.junit.Test
 
 class NavigationStateTest {
     @Test
+    fun planningToolsReturnThroughPlanningToMore(){
+        var state=NavigationState().selectTopLevel(Screen.More).open(Screen.Planning).open(Screen.Points)
+        state=state.back()
+        assertEquals(Screen.Planning,state.current)
+        assertTrue(state.canGoBack)
+        state=state.open(Screen.Manual).back().back()
+        assertEquals(Screen.More,state.current)
+        assertFalse(state.canGoBack)
+    }
+
+    @Test
     fun homeMoreInternalBackReturnsToMore() {
         var state=NavigationState()
 

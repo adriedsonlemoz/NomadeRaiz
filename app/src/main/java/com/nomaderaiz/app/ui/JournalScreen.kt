@@ -31,11 +31,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nomaderaiz.app.R
 import com.nomaderaiz.app.data.AppRepository
 import com.nomaderaiz.app.data.JournalEntry
+import com.nomaderaiz.app.data.numberOrNull
+import com.nomaderaiz.app.data.numberError
+import androidx.compose.foundation.verticalScroll
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -46,9 +51,34 @@ internal fun JournalScreen(modifier:Modifier,entries:List<JournalEntry>,save:(Li
     var editing by remember{mutableStateOf<JournalEntry?>(null)}
     val totalKm=entries.sumOf{it.km}
     val dateFormat=remember{SimpleDateFormat("dd/MM/yyyy",Locale("pt","BR"))}
+    val monthFormat=remember{SimpleDateFormat("MMMM yyyy",Locale("pt","BR"))}
+    val latest=entries.maxByOrNull{it.createdAt}
 
-    LazyColumn(modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
-        item{Header("Diário da viagem","Registre e edite os dias da jornada")}
+    LazyColumn(
+        modifier.fillMaxSize().padding(horizontal=14.dp),
+        contentPadding=androidx.compose.foundation.layout.PaddingValues(top=6.dp,bottom=20.dp),
+        verticalArrangement=Arrangement.spacedBy(9.dp)
+    ){
+        item{ScreenHeader("Diário","Registros reais da sua jornada")}
+        item{
+            SectionLabel(monthFormat.format(Date()).replaceFirstChar{it.uppercase()})
+        }
+        item{
+            HeroCard(R.drawable.nr_diario_acampamento,height=205.dp){
+                Column(
+                    Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(14.dp),
+                    verticalArrangement=Arrangement.spacedBy(5.dp)
+                ){
+                    Text(latest?.let{"${it.clima} ${it.local}"}?:"Seu próximo registro",fontSize=18.sp,fontWeight=FontWeight.Black,color=Color.White)
+                    Text(latest?.let{dateFormat.format(Date(it.createdAt))}?:"Guarde locais, clima, distância e memórias.",fontSize=12.sp,color=Color.White.copy(alpha=.82f))
+                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
+                        Metric(entries.size.toString(),"registros",Modifier.weight(1f),Color.White)
+                        Metric("%.1f km".format(totalKm),"distância",Modifier.weight(1f),Color.White)
+                        Metric(latest?.km?.let{"%.1f km".format(it)}?:"—","último dia",Modifier.weight(1f),Color.White)
+                    }
+                }
+            }
+        }
         item{
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
                 JournalStatCard(entries.size.toString(),"registros",Modifier.weight(1f))
@@ -62,9 +92,9 @@ internal fun JournalScreen(modifier:Modifier,entries:List<JournalEntry>,save:(Li
                 Row(Modifier.padding(14.dp),verticalAlignment=Alignment.Top){
                     Column(Modifier.weight(1f)){
                         Text("${entry.clima} ${entry.local}",fontWeight=FontWeight.Bold)
-                        Text("${entry.km} km • ${dateFormat.format(Date(entry.createdAt))}",fontSize=11.sp)
+                        Text("${entry.km} km • ${dateFormat.format(Date(entry.createdAt))}",fontSize=12.sp)
                         if(entry.nota.isNotBlank())Text(entry.nota)
-                        Text("Toque para editar",fontSize=10.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Toque para editar",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     IconButton(onClick={save(entries.filterNot{it.id==entry.id})}){Icon(Icons.Default.Delete,"Excluir")}
                 }
@@ -83,7 +113,7 @@ internal fun JournalScreen(modifier:Modifier,entries:List<JournalEntry>,save:(Li
 
 @Composable
 private fun JournalStatCard(value:String,label:String,modifier:Modifier){
-    Card(modifier){Column(Modifier.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally){Text(value,fontWeight=FontWeight.Bold);Text(label,fontSize=10.sp)}}
+    Card(modifier){Column(Modifier.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally){Text(value,fontWeight=FontWeight.Bold);Text(label,fontSize=12.sp)}}
 }
 
 @Composable
@@ -95,10 +125,10 @@ private fun JournalDialog(entry:JournalEntry?,dismiss:()->Unit,done:(String,Stri
     val weathers=listOf("☀️","⛅","☁️","🌧️","⛈️","🌬️")
     AlertDialog(
         onDismissRequest=dismiss,
-        confirmButton={Button(onClick={done(local.trim(),weather,km.toDoubleOrNull()?.coerceAtLeast(0.0)?:0.0,note)},enabled=local.isNotBlank()){Text("SALVAR")}},
+        confirmButton={Button(onClick={done(local.trim(),weather,km.numberOrNull()?:0.0,note)},enabled=local.isNotBlank()&&numberError(km)==null){Text("SALVAR")}},
         dismissButton={TextButton(dismiss){Text("CANCELAR")}},
         title={Text(if(entry==null)"Novo registro" else "Editar registro")},
-        text={Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
+        text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
             OutlinedTextField(local,{local=it},label={Text("Local")},modifier=Modifier.fillMaxWidth())
             Row(Modifier.horizontalScroll(rememberScrollState())){weathers.forEach{w->FilterChip(selected=weather==w,onClick={weather=w},label={Text(w)},modifier=Modifier.padding(end=4.dp))}}
             NumericField(km,{km=it},"Km pedalados")

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -106,8 +107,12 @@ internal fun BackupScreen(repo:AppRepository,equipment:List<EquipmentItem>,onRes
         }
     }
 
-    LazyColumn(Modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
-        item{Row(verticalAlignment=Alignment.CenterVertically){IconButton(back){Icon(Icons.Default.ArrowBack,"Voltar")};Header("Exportar / Backup","Copie, salve ou restaure seus dados")}}
+    LazyColumn(
+        Modifier.fillMaxSize().padding(horizontal=14.dp),
+        contentPadding=PaddingValues(top=6.dp,bottom=20.dp),
+        verticalArrangement=Arrangement.spacedBy(10.dp)
+    ){
+        item{ScreenHeader("Exportar / Backup","Copie, salve ou restaure seus dados",back)}
         if(working)item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center){CircularProgressIndicator()}}
         item{
             SectionCard("Exportar lista"){
