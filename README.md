@@ -2,14 +2,17 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.43-kotlin-alpha.16`
+**Versão atual:** `1.0.44-kotlin-alpha.17`
 
-**versionCode:** `100043`
+**versionCode:** `100044`
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
+- Os logs `Android-Kotlin-APK-16-logs.zip` confirmaram testes unitários e compilação do APK com sucesso; no Android 15, 4 de 5 testes passaram e 1 falhou no novo `assertIsSelected()` executado imediatamente após o clique em `+20%`.
+- O teste foi corrigido para aguardar a recomposição e consultar novamente a semântica do chip antes da asserção, sem remover a verificação de seleção.
+- Após recriar a Activity, o mesmo teste agora também confirma que `+20%` continua selecionado na interface, além das verificações já existentes no repositório.
 - Tela **Planejar** reformulada como assistente de viagem: o fluxo principal agora pergunta destino, distância, pessoas, velocidade média e horas de pedal por dia.
 - A estimativa é atualizada enquanto o usuário digita e mostra km/dia, horas efetivas de pedal, dias previstos e horas do último dia.
 - Nova margem de segurança de `0%`, `+10%` ou `+20%`, tratada como tempo adicional de planejamento sem alterar a distância real.

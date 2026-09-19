@@ -70,7 +70,13 @@ class NavigationUiTest {
         enter("Água por pessoa/dia","3")
         enter("Consumo de energia do grupo","25")
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        compose.onNodeWithTag("planning-margin-20").performClick().assertIsSelected()
+        // performClick dispara a mudança de estado; espere a recomposição antes de
+        // consultar novamente a semântica Selected do FilterChip. Encadear o assert
+        // na mesma SemanticsNodeInteraction tornou o teste sensível ao timing do
+        // Android 15, embora a seleção seja uma atualização Compose normal.
+        compose.onNodeWithTag("planning-margin-20").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
         enter("Dinheiro disponível","1.500,50")
@@ -95,6 +101,9 @@ class NavigationUiTest {
         assertEquals(3.0,saved.draft.waterDailyPerPerson.numberOrNull()!!,0.0)
         assertEquals(25.0,saved.draft.energyDailyWh.numberOrNull()!!,0.0)
         assertEquals(saved.draft,saved.lastGenerated)
+        // Além do repositório, confirme que a UI restaurada também reflete +20%.
+        compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
+        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
         compose.onNodeWithTag("planning-list").performScrollToIndex(0)
         compose.onNodeWithContentDescription("Voltar").performClick()
         assertScreen("More")

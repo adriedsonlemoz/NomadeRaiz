@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.44-kotlin-alpha.17
+
+### Sincronização do teste de margem no Android 15
+
+- Analisado `Android-Kotlin-APK-16-logs.zip`: `:app:testDebugUnitTest` passou, `:app:assembleDebug` passou e os testes instrumentados Android 15 executaram 5 casos, com 4 aprovados e 1 falha.
+- A falha ocorreu em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`, no novo `assertIsSelected()` do chip `+20%`, antes de o teste chegar às verificações finais de persistência.
+- O teste encadeava `performClick().assertIsSelected()` na mesma interação sem uma sincronização explícita entre a ação e a leitura da nova árvore semântica. No Android 15, a asserção observou `Selected = false` antes da recomposição refletir a alteração.
+- A validação agora executa o clique, chama `waitForIdle()` e consulta novamente o nó `planning-margin-20` antes de exigir `assertIsSelected()`. A verificação não foi removida nem relaxada.
+- O mesmo teste foi reforçado após `Activity.recreate()`: além de conferir `safetyMarginPercent == 20` no repositório, ele volta ao chip e exige que a própria interface restaurada esteja selecionada em `+20%`.
+- A correção anterior de atualização sobre o estado raiz e persistência serializada foi preservada sem alterações.
+- O módulo Backup não foi alterado.
+- Versão e metadados sincronizados: `1.0.44-kotlin-alpha.17` / `100044`.
+
 ## 1.0.43-kotlin-alpha.16
 
 ### Persistência do Planejamento e teste Android 15

@@ -29,10 +29,10 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigida a persistência do Planejamento após edições rápidas, navegação e recriação da Activity.")
-                Text("• Margem de segurança, ritmo, dinheiro, água e demais campos agora são atualizados sobre o estado mais recente, sem um campo sobrescrever outro.")
-                Text("• A gravação automática de Planejamento e Calculadora continua leve, mas agora é serializada para impedir que um rascunho antigo substitua o novo.")
-                Text("• O salvamento manual continua imediato e os testes Android 15 foram reforçados para conferir a margem selecionada.")
+                Text("• Corrigido o teste Android 15 da margem de segurança: a validação agora aguarda a recomposição e consulta novamente o chip após o clique.")
+                Text("• O teste continua exigindo que +20% fique realmente selecionado; depois da recriação da Activity, também confirma a seleção na interface e no rascunho persistido.")
+                Text("• A correção anterior de estado e persistência do Planejamento foi preservada: campos rápidos não devem sobrescrever alterações recentes.")
+                Text("• A gravação automática de Planejamento e Calculadora permanece serializada e fora da thread principal.")
                 Text("• O assistente de viagem com destino, distância, ritmo, cenários, data de chegada, alimentação, água e energia foi preservado.")
             }
         }
