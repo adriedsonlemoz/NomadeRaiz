@@ -14,6 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -228,10 +231,16 @@ private fun PlanningRideFields(draft:PlanningDraft,change:((PlanningDraft)->Plan
         Text("Margem de segurança",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
         FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)){
             listOf(0 to "Sem margem",10 to "+10%",20 to "+20%").forEach{(value,label)->
+                val isSelected=draft.safetyMarginPercent==value
                 FilterChip(
-                    selected=draft.safetyMarginPercent==value,
+                    selected=isSelected,
                     onClick={change{it.copy(safetyMarginPercent=value)}},
-                    modifier=Modifier.testTag("planning-margin-$value"),
+                    modifier=Modifier
+                        .testTag("planning-margin-$value")
+                        .semantics {
+                            selected=isSelected
+                            stateDescription=if(isSelected) "$label selecionado" else "$label não selecionado"
+                        },
                     label={Text(label)}
                 )
             }

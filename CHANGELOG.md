@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.45-kotlin-alpha.18
+
+### Margem +20%: semântica e validação Android 15
+
+- Analisado `Android-Kotlin-APK-17-logs.zip`, correspondente à versão `1.0.44-kotlin-alpha.17`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 52s`) e `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 17s`).
+- Os testes instrumentados no Android 15 executaram 5 casos: 4 passaram e 1 falhou novamente em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation` com `Failed to assert: Selected = true`.
+- A tentativa anterior de resolver apenas com `waitForIdle()` não foi suficiente. O novo log mostra que a causa não deve ser tratada somente como atraso de recomposição.
+- O chip de margem agora publica explicitamente `selected` e `stateDescription` na semântica associada à própria tag `planning-margin-*`, evitando depender de como o `FilterChip` Material3 combina internamente `testTag` e `selectable` no Android 15.
+- O teste continua exigindo `assertIsSelected()`. Antes dessa asserção, ele também aguarda a persistência real do rascunho refletir `safetyMarginPercent == 20`, separando claramente falha de clique/estado, falha semântica e falha de restauração.
+- Após `Activity.recreate()`, continuam obrigatórias as verificações de `safetyMarginPercent == 20`, campos avançados, recursos, `lastGenerated` e seleção visual do chip `+20%`. Nenhum teste foi removido ou relaxado.
+- Persistência serializada, formatação pt-BR, assistente de viagem e compatibilidade de dados foram preservados.
+- O módulo Backup não foi alterado.
+- Versão e metadados sincronizados: `1.0.45-kotlin-alpha.18` / `100045`.
+
 ## 1.0.44-kotlin-alpha.17
 
 ### Sincronização do teste de margem no Android 15

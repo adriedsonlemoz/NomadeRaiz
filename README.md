@@ -2,9 +2,13 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.44-kotlin-alpha.17`
+**Versão atual:** `1.0.45-kotlin-alpha.18`
 
-**versionCode:** `100044`
+**versionCode:** `100045`
+
+### Correção desta entrega
+
+A versão `1.0.45-kotlin-alpha.18` mantém o teste de margem `+20%` e torna o estado selecionado do chip explícito na semântica Compose. O teste instrumentado também aguarda a persistência real do valor antes de conferir a seleção visual, sem remover as validações após navegação e recriação da Activity.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 

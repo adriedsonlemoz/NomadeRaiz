@@ -1,40 +1,41 @@
-# Validação — 1.0.44-kotlin-alpha.17
+# Validação — 1.0.45-kotlin-alpha.18
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.43-alpha.16.zip`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100044`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.44-alpha.17.zip`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100045`.
 
 ## Resultado real dos logs recebidos
 
-O arquivo `Android-Kotlin-APK-16-logs.zip` foi analisado antes desta correção. Ele corresponde à execução da versão-base `1.0.43-kotlin-alpha.16`.
+O arquivo `Android-Kotlin-APK-17-logs.zip` foi analisado antes desta correção e corresponde à versão `1.0.44-kotlin-alpha.17`.
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 55s`; 24 tarefas executadas.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 19s`; 37 tarefas, 19 executadas e 18 atualizadas.
-- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 5 testes; 4 chegaram ao estado de aprovados e 1 falhou.
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 52s`; 24 tarefas executadas.
+- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 17s`; 37 tarefas, 19 executadas e 18 atualizadas.
+- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram executados 5 testes; 4 passaram e 1 falhou.
 - Teste que falhou: `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
 - Falha registrada: `java.lang.AssertionError: Failed to assert the following: (Selected = 'true')`.
-- A falha aconteceu no novo `assertIsSelected()` executado imediatamente depois de tocar no chip `planning-margin-20`. Portanto essa execução **não chegou** às asserções finais que verificam `safetyMarginPercent`, dias, recursos e `lastGenerated` após recriação.
-- Como houve falha instrumentada, o workflow terminou com `BUILD FAILED` e a publicação continuou corretamente bloqueada.
+- A Release permaneceu corretamente bloqueada.
 
-Os avisos iniciais de `adb: device offline` ocorreram durante a inicialização do emulador e foram recuperados pelo runner; os 5 testes chegaram a iniciar. Eles não são a causa da falha final.
+Os avisos iniciais de ADB ocorreram durante a inicialização do emulador, mas o runner se recuperou e os 5 testes foram executados; eles não são a causa final da falha.
 
-## Causa desta falha
+## Conclusão da análise
 
-O teste da versão 1.0.43 reforçou a verificação do chip de margem, mas encadeou `performClick().assertIsSelected()` na mesma `SemanticsNodeInteraction`. O clique altera estado Compose e a propriedade semântica `Selected` é atualizada na recomposição seguinte. Nesta execução do Android 15, a leitura ocorreu antes de a nova árvore semântica refletir a seleção.
+A versão 1.0.44 já separava o clique, executava `waitForIdle()` e consultava novamente a tag, mas o mesmo `Selected = true` voltou a falhar. Portanto, o problema não deve ser explicado apenas como uma corrida de recomposição.
 
-Isso é diferente da falha da versão 1.0.42, na qual a execução chegou ao repositório e encontrou `expected:<20> but was:<0>`. Na 1.0.43 o teste parou antes dessa etapa, então os logs atuais não comprovam nem refutam a persistência final da correção anterior.
+A validação usava a tag aplicada ao `FilterChip`, enquanto o estado selecionado é produzido pela implementação interna `selectable` do Material3. Em Android 15/Compose, depender implicitamente da composição dessas camadas semânticas deixou a asserção instável. A tela agora publica explicitamente o estado `selected` no mesmo modificador semântico da tag de teste e também fornece `stateDescription` coerente para acessibilidade.
 
 ## Correção aplicada
 
-- O clique em `planning-margin-20` e a asserção foram separados.
-- Depois do clique, o teste executa `compose.waitForIdle()` e somente então consulta novamente `planning-margin-20` e exige `assertIsSelected()`.
-- A asserção de seleção foi mantida; nenhum teste foi removido ou enfraquecido.
-- Depois de `Activity.recreate()`, o teste foi fortalecido: ele ainda exige `saved.draft.safetyMarginPercent == 20` no repositório e agora também rola novamente até o chip e exige que a UI restaurada continue selecionada em `+20%`.
-- A lógica de atualização sobre o estado raiz e a persistência serializada com `snapshotFlow` + `collectLatest` da versão 1.0.43 foi preservada.
-- Backup não foi alterado. `applicationId` e `namespace` continuam `com.nomaderaiz.app`.
+- `planning-margin-0`, `planning-margin-10` e `planning-margin-20` continuam sendo chips reais e clicáveis.
+- Cada chip agora expõe explicitamente `Selected` de acordo com `draft.safetyMarginPercent`.
+- O chip também expõe uma descrição de estado como `+20% selecionado` ou `+20% não selecionado`.
+- O teste não perdeu `assertIsSelected()`. Antes dele, passa a aguardar até 5 s pela persistência real refletir `safetyMarginPercent == 20`; como o autosave usa debounce de 300 ms, isso também garante que `waitForIdle()` não seja usado indevidamente como substituto de espera por uma corrotina atrasada.
+- Depois de `Activity.recreate()`, continuam sendo conferidos os valores do rascunho, dias estimados, alimentação, água, energia, `lastGenerated` e a seleção visual de `+20%`.
+- A lógica de atualização sobre o estado mais recente e o fluxo serializado de persistência foram preservados.
+- Backup não foi alterado; `applicationId` e `namespace` continuam `com.nomaderaiz.app`.
 
-## Verificações desta entrega no ambiente atual
+## Verificações possíveis neste ambiente
 
-- Estrutura e referências dos arquivos modificados foram revisadas.
-- `app/build.gradle.kts`, README, CHANGELOG, Sobre e `github-manager.json` foram sincronizados para `1.0.44-kotlin-alpha.17` / `100044`.
-- O ambiente local disponível não possui o executável Gradle; por isso não é declarado que `:app:testDebugUnitTest`, `:app:assembleDebug` ou `:app:connectedDebugAndroidTest` passaram nesta nova versão.
+- Estrutura, referências e alterações foram revisadas.
+- `app/build.gradle.kts`, README, CHANGELOG, Sobre e `github-manager.json` foram sincronizados para `1.0.45-kotlin-alpha.18` / `100045`.
+- `scripts/sync-github-manager.py --check` deve permanecer como verificação obrigatória no workflow.
+- Este ambiente não possui executável Gradle nem Gradle Wrapper no projeto; portanto, **não** é declarado que os testes Android desta nova versão passaram.
 
-A próxima execução do GitHub Actions deve repetir obrigatoriamente testes unitários → build APK → testes instrumentados Android 15. A Release deve permanecer bloqueada se qualquer etapa falhar e deve publicar somente `Nomade-Raiz.apk`.
+A próxima execução do GitHub Actions deve repetir testes unitários → build APK → testes instrumentados Android 15. A Release deve continuar bloqueada se qualquer etapa falhar e deve publicar somente `Nomade-Raiz.apk`.

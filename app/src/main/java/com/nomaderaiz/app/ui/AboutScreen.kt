@@ -29,11 +29,11 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigido o teste Android 15 da margem de segurança: a validação agora aguarda a recomposição e consulta novamente o chip após o clique.")
-                Text("• O teste continua exigindo que +20% fique realmente selecionado; depois da recriação da Activity, também confirma a seleção na interface e no rascunho persistido.")
-                Text("• A correção anterior de estado e persistência do Planejamento foi preservada: campos rápidos não devem sobrescrever alterações recentes.")
-                Text("• A gravação automática de Planejamento e Calculadora permanece serializada e fora da thread principal.")
-                Text("• O assistente de viagem com destino, distância, ritmo, cenários, data de chegada, alimentação, água e energia foi preservado.")
+                Text("• Corrigida a validação da margem +20% no Android 15 sem remover a verificação de estado.")
+                Text("• O chip de margem agora publica explicitamente seu estado selecionado na semântica, melhorando testes e acessibilidade.")
+                Text("• O teste aguarda a persistência real do +20% antes de validar a seleção visual e continua conferindo o valor após recriar a Activity.")
+                Text("• Testes unitários e build da versão anterior passaram; a execução instrumentada ficou em 4/5 e esta correção ainda precisa ser revalidada no GitHub Actions.")
+                Text("• O assistente de viagem, a formatação automática dos números e a persistência serializada foram preservados.")
             }
         }
         item{

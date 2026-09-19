@@ -70,11 +70,17 @@ class NavigationUiTest {
         enter("Água por pessoa/dia","3")
         enter("Consumo de energia do grupo","25")
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        // performClick dispara a mudança de estado; espere a recomposição antes de
-        // consultar novamente a semântica Selected do FilterChip. Encadear o assert
-        // na mesma SemanticsNodeInteraction tornou o teste sensível ao timing do
-        // Android 15, embora a seleção seja uma atualização Compose normal.
+        // A tag identifica o próprio chip e a tela publica explicitamente o estado
+        // Selected nessa mesma semântica. Isso evita depender de como a implementação
+        // interna do Material3 combina testTag e selectable no Android 15.
         compose.onNodeWithTag("planning-margin-20").performClick()
+        // A persistência do rascunho usa debounce de 300 ms. Espere a própria
+        // fonte persistente refletir +20% antes de validar a semântica visual;
+        // waitForIdle() sozinho não aguarda corrotinas deliberadamente atrasadas.
+        val context=InstrumentationRegistry.getInstrumentation().targetContext
+        compose.waitUntil(timeoutMillis=5_000){
+            AppRepository(context).loadPlanningSession().draft.safetyMarginPercent==20
+        }
         compose.waitForIdle()
         compose.onNodeWithTag("planning-margin-20").assertIsSelected()
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
