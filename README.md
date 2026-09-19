@@ -2,9 +2,9 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.42-kotlin-alpha.15`
+**Versão atual:** `1.0.43-kotlin-alpha.16`
 
-**versionCode:** `100042`
+**versionCode:** `100043`
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 

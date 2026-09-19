@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.43-kotlin-alpha.16
+
+### Persistência do Planejamento e teste Android 15
+
+- Corrigida a falha real observada no GitHub Actions em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`: 4 de 5 testes instrumentados passaram e a margem de segurança selecionada em `+20%` voltou como `0%` após a sequência de edição, navegação e recriação da Activity.
+- A causa estava em atualizações de `PlanningDraft` feitas a partir de cópias capturadas por callbacks de campos diferentes. Em interações rápidas, um campo posterior podia reconstruir o rascunho a partir de uma versão anterior e sobrescrever uma alteração recente.
+- Os campos do Planejamento agora aplicam transformações sobre o estado mais atual no nível raiz do aplicativo. Assim, editar dinheiro, água, ritmo ou detalhes opcionais não pode apagar silenciosamente a margem ou outro campo atualizado logo antes.
+- A persistência com atraso de 300 ms também foi serializada em um único fluxo com `snapshotFlow` + `collectLatest`, evitando que uma gravação antiga termine depois de uma gravação nova e sobrescreva o rascunho mais recente.
+- O botão **Salvar planejamento** continua fazendo gravação imediata do snapshot atual, preservando a segurança na recriação da Activity sem voltar a gravar `SharedPreferences` a cada tecla.
+- O chip de margem recebeu tag estável (`planning-margin-20`) e o teste instrumentado agora confirma explicitamente que `+20%` ficou selecionado antes de prosseguir. O teste não foi removido nem enfraquecido.
+- Os logs recebidos desta versão-base confirmaram: testes unitários **OK**, compilação do APK **OK**, Android 15 com **4/5 testes aprovados e 1 falha**. Esta correção ainda precisa de uma nova execução do GitHub Actions para ser declarada aprovada.
+- Tela Sobre, README, CHANGELOG, VALIDACAO e metadados do GitHub Manager atualizados.
+- Módulo Backup preservado sem alterações.
+- Versão e metadados sincronizados: `1.0.43-kotlin-alpha.16` / `100043`.
+
 ## 1.0.42-kotlin-alpha.15
 
 ### Planejamento por ritmo e recursos essenciais

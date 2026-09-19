@@ -29,12 +29,11 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Planejamento reformulado como assistente de viagem, com destino, distância, velocidade média e horas de pedal por dia.")
-                Text("• Estimativa instantânea de km/dia, horas totais, dias de viagem e duração do último dia.")
-                Text("• Cenários de ritmo comparáveis e margem de segurança de 0%, 10% ou 20%.")
-                Text("• Data de saída opcional com previsão da data de chegada.")
-                Text("• Alimentação, água e energia calculadas diretamente para a duração estimada.")
-                Text("• Controles detalhados antigos continuam disponíveis numa seção opcional, preservando dados anteriores.")
+                Text("• Corrigida a persistência do Planejamento após edições rápidas, navegação e recriação da Activity.")
+                Text("• Margem de segurança, ritmo, dinheiro, água e demais campos agora são atualizados sobre o estado mais recente, sem um campo sobrescrever outro.")
+                Text("• A gravação automática de Planejamento e Calculadora continua leve, mas agora é serializada para impedir que um rascunho antigo substitua o novo.")
+                Text("• O salvamento manual continua imediato e os testes Android 15 foram reforçados para conferir a margem selecionada.")
+                Text("• O assistente de viagem com destino, distância, ritmo, cenários, data de chegada, alimentação, água e energia foi preservado.")
             }
         }
         item{

@@ -23,6 +23,8 @@ import com.nomaderaiz.app.ui.theme.NomadeRaizTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 private val NavigationStateSaver = listSaver<NavigationState, String>(
     save = { state -> listOf(state.current.name) + state.backStack.map { it.name } },
@@ -68,13 +70,24 @@ fun NomadeRaizApp(){
     // são atualizados imediatamente; a serialização persistente é agrupada e executada
     // fora da thread da UI. Assim a Activity pode ser recriada sem perder o que foi
     // digitado e sem gravar SharedPreferences a cada tecla.
-    LaunchedEffect(planning){
-        delay(300)
-        withContext(Dispatchers.IO){repo.savePlanningSession(planning)}
+    // Um único coletor serializa as gravações em ordem. collectLatest cancela o
+    // debounce anterior antes de aceitar o próximo valor e impede que um snapshot
+    // antigo termine depois de um valor mais novo, sobrescrevendo campos recentes.
+    LaunchedEffect(repo){
+        snapshotFlow { planning }
+            .distinctUntilChanged()
+            .collectLatest { value ->
+                delay(300)
+                withContext(Dispatchers.IO){repo.savePlanningSession(value)}
+            }
     }
-    LaunchedEffect(calculator){
-        delay(300)
-        withContext(Dispatchers.IO){repo.saveCalculatorDraft(calculator)}
+    LaunchedEffect(repo){
+        snapshotFlow { calculator }
+            .distinctUntilChanged()
+            .collectLatest { value ->
+                delay(300)
+                withContext(Dispatchers.IO){repo.saveCalculatorDraft(value)}
+            }
     }
 
     fun reloadPersistentState(){
@@ -136,7 +149,16 @@ fun NomadeRaizApp(){
                 Screen.Verify->VerifyScreen(repo,activeCheckMode,{mode->activeCheckMode=mode;repo.saveActiveCheckMode(mode)},{back()})
                 Screen.Planning->PlanningScreen(
                     modifier=Modifier,equipment=items,session=planning,
-                    save={planning=it},commit={planning=it;repo.savePlanningSession(it)},
+                    updateDraft={transform->
+                        val current=planning
+                        planning=current.copy(draft=transform(current.draft))
+                    },
+                    commitCurrent={
+                        val snapshot=planning.draft.snapshotForPlanning()
+                        val updated=planning.copy(draft=snapshot,lastGenerated=snapshot)
+                        planning=updated
+                        repo.savePlanningSession(updated)
+                    },
                     onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},
                     back=if(navigation.canGoBack)({back()})else null
                 )

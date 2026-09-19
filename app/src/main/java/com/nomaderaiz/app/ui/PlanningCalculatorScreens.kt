@@ -25,7 +25,8 @@ import kotlin.math.ceil
 
 @Composable
 internal fun PlanningScreen(
-    modifier:Modifier,equipment:List<EquipmentItem>,session:PlanningSession,save:(PlanningSession)->Unit,commit:(PlanningSession)->Unit,
+    modifier:Modifier,equipment:List<EquipmentItem>,session:PlanningSession,
+    updateDraft:((PlanningDraft)->PlanningDraft)->Unit,commitCurrent:()->Unit,
     onPoints:()->Unit,onManual:()->Unit,back:(()->Unit)?=null
 ){
     val draft=session.draft
@@ -64,15 +65,15 @@ internal fun PlanningScreen(
             }
 
             item{
-                PlanningTripFields(draft){updated->
+                PlanningTripFields(draft){transform->
                     saveFeedback=false
-                    save(session.copy(draft=updated))
+                    updateDraft(transform)
                 }
             }
             item{
-                PlanningRideFields(draft){updated->
+                PlanningRideFields(draft){transform->
                     saveFeedback=false
-                    save(session.copy(draft=updated))
+                    updateDraft(transform)
                 }
             }
             item{LivePlanCard(draft,estimate)}
@@ -80,14 +81,14 @@ internal fun PlanningScreen(
                 item{
                     ScenarioSuggestions(draft,scenarios){hours->
                         saveFeedback=false
-                        save(session.copy(draft=draft.copy(hoursPerDay=hours.toInt().toString())))
+                        updateDraft{it.copy(hoursPerDay=hours.toInt().toString())}
                     }
                 }
             }
             item{
-                EssentialResourcesCard(draft,essentials){updated->
+                EssentialResourcesCard(draft,essentials){transform->
                     saveFeedback=false
-                    save(session.copy(draft=updated))
+                    updateDraft(transform)
                 }
             }
 
@@ -100,19 +101,19 @@ internal fun PlanningScreen(
             }
 
             if(advanced){
-                item{AdvancedPlanningFields(draft){updated->save(session.copy(draft=updated))}}
+                item{AdvancedPlanningFields(draft,updateDraft)}
                 item{
                     val people=draft.people.wholeNumberOrNull()?:1
                     val food=remember(draft.foodForm,people){Calculator.food(Calculator.buildFoodLines(foodConfigs,foodInputs(draft.foodForm),people))}
                     SectionCard("Alimentação detalhada",Icons.Outlined.Restaurant){
                         Text("Opcional. Use apenas se quiser controlar os alimentos individualmente; o cálculo rápido acima usa gasto por pessoa/dia.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
-                        FoodEditor(draft.foodForm,{save(session.copy(draft=draft.copy(foodForm=it)))},people)
+                        FoodEditor(draft.foodForm,{food->updateDraft{it.copy(foodForm=food)}},people)
                         if(foodFormErrors(draft.foodForm).isEmpty()&&food.valid){
                             Text("Autonomia do inventário: ${food.days?:0} dia(s) • valor carregado: ${money(food.totalValue)}",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
                         }
                     }
                 }
-                item{PlanningWaterFields(draft,{save(session.copy(draft=it))},onPoints)}
+                item{PlanningWaterFields(draft,updateDraft,onPoints)}
             }
         }
 
@@ -129,8 +130,7 @@ internal fun PlanningScreen(
                 Button(
                     onClick={
                         focus.clearFocus()
-                        val snapshot=draft.snapshotForPlanning()
-                        commit(session.copy(draft=snapshot,lastGenerated=snapshot))
+                        commitCurrent()
                         saveFeedback=true
                         scope.launch{scroll.animateScrollToItem(0)}
                     },
@@ -182,16 +182,16 @@ private fun LastSavedPlanCard(saved:PlanningDraft,canOpenDetails:Boolean,expande
 }
 
 @Composable
-private fun PlanningTripFields(draft:PlanningDraft,change:(PlanningDraft)->Unit){
+private fun PlanningTripFields(draft:PlanningDraft,change:((PlanningDraft)->PlanningDraft)->Unit){
     val context=LocalContext.current
     SectionCard("1. Para onde você vai?",Icons.Outlined.Explore){
         OutlinedTextField(
-            draft.destination,{change(draft.copy(destination=it))},
+            draft.destination,{value->change{it.copy(destination=value)}},
             label={Text("Destino (opcional)")},modifier=Modifier.fillMaxWidth(),singleLine=true
         )
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
-            NumericField(draft.km,{change(draft.copy(km=it))},"Distância prevista",Modifier.weight(1.35f),positive=true,unit="km")
-            NumericField(draft.people,{change(draft.copy(people=it))},"Pessoas",Modifier.weight(.75f),whole=true,positive=true)
+            NumericField(draft.km,{value->change{it.copy(km=value)}},"Distância prevista",Modifier.weight(1.35f),positive=true,unit="km")
+            NumericField(draft.people,{value->change{it.copy(people=value)}},"Pessoas",Modifier.weight(.75f),whole=true,positive=true)
         }
         Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){
             OutlinedButton(
@@ -199,7 +199,7 @@ private fun PlanningTripFields(draft:PlanningDraft,change:(PlanningDraft)->Unit)
                     val base=parsePlanningDate(draft.departureDate)?:LocalDate.now()
                     DatePickerDialog(
                         context,
-                        {_,year,month,day->change(draft.copy(departureDate=LocalDate.of(year,month+1,day).toString()))},
+                        {_,year,month,day->change{it.copy(departureDate=LocalDate.of(year,month+1,day).toString())}},
                         base.year,base.monthValue-1,base.dayOfMonth
                     ).show()
                 },
@@ -210,7 +210,7 @@ private fun PlanningTripFields(draft:PlanningDraft,change:(PlanningDraft)->Unit)
                 Text(if(draft.departureDate.isBlank())"DATA DE SAÍDA (OPCIONAL)" else formatPlanningDate(draft.departureDate))
             }
             if(draft.departureDate.isNotBlank()){
-                IconButton(onClick={change(draft.copy(departureDate=""))}){Icon(Icons.Outlined.Close,contentDescription="Remover data de saída")}
+                IconButton(onClick={change{it.copy(departureDate="")}}){Icon(Icons.Outlined.Close,contentDescription="Remover data de saída")}
             }
         }
     }
@@ -218,11 +218,11 @@ private fun PlanningTripFields(draft:PlanningDraft,change:(PlanningDraft)->Unit)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PlanningRideFields(draft:PlanningDraft,change:(PlanningDraft)->Unit){
+private fun PlanningRideFields(draft:PlanningDraft,change:((PlanningDraft)->PlanningDraft)->Unit){
     SectionCard("2. Como quer pedalar?",Icons.Outlined.DirectionsBike){
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
-            NumericField(draft.speedKmh,{change(draft.copy(speedKmh=it))},"Velocidade média",Modifier.weight(1f),positive=true,unit="km/h")
-            NumericField(draft.hoursPerDay,{change(draft.copy(hoursPerDay=it))},"Horas/dia",Modifier.weight(1f),positive=true,unit="h")
+            NumericField(draft.speedKmh,{value->change{it.copy(speedKmh=value)}},"Velocidade média",Modifier.weight(1f),positive=true,unit="km/h")
+            NumericField(draft.hoursPerDay,{value->change{it.copy(hoursPerDay=value)}},"Horas/dia",Modifier.weight(1f),positive=true,unit="h")
         }
         Text("Use a velocidade média que você espera manter enquanto estiver pedalando. Paradas entram na margem, não na velocidade.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
         Text("Margem de segurança",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
@@ -230,7 +230,8 @@ private fun PlanningRideFields(draft:PlanningDraft,change:(PlanningDraft)->Unit)
             listOf(0 to "Sem margem",10 to "+10%",20 to "+20%").forEach{(value,label)->
                 FilterChip(
                     selected=draft.safetyMarginPercent==value,
-                    onClick={change(draft.copy(safetyMarginPercent=value))},
+                    onClick={change{it.copy(safetyMarginPercent=value)}},
+                    modifier=Modifier.testTag("planning-margin-$value"),
                     label={Text(label)}
                 )
             }
@@ -298,21 +299,21 @@ private fun RowScope.ScenarioButtonContent(scenario:TripScenario,selected:Boolea
 }
 
 @Composable
-private fun EssentialResourcesCard(draft:PlanningDraft,estimate:EssentialResourceEstimate?,change:(PlanningDraft)->Unit){
+private fun EssentialResourcesCard(draft:PlanningDraft,estimate:EssentialResourceEstimate?,change:((PlanningDraft)->PlanningDraft)->Unit){
     SectionCard("3. Essenciais da viagem",Icons.Outlined.Backpack){
         Text("Preencha só o que quiser estimar. Os totais acompanham automaticamente a duração calculada.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
         NumericField(
-            draft.foodDailyCost,{change(draft.copy(foodDailyCost=it))},
+            draft.foodDailyCost,{value->change{it.copy(foodDailyCost=value)}},
             "Alimentação por pessoa/dia",money=true,positive=true,
             helper=estimate?.foodCost?.let{"Total para a viagem: ${money(it)}"}
         )
         NumericField(
-            draft.waterDailyPerPerson,{change(draft.copy(waterDailyPerPerson=it))},
+            draft.waterDailyPerPerson,{value->change{it.copy(waterDailyPerPerson=value)}},
             "Água por pessoa/dia",positive=true,unit="L/pessoa/dia",
             helper=estimate?.waterLiters?.let{"Total planejado: ${decimal(it)} L"}
         )
         NumericField(
-            draft.energyDailyWh,{change(draft.copy(energyDailyWh=it))},
+            draft.energyDailyWh,{value->change{it.copy(energyDailyWh=value)}},
             "Consumo de energia do grupo",positive=true,unit="Wh/dia",
             helper=estimate?.energyWh?.let{"Necessidade para a viagem: ${decimal(it)} Wh"}
         )
@@ -324,29 +325,29 @@ private fun EssentialResourcesCard(draft:PlanningDraft,estimate:EssentialResourc
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AdvancedPlanningFields(draft:PlanningDraft,change:(PlanningDraft)->Unit){
+private fun AdvancedPlanningFields(draft:PlanningDraft,change:((PlanningDraft)->PlanningDraft)->Unit){
     SectionCard("Detalhes opcionais",Icons.Outlined.Tune){
         Text("Esses campos mantêm os controles avançados das versões anteriores sem deixar a tela principal pesada.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
-        NumericField(draft.availableMoney,{change(draft.copy(availableMoney=it))},"Dinheiro disponível",money=true)
+        NumericField(draft.availableMoney,{value->change{it.copy(availableMoney=value)}},"Dinheiro disponível",money=true)
         Text("Tipo de viagem",fontWeight=FontWeight.SemiBold)
         FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)){
             TravelType.entries.forEach{travel->
-                FilterChip(selected=draft.type==travel,onClick={change(draft.copy(type=travel))},label={Text(travel.label)})
+                FilterChip(selected=draft.type==travel,onClick={change{it.copy(type=travel)}},label={Text(travel.label)})
             }
         }
         NumericField(
-            draft.dailyKm,{change(draft.copy(dailyKm=it))},"Meta manual de km/dia",positive=true,
+            draft.dailyKm,{value->change{it.copy(dailyKm=value)}},"Meta manual de km/dia",positive=true,
             helper="Compatibilidade com planos antigos. O cálculo principal usa velocidade e horas por dia.",unit="km/dia"
         )
         NumericField(
-            draft.days,{change(draft.copy(days=it))},"Duração manual",positive=true,
+            draft.days,{value->change{it.copy(days=value)}},"Duração manual",positive=true,
             helper="Compatibilidade com planos antigos. É substituída pela estimativa quando o ritmo está preenchido.",unit="dias"
         )
     }
 }
 
 @Composable
-private fun PlanningWaterFields(draft:PlanningDraft,change:(PlanningDraft)->Unit,onPoints:()->Unit){
+private fun PlanningWaterFields(draft:PlanningDraft,change:((PlanningDraft)->PlanningDraft)->Unit,onPoints:()->Unit){
     val water=remember(draft.waterLiters,draft.refill,draft.refillFrequency,draft.people,draft.waterDailyPerPerson){
         Calculator.water(
             draft.waterLiters.numberOrNull()?:0.0,
@@ -358,11 +359,11 @@ private fun PlanningWaterFields(draft:PlanningDraft,change:(PlanningDraft)->Unit
     }
     SectionCard("Água carregada e reabastecimento",Icons.Outlined.WaterDrop){
         Text("Opcional. Aqui você compara a água que realmente levará com o consumo diário informado no cálculo principal.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
-        NumericField(draft.waterLiters,{change(draft.copy(waterLiters=it))},"Água carregada",unit="L")
-        Row(verticalAlignment=Alignment.CenterVertically){Switch(draft.refill,{change(draft.copy(refill=it))});Text(" Planejo reabastecer")}
+        NumericField(draft.waterLiters,{value->change{it.copy(waterLiters=value)}},"Água carregada",unit="L")
+        Row(verticalAlignment=Alignment.CenterVertically){Switch(draft.refill,{value->change{it.copy(refill=value)}});Text(" Planejo reabastecer")}
         if(draft.refill){
-            NumericField(draft.refillFrequency,{change(draft.copy(refillFrequency=it))},"Intervalo entre reabastecimentos",positive=true,unit="dias")
-            OutlinedTextField(draft.waterPlaces,{change(draft.copy(waterPlaces=it))},label={Text("Locais previstos para água")},modifier=Modifier.fillMaxWidth())
+            NumericField(draft.refillFrequency,{value->change{it.copy(refillFrequency=value)}},"Intervalo entre reabastecimentos",positive=true,unit="dias")
+            OutlinedTextField(draft.waterPlaces,{value->change{it.copy(waterPlaces=value)}},label={Text("Locais previstos para água")},modifier=Modifier.fillMaxWidth())
             OutlinedButton(onClick=onPoints,modifier=Modifier.fillMaxWidth()){Icon(Icons.Outlined.Place,null);Text(" PONTOS DE APOIO")}
         }
         if(numberError(draft.waterLiters)==null&&draft.waterLiters.isNotBlank()&&draft.people.wholeNumberOrNull()?.let{it>0}==true){

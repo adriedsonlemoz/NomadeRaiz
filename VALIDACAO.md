@@ -1,44 +1,38 @@
-# Validação — 1.0.42-kotlin-alpha.15
+# Validação — 1.0.43-kotlin-alpha.16
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.41-alpha.14.zip`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100042`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.42-alpha.15.zip`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100043`.
 
-## Análise antes das alterações
+## Resultado real dos logs recebidos
 
-- A tela Planejar concentrava um card visual grande, resumo completo do último planejamento e estados de seis categorias antes dos campos principais. Isso aumentava a quantidade de composição e obrigava o usuário a rolar antes de informar o que define a viagem.
-- O fluxo anterior dependia principalmente de `dias` e `km/dia`; velocidade média e horas reais de pedal não faziam parte do modelo de Planejamento, embora já existissem conceitos semelhantes na Calculadora.
-- Alimentação detalhada era composta diretamente na tela principal, mesmo quando o usuário queria apenas uma estimativa rápida. O editor item a item e os controles avançados agora só são compostos quando `Detalhes opcionais` está aberto.
-- A imagem raster do hero de Planejamento era decodificada/composta toda vez que a tela era criada. O novo Planejamento usa somente componentes Compose nessa área; o arquivo antigo permanece no projeto para não alterar recursos de outras telas/compatibilidade.
-- A persistência com debounce de 300 ms e `Dispatchers.IO` introduzida na versão anterior foi mantida. Não foi reintroduzida gravação de `SharedPreferences` a cada tecla. O botão explícito **Salvar planejamento** grava o snapshot imediatamente uma única vez, evitando corrida com a recriação da Activity sem penalizar a digitação.
+O arquivo `Android-Kotlin-APK-15-logs.zip` foi analisado antes da correção. Ele corresponde à execução da versão-base `1.0.42-kotlin-alpha.15`.
 
-## Mudanças verificadas em código
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL`.
+- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL`.
+- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram executados 5 testes; 4 passaram e 1 falhou.
+- Teste que falhou: `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- Falha registrada: `java.lang.AssertionError: expected:<20> but was:<0>`. O valor era `PlanningDraft.safetyMarginPercent`: a interface havia selecionado `+20%`, mas o rascunho persistido terminou com `0%`.
+- Como os testes instrumentados falharam, o workflow encerrou com `BUILD FAILED` e a publicação permaneceu corretamente bloqueada.
 
-- Novo `TripPlanner.kt` implementa o cálculo determinístico de distância diária, horas teóricas, horas com margem, dias estimados, último dia, cenários e data de chegada.
-- `PlanningDraft` recebeu `speedKmh`, `hoursPerDay`, `safetyMarginPercent`, `departureDate`, `foodDailyCost`, `waterDailyPerPerson` e `energyDailyWh`.
-- `TravelFormJson` passou ao schema local 2. Ao ler JSON antigo, velocidade e horas ficam vazias e os dias antigos permanecem como fallback; nenhum valor de ritmo é inventado para dados já salvos.
-- `buildPlanningResult` usa a duração calculada quando existe, mas continua aceitando planos legados baseados em duração manual.
-- O cálculo rápido de recursos usa a duração atual: alimentação = custo/dia × pessoas × dias; água = L/pessoa/dia × pessoas × dias; energia = Wh/dia do grupo × dias.
-- A função de água aceita consumo por pessoa/dia configurável e mantém 3 L/pessoa/dia como padrão somente para caminhos antigos que não informam um valor específico.
-- Campos avançados, editor detalhado de alimentos, reabastecimento, orçamento, tipos de viagem, segurança e inventário continuam no projeto e não foram removidos.
-- A tela Sobre lista as mudanças da nova versão.
-- `applicationId` e `namespace` permanecem `com.nomaderaiz.app`, preservando a instalação sobre versões anteriores quando assinadas com a mesma chave.
-- O módulo Backup não foi alterado.
+## Causa encontrada
 
-## Testes e validações executados neste ambiente
+Os campos de `PlanningScreen` recebiam um `PlanningDraft` e, em seus callbacks, faziam `draft.copy(...)`. Esse `draft` era a cópia capturada pela composição daquele componente. Em uma sequência rápida de ações, outro campo podia executar usando uma cópia anterior e reconstruir todo o rascunho, apagando um valor atualizado poucos instantes antes. O cenário do teste reproduziu isso com a margem `+20%` seguida da abertura dos detalhes e edição do dinheiro.
 
-- Compilação conjunta dos arquivos puros de regra de negócio com `kotlinc`: **OK**. Foram compilados `Models.kt`, `NumberInput.kt`, `TripPlanner.kt`, `TravelForms.kt`, `Calculator.kt`, `Planning.kt`, `PlanningResult.kt` e `SeedData.kt`.
-- A compilação acima valida sintaxe e tipos da nova lógica de planejamento sem depender do Android/Compose.
-- Execução isolada da nova lógica: **OK** — 300 km a 20 km/h por 7 h/dia resultou em 3 dias, 15 h teóricas e 1 h no último dia; saída em 22/09/2026 resultou em chegada estimada em 24/09/2026. Para 2 pessoas, R$ 40/pessoa/dia, 3 L/pessoa/dia e 30 Wh/dia resultaram em R$ 240, 18 L e 90 Wh para a viagem.
-- `python3 scripts/sync-github-manager.py --check`: **OK**.
-- Testes JUnit foram atualizados para cobrir 300 km a 20 km/h por 7 h/dia, margem de segurança, previsão de chegada, migração de JSON antigo e totais rápidos de alimentação/água/energia.
-- Teste instrumentado de Planejamento foi atualizado para editar distância, velocidade, horas, recursos essenciais, margem, abrir detalhes opcionais, salvar, navegar, recriar a Activity e verificar a persistência.
-- `github-manager.json`, README, CHANGELOG e `app/build.gradle.kts` foram sincronizados para `1.0.42-kotlin-alpha.15` / `100042`.
+Havia também um segundo risco de ordem na persistência automática: cada mudança criava um `LaunchedEffect(planning)` próprio com atraso de 300 ms. Embora a intenção fosse debounce, uma gravação já iniciada em `Dispatchers.IO` podia competir com uma gravação mais nova.
 
-## Validações que ainda exigem o ambiente Android
+## Correção aplicada
 
-- Tentativa real de executar `gradle :app:testDebugUnitTest :app:assembleDebug --stacktrace`: **não iniciou**, porque este ambiente retorna `gradle: command not found` e o projeto não contém Gradle Wrapper. Uma tentativa de obter a distribuição do Gradle também não ficou disponível neste ambiente.
-- `:app:testDebugUnitTest`: ainda precisa ser executado pelo Gradle Android.
-- `:app:assembleDebug`: ainda precisa ser executado pelo Gradle Android.
-- `:app:connectedDebugAndroidTest` em Android 15: ainda precisa ser executado em emulador/dispositivo.
-- Home → Mais → módulos → voltar, abertura repetida de Mais e navegação inferior continuam cobertas pela suíte instrumentada existente, mas só podem ser declaradas aprovadas depois da execução real.
+- `PlanningScreen` não recebe mais snapshots inteiros para substituir o rascunho em cada campo. Cada controle envia uma transformação `(PlanningDraft) -> PlanningDraft`.
+- `NomadeRaizApp` aplica essa transformação sobre `planning.draft` no instante da ação, sempre usando o estado raiz mais recente.
+- O botão **Salvar planejamento** cria o snapshot a partir do estado raiz atual e o persiste imediatamente junto com `lastGenerated`.
+- A persistência automática de Planejamento e Calculadora agora usa um coletor estável com `snapshotFlow`, `distinctUntilChanged` e `collectLatest`, mantendo o atraso de 300 ms sem permitir inversão da ordem dos snapshots.
+- O chip `+20%` recebeu `testTag("planning-margin-20")`; o teste instrumentado passou a clicar nessa tag e chamar `assertIsSelected()` antes de continuar. Isso aumenta a precisão do teste sem remover nenhuma verificação de persistência.
+- Backup não foi alterado. `applicationId` e `namespace` continuam `com.nomaderaiz.app`.
 
-O workflow do GitHub Actions continua na ordem testes unitários → build APK → Android 15 → publicação e continua bloqueando a Release se qualquer etapa falhar. A Release continua publicando somente `Nomade-Raiz.apk`, sem AAB e sem `upload-artifact`.
+## Verificações desta entrega no ambiente atual
+
+- Estrutura e referências dos arquivos modificados foram revisadas.
+- As regras puras de negócio continuam compiláveis separadamente com `kotlinc`; a alteração principal desta entrega está na camada Compose/estado.
+- `python3 scripts/sync-github-manager.py --check` deve ser executado após a sincronização dos metadados e faz parte da preparação do pacote.
+- O ambiente atual não possui Gradle/Android SDK configurado para executar `:app:testDebugUnitTest`, `:app:assembleDebug` ou o emulador Android 15. Portanto, **não é declarado que a correção passou nos testes Android ainda**.
+
+A próxima execução do GitHub Actions deve repetir obrigatoriamente testes unitários → build APK → testes instrumentados Android 15. A Release deve continuar bloqueada se qualquer etapa falhar e deve publicar somente `Nomade-Raiz.apk`.
