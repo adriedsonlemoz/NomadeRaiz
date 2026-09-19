@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.40-kotlin-alpha.13
+
+### Calculadora enxuta para a cicloviagem
+
+- Simplificada a tela Calculadora para mostrar apenas os dados práticos de alimentação, água e energia, além dos dias da viagem para estimar totais.
+- Alimentação agora usa gasto diário; Água usa quantidade carregada e consumo diário; Energia usa reserva disponível e consumo diário.
+- Removidos da interface da Calculadora os blocos extensos de Bike, inventário de alimentos, Dinheiro, Peso e custos detalhados. Os campos legados continuam preservados no rascunho persistido, evitando perda de dados de instalações anteriores.
+- Revisada a correção da navegação inferior: não há mais uso de `WindowInsets.isImeVisible`; `nav-More` e `nav-Journal` permanecem na composição sempre que uma tela principal está ativa.
+- Backup permanece fora do escopo e não foi alterado.
+- Versão e metadados sincronizados: `1.0.40-kotlin-alpha.13` / `100040`.
+
 ## 1.0.39-kotlin-alpha.12
 
 ### Correção do teste Android 15 e da navegação inferior

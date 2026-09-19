@@ -2,13 +2,16 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.39-kotlin-alpha.12`
+**Versão atual:** `1.0.40-kotlin-alpha.13`
 
-**versionCode:** `100039`
+**versionCode:** `100040`
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
+
+- Calculadora simplificada: removido o excesso visual de Bike, inventário de alimentos, dinheiro, peso e custos detalhados; a tela agora prioriza alimentação, água e energia. Os dados antigos continuam preservados na persistência para compatibilidade.
+- Confirmada em código a remoção da dependência de `WindowInsets.isImeVisible`; a barra inferior é renderizada sempre que o destino atual é uma tela principal.
 
 - Barra inferior sem altura fixa de 70 dp, com tratamento dos espaços do sistema e do teclado. As barras do Android acompanham o tema do aplicativo.
 - Planejamento salva automaticamente o rascunho e mantém o último planejamento gerado separado das edições em andamento. Calculadora também conserva seus campos ao sair e reabrir.
@@ -29,7 +32,7 @@ Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android
 - Equipamentos com as 9 categorias e 20 itens-base do original, CRUD, status, quantidade, preço, observações, prioridade, filtros, ordenação e totais financeiros.
 - Cinco modos de checklist. Como no original, apenas `Antes de sair` e `Bike/Manutenção` são persistentes; os demais são temporários.
 - Planejamento com destino, duração, pessoas, distância, média calculada, meta de pedal, quatro tipos de viagem, alimentação, água, orçamento, reserva financeira, energia automática pelo inventário, abrigo, segurança, estados, recomendações e atalhos para Pontos de apoio/Manual da Bike.
-- Calculadora com Resumo Geral, Bike, Comida, Água, Energia, Dinheiro, Peso e Custo da viagem.
+- Calculadora simplificada para uso na estrada: gasto diário com alimentação, água carregada/consumo diário e energia disponível/consumo diário, com autonomia e totais quando aplicáveis.
 - Diário com cadastro, edição, clima, quilometragem, notas, exclusão, totais e persistência.
 - Pontos de apoio com os tipos originais, filtro por tipo, cadastro, edição, confirmação de exclusão, avaliação e estado aberto/fechado.
 - Alertas de reposição com mínimos individuais e sugestões.
