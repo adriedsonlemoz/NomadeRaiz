@@ -31,7 +31,6 @@ private val NavigationStateSaver = listSaver<NavigationState, String>(
     }
 )
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NomadeRaizApp(){
     val context=LocalContext.current
@@ -50,7 +49,6 @@ fun NomadeRaizApp(){
     var planning by remember{mutableStateOf(repo.loadPlanningSession())}
     var calculator by remember{mutableStateOf(repo.loadCalculatorDraft())}
     val savedScreens=rememberSaveableStateHolder()
-    val keyboardVisible=WindowInsets.isImeVisible
 
     fun reloadPersistentState(){
         items=repo.loadItems();journal=repo.loadJournal();points=repo.loadPoints();minimums=repo.loadMinimums()
@@ -70,7 +68,7 @@ fun NomadeRaizApp(){
             containerColor=MaterialTheme.colorScheme.background,
             contentWindowInsets=WindowInsets.safeDrawing,
             bottomBar={
-                if(navigation.current in topLevelScreens&&!keyboardVisible){
+                if(navigation.current in topLevelScreens){
                     NavigationBar(
                         modifier=Modifier.testTag("bottom-navigation"),
                         containerColor=MaterialTheme.colorScheme.surface,

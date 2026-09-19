@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.39-kotlin-alpha.12
+
+### Correção do teste Android 15 e da navegação inferior
+
+- Corrigida a causa das quatro falhas instrumentadas observadas no GitHub Actions.
+- A barra inferior não depende mais de `WindowInsets.isImeVisible`, que podia permanecer ativo incorretamente no emulador Android 15 e retirar `Mais` e `Diário` da árvore da interface.
+- A navegação inferior agora permanece disponível em todas as telas principais; o redimensionamento do teclado continua sendo tratado pelo sistema e por `imePadding` no conteúdo.
+- Nenhum módulo, dado persistido ou recurso de Backup foi removido ou alterado.
+- Versão e metadados sincronizados: `1.0.39-kotlin-alpha.12` / `100039`.
+
 ## 1.0.38-kotlin-alpha.11
 
 - Corrigidas a altura fixa da navegação inferior e a aplicação/consumo dos espaços das barras do Android e do teclado; aparência das barras sincronizada com o tema escolhido.

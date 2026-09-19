@@ -1,6 +1,8 @@
-# Validação — 1.0.38-kotlin-alpha.11
+# Validação — 1.0.39-kotlin-alpha.12
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.37-alpha.10.zip`, entregue anteriormente. A versão principal continua em `app/build.gradle.kts`; `versionCode` atual: `100038`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.38-alpha.11.zip`, entregue anteriormente. A versão principal continua em `app/build.gradle.kts`; `versionCode` atual: `100039`.
+
+Os logs do GitHub Actions confirmaram que compilação e testes unitários passaram na versão anterior. Quatro testes instrumentados falharam porque `WindowInsets.isImeVisible` ocultou a barra inferior no emulador Android 15 mesmo sem teclado aberto. A dependência desse sinal foi removida nesta versão.
 
 ## O que foi verificado aqui
 
@@ -16,7 +18,7 @@ Base utilizada: `Nomade-Raiz-Kotlin-v1.0.37-alpha.10.zip`, entregue anteriorment
 
 ## Limite da validação
 
-Gradle e Android SDK não estão disponíveis no ambiente local e seu download foi bloqueado pela política de rede. Por isso **não houve compilação Kotlin/Android, execução JUnit ou teste em emulador/aparelho nesta entrega**. Após essa limitação ser informada, o usuário autorizou continuar com o código e a validação preparada no GitHub Actions.
+Gradle e Android SDK não estão disponíveis no ambiente local e seu download foi bloqueado pela política de rede. Os logs enviados pelo usuário comprovam que, na versão `1.0.38`, os testes unitários e `assembleDebug` terminaram com `BUILD SUCCESSFUL`. Dos cinco testes instrumentados, um passou e quatro falharam pela ausência das tags da barra inferior. A correção da versão `1.0.39` ainda precisa ser executada novamente pelo GitHub Actions.
 
 Não se deve interpretar a revisão estática como prova de compilação ou de ausência de travamentos. Nenhum APK novo é incluído neste ZIP. A Release só será publicada pelo workflow se as etapas abaixo forem concluídas com sucesso.
 
@@ -43,7 +45,7 @@ gradle :app:testDebugUnitTest :app:assembleDebug
 gradle :app:connectedDebugAndroidTest
 ```
 
-O workflow `Android Kotlin APK` usa emulador Android 15 para os testes instrumentados. A ordem é: metadados → testes unitários → compilação → testes Android → publicação do APK. Falha em qualquer etapa interrompe a publicação. Nenhuma execução remota ou Release foi iniciada durante esta entrega.
+O workflow `Android Kotlin APK` usa emulador Android 15 para os testes instrumentados. A ordem é: metadados → testes unitários → compilação → testes Android → publicação do APK. Falha em qualquer etapa interrompe a publicação; na execução analisada, isso impediu corretamente a criação da Release depois das quatro falhas instrumentadas.
 
 ## Conferência em aparelho ainda necessária
 
