@@ -2,28 +2,31 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.46-kotlin-alpha.19`
+**Versão atual:** `1.0.47-kotlin-alpha.20`
 
-**versionCode:** `100046`
+**versionCode:** `100047`
 
 ### Correção desta entrega
 
-A versão `1.0.46-kotlin-alpha.19` corrige a falha real observada nos logs da `1.0.45`: o teste Android 15 não falhou mais na asserção semântica, e sim expirou aguardando o valor `+20%` aparecer no armazenamento persistente. A margem deixou de depender do autosave com debounce e agora é persistida imediatamente por ser uma escolha discreta. O seletor também deixou de usar `FilterChip` com semântica sobreposta e passou a usar um controle `selectable` próprio, em que clique, estado selecionado e tag pertencem ao mesmo nó semântico.
+A versão `1.0.47-kotlin-alpha.20` corrige a falha observada nos logs da `1.0.46`: os testes unitários e o APK passaram, mas o Android 15 voltou a falhar em `Selected = true` no seletor de margem do Planejamento. Não é o mesmo erro da execução imediatamente anterior (`ComposeTimeoutException` de persistência); é o mesmo tipo de asserção semântica visto antes.
+
+A causa tratada nesta entrega é a existência de semânticas separadas no controle customizado: `testTag` e `selectable` podiam representar nós diferentes para o teste. O controle agora usa `clearAndSetSemantics` para publicar explicitamente, em um único nó, `testTag`, `Selected`, papel de radio button, descrição de estado e ação de clique. O toque físico continua funcionando por `clickable`, e a opção selecionada também recebe um marcador visual `✓`.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- Os logs `Android-Kotlin-APK-18-logs.zip` confirmaram `:app:testDebugUnitTest` e `:app:assembleDebug` com sucesso na `1.0.45-kotlin-alpha.18`.
+- Os logs `Android-Kotlin-APK-19-logs.zip` confirmaram `:app:testDebugUnitTest` e `:app:assembleDebug` com sucesso na `1.0.46-kotlin-alpha.19`.
 - No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha mudou: não foi `Selected = true`; ocorreu `ComposeTimeoutException: Condition still not satisfied after 5000 ms` enquanto o teste aguardava `safetyMarginPercent == 20` no `AppRepository`.
-- A margem `0% / +10% / +20%` agora usa um controle seletivo próprio com `Modifier.selectable`, mantendo clique, estado `Selected`, papel de radio button e `testTag` no mesmo nó semântico.
-- Por ser uma escolha de baixa frequência, a margem é salva imediatamente no repositório. Campos numéricos continuam com debounce de 300 ms para preservar desempenho durante digitação.
-- O teste instrumentado continua exigindo seleção visual, persistência real, navegação, geração do plano e restauração após `Activity.recreate()`; nenhuma verificação foi removida.
-- Assistente de viagem, formatação automática pt-BR, cenários, alimentação, água, energia e compatibilidade de dados foram preservados.
+- A falha registrada foi novamente `Failed to assert: (Selected = 'true')`.
+- Diferente do log anterior, não houve `ComposeTimeoutException` de persistência nessa execução.
+- O seletor `0% / +10% / +20%` agora concentra tag, estado selecionado, papel e ação no mesmo nó semântico, evitando ambiguidade entre modificadores semânticos.
+- O teste continua exigindo seleção na interface, persistência real, geração do plano, navegação, `Activity.recreate()`, restauração dos campos e `lastGenerated`. Também foram adicionados checkpoints no log para indicar em qual etapa a próxima execução falharia, caso ainda haja problema.
+- Adicionado teste unitário específico para garantir que `safetyMarginPercent = 20` sobrevive ao `snapshotForPlanning()` e ao round-trip de `PlanningSession`.
+- Persistência imediata da margem e debounce dos campos digitados foram preservados.
 - A tela **Sobre** foi atualizada e o módulo **Backup** não foi alterado.
 
-**Validação desta entrega:** os novos logs da versão-base foram analisados e a sincronização de metadados foi verificada localmente. Este ambiente não possui Gradle/Android SDK configurado para executar novamente o build completo; a `1.0.46` ainda precisa passar pelo GitHub Actions. Nenhum teste Android desta nova versão é declarado como aprovado sem execução.
+**Validação desta entrega:** os logs da versão-base foram analisados e os metadados foram sincronizados. Este ambiente não executa o emulador Android 15 desta nova versão; portanto a `1.0.47` ainda precisa passar pelo GitHub Actions antes da Release.
 
 ## Estado funcional atual
 

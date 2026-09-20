@@ -29,11 +29,11 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigida a falha de persistência da margem +20% observada nos testes Android 15.")
-                Text("• A margem agora é uma escolha seletiva própria: clique e estado selecionado ficam no mesmo nó semântico.")
-                Text("• 0%, +10% e +20% são salvos imediatamente; o debounce continua somente nos campos digitados para manter a tela leve.")
+                Text("• Corrigida a semântica do seletor de margem do Planejamento observada no Android 15.")
+                Text("• Tag de teste, estado Selected, papel e ação agora pertencem explicitamente ao mesmo nó semântico.")
+                Text("• O toque físico continua independente e a opção escolhida fica marcada visualmente com ✓.")
+                Text("• A margem continua com persistência imediata; campos digitados mantêm debounce para preservar desempenho.")
                 Text("• Os logs da versão anterior tiveram testes unitários e APK aprovados, com 4/5 testes Android 15; esta versão ainda precisa de nova validação.")
-                Text("• Assistente de viagem, formatação automática e compatibilidade dos dados foram preservados.")
             }
         }
         item{

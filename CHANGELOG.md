@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.47-kotlin-alpha.20
+
+### Margem do Planejamento: semântica unificada
+
+- Analisado `Android-Kotlin-APK-19-logs.zip`, correspondente à versão `1.0.46-kotlin-alpha.19`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 38s`).
+- `:app:assembleDebug` passou antes da etapa instrumentada.
+- Os testes Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha registrada foi `Failed to assert the following: (Selected = 'true')`. Portanto, não é o mesmo erro da execução imediatamente anterior, que era `ComposeTimeoutException` aguardando persistência; é o retorno do problema de semântica `Selected`.
+- A análise do controle mostrou `testTag` e `selectable` em modificadores semânticos separados. Isso podia fazer o teste localizar o nó identificado pela tag sem ler o mesmo estado `Selected` do nó de seleção.
+- `PlanningMarginChoice` agora usa `clearAndSetSemantics` para declarar no mesmo nó: `testTag`, `selected`, `Role.RadioButton`, `stateDescription` e a ação `onClick`. O toque físico continua via `clickable`.
+- A opção selecionada recebe também o indicador visual `✓`, melhorando a leitura sem depender apenas de cor.
+- O teste instrumentado não foi removido nem relaxado: continua verificando seleção, persistência, campos avançados, geração, navegação, recriação da Activity, valores restaurados e seleção restaurada. Checkpoints foram adicionados para diferenciar futuras falhas de clique, UI, persistência e restauração.
+- Adicionado teste unitário específico para o round-trip de `safetyMarginPercent` em `snapshotForPlanning()` e `TravelFormJson`.
+- Backup, `applicationId`, `namespace`, dados legados e workflow de Release foram preservados.
+- Versão e metadados sincronizados: `1.0.47-kotlin-alpha.20` / `100047`.
+
 ## 1.0.46-kotlin-alpha.19
 
 ### Margem do Planejamento: clique e persistência determinísticos

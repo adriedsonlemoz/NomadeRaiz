@@ -51,4 +51,14 @@ class TravelFormJsonTest {
         assertEquals("",session.draft.hoursPerDay)
         assertNull(session.lastGenerated)
     }
+    @Test fun safetyMarginSurvivesDraftSnapshotAndPlanningSessionSerialization(){
+        val draft=PlanningDraft(km="500",speedKmh="20",hoursPerDay="7",safetyMarginPercent=20)
+        val snapshot=draft.snapshotForPlanning()
+        assertEquals(20,snapshot.safetyMarginPercent)
+        val session=PlanningSession(draft=snapshot,lastGenerated=snapshot)
+        val restored=TravelFormJson.decodePlanning(TravelFormJson.encodePlanning(session))
+        assertEquals(20,restored.draft.safetyMarginPercent)
+        assertEquals(20,restored.lastGenerated!!.safetyMarginPercent)
+    }
+
 }

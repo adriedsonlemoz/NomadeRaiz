@@ -3,7 +3,7 @@ package com.nomaderaiz.app.ui
 import android.app.DatePickerDialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -16,6 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.testTag as semanticsTestTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -258,18 +264,28 @@ private fun PlanningRideFields(
 
 @Composable
 private fun PlanningMarginChoice(value:Int,label:String,selected:Boolean,onSelect:()->Unit){
+    val stateLabel=if(selected) "$label selecionado" else "$label não selecionado"
     Surface(
         modifier=Modifier
             .heightIn(min=44.dp)
-            .testTag("planning-margin-$value")
-            .selectable(selected=selected,onClick=onSelect,role=Role.RadioButton),
+            // Um único nó semântico contém tag, Selected, papel e ação. O clickable
+            // continua abaixo para o toque físico; clearAndSetSemantics evita nós
+            // concorrentes do teste/acessibilidade apontando para estados diferentes.
+            .clearAndSetSemantics {
+                semanticsTestTag="planning-margin-$value"
+                this.selected=selected
+                role=Role.RadioButton
+                stateDescription=stateLabel
+                onClick(label="Selecionar $label"){onSelect();true}
+            }
+            .clickable(role=Role.RadioButton,onClick=onSelect),
         shape=MaterialTheme.shapes.small,
         color=if(selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
         contentColor=if(selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
         border=BorderStroke(1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
     ){
         Box(Modifier.padding(horizontal=14.dp,vertical=10.dp),contentAlignment=Alignment.Center){
-            Text(label,fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,fontSize=13.sp)
+            Text(if(selected) "✓ $label" else label,fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,fontSize=13.sp)
         }
     }
 }
