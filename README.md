@@ -2,31 +2,29 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.47-kotlin-alpha.20`
+**Versão atual:** `1.0.48-kotlin-alpha.21`
 
-**versionCode:** `100047`
+**versionCode:** `100048`
 
 ### Correção desta entrega
 
-A versão `1.0.47-kotlin-alpha.20` corrige a falha observada nos logs da `1.0.46`: os testes unitários e o APK passaram, mas o Android 15 voltou a falhar em `Selected = true` no seletor de margem do Planejamento. Não é o mesmo erro da execução imediatamente anterior (`ComposeTimeoutException` de persistência); é o mesmo tipo de asserção semântica visto antes.
+A versão `1.0.48-kotlin-alpha.21` corrige o novo `ComposeTimeoutException` observado em `Android-Kotlin-APK-20-logs.zip`. Os testes unitários e o APK da `1.0.47` passaram, mas o Android 15 terminou novamente com 4/5 testes por falha no teste do Planejamento.
 
-A causa tratada nesta entrega é a existência de semânticas separadas no controle customizado: `testTag` e `selectable` podiam representar nós diferentes para o teste. O controle agora usa `clearAndSetSemantics` para publicar explicitamente, em um único nó, `testTag`, `Selected`, papel de radio button, descrição de estado e ação de clique. O toque físico continua funcionando por `clickable`, e a opção selecionada também recebe um marcador visual `✓`.
+A correção trata duas fontes de instabilidade: o seletor de margem volta a usar o `FilterChip` Material padrão, evitando uma árvore semântica customizada, e a persistência do Planejamento passa a ter uma única política explícita de gravação. Campos digitados continuam com debounce de 300 ms; escolhas discretas invalidam qualquer snapshot pendente e são salvas imediatamente, impedindo que um estado antigo sobrescreva `+20%`.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- Os logs `Android-Kotlin-APK-19-logs.zip` confirmaram `:app:testDebugUnitTest` e `:app:assembleDebug` com sucesso na `1.0.46-kotlin-alpha.19`.
+- Os logs `Android-Kotlin-APK-20-logs.zip` confirmaram `:app:testDebugUnitTest` com sucesso em 55 s e `:app:assembleDebug` com sucesso em 18 s na `1.0.47-kotlin-alpha.20`.
 - No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha registrada foi novamente `Failed to assert: (Selected = 'true')`.
-- Diferente do log anterior, não houve `ComposeTimeoutException` de persistência nessa execução.
-- O seletor `0% / +10% / +20%` agora concentra tag, estado selecionado, papel e ação no mesmo nó semântico, evitando ambiguidade entre modificadores semânticos.
-- O teste continua exigindo seleção na interface, persistência real, geração do plano, navegação, `Activity.recreate()`, restauração dos campos e `lastGenerated`. Também foram adicionados checkpoints no log para indicar em qual etapa a próxima execução falharia, caso ainda haja problema.
-- Adicionado teste unitário específico para garantir que `safetyMarginPercent = 20` sobrevive ao `snapshotForPlanning()` e ao round-trip de `PlanningSession`.
-- Persistência imediata da margem e debounce dos campos digitados foram preservados.
-- A tela **Sobre** foi atualizada e o módulo **Backup** não foi alterado.
+- A falha registrada foi `ComposeTimeoutException: Condition still not satisfied after 5000 ms`. O log padrão do runner não informa qual dos pontos de espera internos expirou.
+- O Planejamento deixou de depender de `snapshotFlow` para sua persistência. A gravação agora é disparada junto da alteração do estado, com cancelamento/invalidação de snapshots antigos.
+- A margem `0% / +10% / +20%` usa novamente `FilterChip`, que fornece a semântica `Selected` padrão do Material3; o indicador `✓` continua visível na opção selecionada.
+- O teste não foi removido nem relaxado: continua verificando seleção, persistência, geração, navegação, `Activity.recreate()`, campos restaurados e `lastGenerated`. O polling genérico foi trocado por asserções determinísticas, de modo que uma nova falha aponte diretamente UI ou persistência.
+- A tela **Sobre** e os metadados foram atualizados. O módulo **Backup** não foi alterado.
 
-**Validação desta entrega:** os logs da versão-base foram analisados e os metadados foram sincronizados. Este ambiente não executa o emulador Android 15 desta nova versão; portanto a `1.0.47` ainda precisa passar pelo GitHub Actions antes da Release.
+**Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.
 
 ## Estado funcional atual
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.48-kotlin-alpha.21
+
+### Planejamento: fim da corrida de persistência e semântica padrão
+
+- Analisado `Android-Kotlin-APK-20-logs.zip`, correspondente à versão `1.0.47-kotlin-alpha.20`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 55s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 18s`).
+- Os testes Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha foi `ComposeTimeoutException: Condition still not satisfied after 5000 ms`. O runner não registrou qual dos `waitUntil` do teste expirou, então a correção elimina as duas fontes ainda frágeis em vez de adivinhar uma delas.
+- `PlanningMarginChoice` volta a usar `FilterChip` Material3, removendo `clearAndSetSemantics`, `clickable` e uma ação semântica duplicada. `Selected` e clique passam a vir do próprio componente padrão.
+- A persistência do Planejamento deixou de usar o coletor `snapshotFlow`. Campos digitados agendam uma gravação com debounce de 300 ms; cada nova edição cancela/invalida a anterior.
+- Escolhas discretas e a geração do plano cancelam qualquer gravação pendente e persistem imediatamente. Uma revisão monotônica e um bloqueio curto impedem um snapshot antigo de terminar depois de um valor novo.
+- O teste instrumentado continua exigindo `assertIsSelected()`, indicador visual `✓ +20%`, valor 20 no repositório, geração, navegação, recriação da Activity, restauração integral e `lastGenerated`. O polling de 5 s foi removido para que uma regressão falhe no ponto exato.
+- Backup, `applicationId`, `namespace`, dados legados e fluxo de Release foram preservados.
+- Versão e metadados sincronizados: `1.0.48-kotlin-alpha.21` / `100048`.
+
 ## 1.0.47-kotlin-alpha.20
 
 ### Margem do Planejamento: semântica unificada

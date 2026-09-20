@@ -21,10 +21,14 @@ import androidx.compose.ui.platform.testTag
 import com.nomaderaiz.app.data.*
 import com.nomaderaiz.app.ui.theme.NomadeRaizTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 private val NavigationStateSaver = listSaver<NavigationState, String>(
     save = { state -> listOf(state.current.name) + state.backStack.map { it.name } },
@@ -66,21 +70,39 @@ fun NomadeRaizApp(){
     var calculator by rememberSaveable(stateSaver=CalculatorDraftSaver){mutableStateOf(repo.loadCalculatorDraft())}
     val savedScreens=rememberSaveableStateHolder()
 
-    // Planejamento e Calculadora têm digitação contínua. O estado visual e o SavedState
-    // são atualizados imediatamente; a serialização persistente é agrupada e executada
-    // fora da thread da UI. Assim a Activity pode ser recriada sem perder o que foi
-    // digitado e sem gravar SharedPreferences a cada tecla.
-    // Um único coletor serializa as gravações em ordem. collectLatest cancela o
-    // debounce anterior antes de aceitar o próximo valor e impede que um snapshot
-    // antigo termine depois de um valor mais novo, sobrescrevendo campos recentes.
-    LaunchedEffect(repo){
-        snapshotFlow { planning }
-            .distinctUntilChanged()
-            .collectLatest { value ->
-                delay(300)
-                withContext(Dispatchers.IO){repo.savePlanningSession(value)}
+    // Planejamento usa persistência explícita para evitar uma corrida entre o debounce
+    // dos campos digitados e escolhas discretas (como a margem de segurança). Só o
+    // snapshot mais recente pode chegar ao repositório. Controles discretos invalidam
+    // qualquer gravação pendente e são aplicados imediatamente.
+    val persistenceScope=rememberCoroutineScope()
+    val planningRevision=remember{AtomicLong(0)}
+    val planningSaveJob=remember{AtomicReference<Job?>(null)}
+    val planningWriteLock=remember{Any()}
+
+    fun persistPlanningDebounced(value:PlanningSession){
+        val revision=planningRevision.incrementAndGet()
+        planningSaveJob.getAndSet(null)?.cancel()
+        val job=persistenceScope.launch{
+            delay(300)
+            withContext(Dispatchers.IO){
+                synchronized(planningWriteLock){
+                    if(planningRevision.get()==revision) repo.savePlanningSession(value)
+                }
             }
+        }
+        planningSaveJob.set(job)
     }
+
+    fun persistPlanningImmediate(value:PlanningSession){
+        planningRevision.incrementAndGet()
+        planningSaveJob.getAndSet(null)?.cancel()
+        // SharedPreferences.apply() atualiza o valor em memória antes de retornar.
+        // O bloco sincronizado garante que uma gravação antiga nunca termine depois.
+        synchronized(planningWriteLock){repo.savePlanningSession(value)}
+    }
+
+    // A Calculadora permanece com debounce serializado porque só recebe digitação
+    // contínua e não possui o mesmo tipo de escolha discreta do Planejamento.
     LaunchedEffect(repo){
         snapshotFlow { calculator }
             .distinctUntilChanged()
@@ -91,6 +113,8 @@ fun NomadeRaizApp(){
     }
 
     fun reloadPersistentState(){
+        planningRevision.incrementAndGet()
+        planningSaveJob.getAndSet(null)?.cancel()
         items=repo.loadItems();journal=repo.loadJournal();points=repo.loadPoints();minimums=repo.loadMinimums()
         favoriteTips=repo.loadFavoriteTips();settings=repo.loadSettings();quickNote=repo.loadQuickNote();activeCheckMode=repo.loadActiveCheckMode()
         favoriteManual=repo.loadFavoriteManual();masteredSkills=repo.loadMasteredSkills()
@@ -151,22 +175,21 @@ fun NomadeRaizApp(){
                     modifier=Modifier,equipment=items,session=planning,
                     updateDraft={transform->
                         val current=planning
-                        planning=current.copy(draft=transform(current.draft))
+                        val updated=current.copy(draft=transform(current.draft))
+                        planning=updated
+                        persistPlanningDebounced(updated)
                     },
                     updateDraftImmediate={transform->
-                        // Controles discretos (ex.: margem de segurança) devem sobreviver
-                        // imediatamente a navegação/recriação. Mantemos a digitação numérica
-                        // no debounce para não reintroduzir gravações a cada tecla.
                         val current=planning
                         val updated=current.copy(draft=transform(current.draft))
                         planning=updated
-                        repo.savePlanningSession(updated)
+                        persistPlanningImmediate(updated)
                     },
                     commitCurrent={
                         val snapshot=planning.draft.snapshotForPlanning()
                         val updated=planning.copy(draft=snapshot,lastGenerated=snapshot)
                         planning=updated
-                        repo.savePlanningSession(updated)
+                        persistPlanningImmediate(updated)
                     },
                     onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},
                     back=if(navigation.canGoBack)({back()})else null

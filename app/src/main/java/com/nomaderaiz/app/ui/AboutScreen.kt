@@ -29,10 +29,10 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigida a semântica do seletor de margem do Planejamento observada no Android 15.")
-                Text("• Tag de teste, estado Selected, papel e ação agora pertencem explicitamente ao mesmo nó semântico.")
-                Text("• O toque físico continua independente e a opção escolhida fica marcada visualmente com ✓.")
-                Text("• A margem continua com persistência imediata; campos digitados mantêm debounce para preservar desempenho.")
+                Text("• Corrigida a nova falha de timeout do teste do Planejamento no Android 15.")
+                Text("• A margem voltou a usar o FilterChip Material padrão, sem semântica customizada concorrente.")
+                Text("• Persistência do Planejamento agora invalida gravações antigas antes de salvar escolhas imediatas.")
+                Text("• O teste verifica seleção visual e persistência +20% de forma determinística, sem espera genérica de 5 s.")
                 Text("• Os logs da versão anterior tiveram testes unitários e APK aprovados, com 4/5 testes Android 15; esta versão ainda precisa de nova validação.")
             }
         }

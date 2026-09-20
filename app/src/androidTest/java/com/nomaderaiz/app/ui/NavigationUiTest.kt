@@ -70,22 +70,16 @@ class NavigationUiTest {
         enter("Água por pessoa/dia","3")
         enter("Consumo de energia do grupo","25")
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        // A margem é um controle discreto: ao selecionar +20% o estado deve mudar
-        // na própria UI e ser persistido imediatamente, sem depender do debounce
-        // usado apenas para campos de digitação contínua.
-        println("NR_TEST margin20: before click")
+        // A margem é uma escolha discreta: o estado visual deve mudar na mesma
+        // interação e o repositório deve enxergar 20 imediatamente. SharedPreferences
+        // apply() atualiza a memória de processo antes de retornar, então não há razão
+        // para mascarar uma regressão real com polling de cinco segundos.
         compose.onNodeWithTag("planning-margin-20").performClick()
         compose.waitForIdle()
-        compose.waitUntil(timeoutMillis=5_000){
-            compose.onAllNodes(hasTestTag("planning-margin-20") and isSelected()).fetchSemanticsNodes().size==1
-        }
         compose.onNodeWithTag("planning-margin-20").assertIsSelected()
-        println("NR_TEST margin20: selected in UI")
+        compose.onNodeWithText("✓ +20%").assertIsDisplayed()
         val context=InstrumentationRegistry.getInstrumentation().targetContext
-        compose.waitUntil(timeoutMillis=5_000){
-            AppRepository(context).loadPlanningSession().draft.safetyMarginPercent==20
-        }
-        println("NR_TEST margin20: persisted")
+        assertEquals("A margem +20% não foi persistida imediatamente",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
         enter("Dinheiro disponível","1.500,50")
@@ -112,11 +106,9 @@ class NavigationUiTest {
         assertEquals(saved.draft,saved.lastGenerated)
         // Além do repositório, confirme que a UI restaurada também reflete +20%.
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        compose.waitUntil(timeoutMillis=5_000){
-            compose.onAllNodes(hasTestTag("planning-margin-20") and isSelected()).fetchSemanticsNodes().size==1
-        }
+        compose.waitForIdle()
         compose.onNodeWithTag("planning-margin-20").assertIsSelected()
-        println("NR_TEST margin20: restored selected after Activity.recreate")
+        compose.onNodeWithText("✓ +20%").assertIsDisplayed()
         compose.onNodeWithTag("planning-list").performScrollToIndex(0)
         compose.onNodeWithContentDescription("Voltar").performClick()
         assertScreen("More")
