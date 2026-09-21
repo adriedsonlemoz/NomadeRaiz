@@ -2,7 +2,6 @@ package com.nomaderaiz.app.ui
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -16,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -258,22 +256,33 @@ private fun PlanningRideFields(
 
 @Composable
 private fun PlanningMarginChoice(value:Int,label:String,selected:Boolean,onSelect:()->Unit){
-    // O próprio Surface recebe testTag + selectable no MESMO LayoutNode. Isso evita
-    // a separação semântica observada com FilterChip no Android 15, em que o teste
-    // encontrava a tag mas lia Selected=false em outro nó interno. Mantemos apenas
-    // uma ação de seleção e a semântica padrão de RadioButton do Compose.
+    // O Android 15 vinha lendo Selected=false no nó customizado Surface+selectable,
+    // mesmo depois do clique. Para tornar a semântica determinística usamos o
+    // RadioButton Material3 como o próprio nó identificado pelo teste. O componente
+    // padrão publica Selected e OnClick no mesmo nó acessível; a Surface fica apenas
+    // responsável pelo visual do seletor.
     Surface(
-        modifier=Modifier
-            .heightIn(min=44.dp)
-            .testTag("planning-margin-$value")
-            .selectable(selected=selected,onClick=onSelect,role=Role.RadioButton),
+        modifier=Modifier.heightIn(min=48.dp),
         shape=MaterialTheme.shapes.small,
         color=if(selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
         contentColor=if(selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
         border=BorderStroke(1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
     ){
-        Box(Modifier.padding(horizontal=14.dp,vertical=10.dp),contentAlignment=Alignment.Center){
-            Text(if(selected) "✓ $label" else label,fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,fontSize=13.sp)
+        Row(
+            Modifier.padding(horizontal=8.dp,vertical=4.dp),
+            verticalAlignment=Alignment.CenterVertically,
+            horizontalArrangement=Arrangement.spacedBy(2.dp)
+        ){
+            RadioButton(
+                selected=selected,
+                onClick=onSelect,
+                modifier=Modifier.testTag("planning-margin-$value")
+            )
+            Text(
+                if(selected) "✓ $label" else label,
+                fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,
+                fontSize=13.sp
+            )
         }
     }
 }

@@ -76,10 +76,10 @@ class NavigationUiTest {
         // para mascarar uma regressão real com polling de cinco segundos.
         compose.onNodeWithTag("planning-margin-20").performClick()
         compose.waitForIdle()
-        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
-        compose.onNodeWithText("✓ +20%").assertIsDisplayed()
         val context=InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("A margem +20% não foi persistida imediatamente",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
+        assertEquals("O clique em +20% não atualizou/persistiu a margem",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
+        compose.onNodeWithText("✓ +20%").assertIsDisplayed()
+        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
         enter("Dinheiro disponível","1.500,50")

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.51-kotlin-alpha.24
+
+### Planejamento: seletor de margem com RadioButton Material3
+
+- Analisado `Android-Kotlin-APK-23-logs.zip`, correspondente à versão `1.0.50-kotlin-alpha.23`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 49s`) e a compilação do APK concluiu antes da etapa instrumentada.
+- Os testes instrumentados Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha foi `Failed to assert the following: (Selected = 'true')`.
+- Como a `1.0.50` já tinha apenas uma `assertIsSelected()`, o log confirmou que a falha ocorre imediatamente após o clique, não depois de `Activity.recreate()`.
+- O nó customizado `Surface + selectable` foi removido como fonte da semântica testada. Cada opção de margem agora contém um `RadioButton` Material3 real, e a tag `planning-margin-*` está no próprio `RadioButton`.
+- O `Surface` externo continua responsável apenas pelo visual; o indicador `✓` permanece visível na opção escolhida.
+- O teste continua exigindo persistência imediata de 20%, `✓ +20%` visível e `Selected=true`. A ordem foi alterada para que um próximo log diferencie claramente clique/estado de semântica, sem remover cobertura.
+- Persistência, geração, navegação, recriação da Activity, restauração dos campos e `lastGenerated` continuam verificadas.
+- Backup, `applicationId`, `namespace` e dados existentes foram preservados.
+- Versão e metadados sincronizados: `1.0.51-kotlin-alpha.24` / `100051`.
+
 ## 1.0.50-kotlin-alpha.23
 
 ### Planejamento: teste de restauração sem duplicar semântica instável

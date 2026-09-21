@@ -29,10 +29,10 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigido o teste instrumentado do Planejamento que repetia a mesma leitura semântica Selected após recriar a Activity.")
-                Text("• A semântica de seleção continua obrigatoriamente validada logo após tocar em +20%.")
-                Text("• Após a recriação, o teste agora confirma o valor persistido e a seleção visível ✓ +20%, além de garantir que 0% e +10% não apareçam selecionados.")
-                Text("• Persistência, geração do plano, lastGenerated e todos os campos restaurados continuam sendo verificados.")
+                Text("• Corrigido o seletor de margem do Planejamento que ainda publicava Selected=false no Android 15 após o clique.")
+                Text("• 0%, +10% e +20% agora usam RadioButton Material3 como nó acessível/testável, mantendo o cartão visual ao redor.")
+                Text("• O teste continua exigindo persistência imediata, indicador ✓ +20% e semântica Selected=true; nenhuma dessas verificações foi removida.")
+                Text("• A ordem do teste foi melhorada para distinguir falha de clique/persistência de falha puramente semântica.")
                 Text("• Os logs da versão anterior tiveram unitários e APK aprovados, com 4/5 testes Android 15; esta versão ainda precisa de nova validação.")
             }
         }

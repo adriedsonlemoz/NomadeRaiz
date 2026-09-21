@@ -1,13 +1,13 @@
-# Validação — 1.0.50-kotlin-alpha.23
+# Validação — 1.0.51-kotlin-alpha.24
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.49-alpha.22`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100050`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.50-alpha.23`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100051`.
 
 ## Resultado real dos logs recebidos
 
-O arquivo correto `Android-Kotlin-APK-22-logs.zip` foi analisado antes desta correção.
+O arquivo `Android-Kotlin-APK-23-logs.zip` foi analisado antes desta correção.
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 50s`.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 14s`.
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 49s`.
+- `:app:assembleDebug`: **OK** — a etapa de compilação concluiu com sucesso antes dos testes instrumentados.
 - `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 5 testes; 4 passaram e 1 falhou.
 - Teste que falhou: `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
 - Falha registrada: `java.lang.AssertionError: Failed to assert the following: (Selected = 'true')`.
@@ -15,25 +15,24 @@ O arquivo correto `Android-Kotlin-APK-22-logs.zip` foi analisado antes desta cor
 
 ## Diagnóstico e correção aplicada
 
-O fluxo de teste validava `assertIsSelected()` logo após tocar em `+20%` e repetia a mesma leitura da propriedade semântica depois de `Activity.recreate()`. A primeira verificação continua no teste e cobre explicitamente a semântica de seleção do controle.
+Na `1.0.50`, o teste já continha apenas uma chamada a `assertIsSelected()`, executada imediatamente após tocar em `+20%`. Portanto, o novo log elimina a dúvida das entregas anteriores: a falha restante não acontece após `Activity.recreate()`, e sim no próprio nó semântico do seletor logo após o clique.
 
-Após a recriação, a finalidade real é comprovar persistência e restauração. Por isso, essa segunda verificação duplicada foi substituída por verificações funcionais e visuais mais específicas:
+O controle customizado `Surface + Modifier.selectable(...)` foi substituído no ponto testado por `RadioButton` Material3. O `testTag("planning-margin-20")` agora pertence diretamente ao `RadioButton`, que fornece pela implementação padrão do Compose a propriedade `Selected` e a ação `OnClick`. A `Surface` externa continua apenas com a aparência visual, e o texto `✓ +20%` continua indicando a opção ativa.
 
-- `AppRepository` deve restaurar `safetyMarginPercent = 20`;
-- todos os demais campos continuam sendo conferidos;
-- `lastGenerated` continua sendo comparado ao rascunho restaurado;
-- a interface deve mostrar `✓ +20%`;
-- `✓ +10%` e `✓ Sem margem` não podem existir;
-- o controle restaurado continua tendo ação de clique.
+O teste não foi enfraquecido. Depois do clique ele agora exige, nesta ordem:
 
-Isso não remove a cobertura de `Selected`: o mesmo teste ainda exige `assertIsSelected()` imediatamente após o clique, antes da navegação/recriação. Também não foram removidas verificações de geração, navegação, persistência ou recriação da Activity.
+1. `safetyMarginPercent = 20` persistido no `AppRepository`;
+2. `✓ +20%` visível na interface;
+3. `assertIsSelected()` no `RadioButton` identificado pela tag.
+
+Depois disso permanecem as verificações de geração, navegação, `Activity.recreate()`, todos os campos restaurados, dias calculados, `lastGenerated`, indicador visual da margem e ação de clique.
 
 O módulo Backup não foi alterado.
 
 ## Verificações desta nova entrega
 
-- Metadados de versão sincronizados para `1.0.50-kotlin-alpha.23` / `100050`.
-- Revisão estática do teste instrumentado e do fluxo de Planejamento concluída.
+- Metadados de versão preparados para `1.0.51-kotlin-alpha.24` / `100051`.
+- Revisão estática do seletor e do teste instrumentado concluída.
 - A nova versão ainda **não** foi executada no emulador Android 15 neste ambiente; portanto não é declarado que os 5/5 testes passaram.
 
 A próxima execução do GitHub Actions deve repetir: metadados → testes unitários → build APK → testes instrumentados Android 15. A Release deve continuar bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.

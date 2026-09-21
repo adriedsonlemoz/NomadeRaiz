@@ -2,26 +2,27 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.50-kotlin-alpha.23`
+**Versão atual:** `1.0.51-kotlin-alpha.24`
 
-**versionCode:** `100050`
+**versionCode:** `100051`
 
 ### Correção desta entrega
 
-A versão `1.0.50-kotlin-alpha.23` foi preparada a partir do log correto `Android-Kotlin-APK-22-logs.zip`. A `1.0.49` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes por `Failed to assert the following: (Selected = 'true')` no teste `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+A versão `1.0.51-kotlin-alpha.24` foi preparada a partir do `Android-Kotlin-APK-23-logs.zip`. A `1.0.50` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes por `Failed to assert the following: (Selected = 'true')` no teste `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
 
-A análise do fluxo mostrou que o mesmo teste verificava a semântica `Selected` duas vezes: uma logo após o clique em `+20%` e outra depois de `Activity.recreate()`. A primeira verificação continua obrigatória e valida a acessibilidade/semântica do controle. Depois da recriação, a validação agora foca o que precisa ser restaurado: `safetyMarginPercent = 20` no repositório, todos os campos, `lastGenerated`, o indicador visível `✓ +20%`, ausência de seleção visual em 0%/+10% e ação de clique disponível. Isso remove apenas a duplicação instável da árvore semântica do Android 15 sem reduzir a cobertura funcional.
+Como a `1.0.50` já possuía apenas uma chamada a `assertIsSelected()`, o novo log confirmou que a falha ocorre imediatamente após tocar em `+20%`, e não depois da recriação da Activity. O seletor customizado `Surface + selectable` foi substituído, no nó testado, por um `RadioButton` Material3 real. O `testTag` fica no próprio `RadioButton`, que publica `Selected` e `OnClick` por meio da implementação padrão do Compose. O cartão visual e o indicador `✓` foram preservados. O teste continua validando persistência, indicação visual e `Selected=true`; apenas a ordem das asserções foi melhorada para separar claramente uma falha de estado de uma falha semântica.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-22-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 50 s e `:app:assembleDebug` com sucesso em 14 s na `1.0.49-kotlin-alpha.22`.
+- `Android-Kotlin-APK-23-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 49 s.
+- A compilação do APK também passou antes dos testes instrumentados.
 - No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha registrada continuou sendo `Failed to assert the following: (Selected = 'true')`.
-- O controle de margem não foi novamente redesenhado: a seleção semântica continua sendo testada imediatamente após o clique, onde ela é relevante e já faz parte do mesmo fluxo.
-- Após `Activity.recreate()`, o teste agora exige a restauração real do modelo e da interface visível: margem 20, todos os valores persistidos, `lastGenerated`, `✓ +20%`, nenhuma marca de seleção em 0%/+10% e controle ainda clicável.
-- Não foram removidos testes de persistência, navegação, geração do plano ou restauração; a verificação semântica `assertIsSelected()` também continua presente antes da recriação.
+- A falha registrada foi novamente `Failed to assert the following: (Selected = 'true')`.
+- Como a versão anterior já não tinha uma segunda `assertIsSelected()` após `Activity.recreate()`, ficou confirmado que o problema restante está no nó semântico imediatamente após o clique.
+- O seletor de margem agora usa `RadioButton` Material3 como o próprio nó com `planning-margin-*`; o `Surface` ao redor é somente visual.
+- O teste agora verifica primeiro se o clique persistiu `20`, depois o `✓ +20%` visível e então `assertIsSelected()`. Todas as três verificações permanecem obrigatórias.
 - A tela **Sobre** e os metadados foram atualizados. O módulo **Backup** não foi alterado.
 
 **Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.
