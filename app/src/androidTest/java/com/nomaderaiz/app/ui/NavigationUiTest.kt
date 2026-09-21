@@ -76,12 +76,18 @@ class NavigationUiTest {
         // para mascarar uma regressão real com polling de cinco segundos.
         compose.onNodeWithTag("planning-margin-20").assertHasClickAction().performClick()
         compose.waitForIdle()
-        // Primeiro confirma que o gesto realmente atualizou a UI/semântica. Só então
-        // confere a persistência síncrona; assim um próximo log aponta a camada exata.
-        compose.onNodeWithText("✓ +20%").assertIsDisplayed()
-        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
         val context=InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("A UI marcou +20%, mas a persistência imediata não gravou a margem",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
+        // Primeiro prova o efeito funcional do gesto. Assim, se houver nova falha, o
+        // log diferencia persistência de uma eventual questão apenas visual/semântica.
+        assertEquals("O clique em +20% não atualizou/persistiu a margem",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
+        // A opção selecionada mantém largura/texto estáveis. Reposicionamos o próprio
+        // alvo após a recomposição para provar que ele segue visível e selecionado sem
+        // depender de um Text filho que possa mudar de linha dentro do FlowRow.
+        compose.onNodeWithTag("planning-margin-20")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertTextContains("+20%")
+            .assertIsSelected()
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
         enter("Dinheiro disponível","1.500,50")
@@ -106,16 +112,19 @@ class NavigationUiTest {
         assertEquals(3.0,saved.draft.waterDailyPerPerson.numberOrNull()!!,0.0)
         assertEquals(25.0,saved.draft.energyDailyWh.numberOrNull()!!,0.0)
         assertEquals(saved.draft,saved.lastGenerated)
-        // A semântica Selected já foi validada imediatamente após o clique acima.
-        // Depois de Activity.recreate(), o objetivo desta parte é provar que o estado
-        // restaurado chegou de fato à interface, sem depender de uma segunda leitura
-        // duplicada da árvore semântica que o Android 15 recompõe durante o recreate.
+        // Depois de Activity.recreate(), validamos novamente o próprio nó estável da
+        // margem. A opção precisa reaparecer visível, clicável e selecionada, enquanto
+        // as outras duas opções permanecem explicitamente desmarcadas.
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
         compose.waitForIdle()
-        compose.onNodeWithTag("planning-margin-20").assertHasClickAction()
-        compose.onNodeWithText("✓ +20%").assertIsDisplayed()
-        compose.onNodeWithText("✓ +10%").assertDoesNotExist()
-        compose.onNodeWithText("✓ Sem margem").assertDoesNotExist()
+        compose.onNodeWithTag("planning-margin-20")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertHasClickAction()
+            .assertTextContains("+20%")
+            .assertIsSelected()
+        compose.onNodeWithTag("planning-margin-10").assertIsNotSelected()
+        compose.onNodeWithTag("planning-margin-0").assertIsNotSelected()
         compose.onNodeWithTag("planning-list").performScrollToIndex(0)
         compose.onNodeWithContentDescription("Voltar").performClick()
         assertScreen("More")

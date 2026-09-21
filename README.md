@@ -2,28 +2,27 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.52-kotlin-alpha.25`
+**Versão atual:** `1.0.53-kotlin-alpha.26`
 
-**versionCode:** `100052`
+**versionCode:** `100053`
 
 ### Correção desta entrega
 
-A versão `1.0.52-kotlin-alpha.25` foi preparada a partir do `Android-Kotlin-APK-24-logs.zip`. A `1.0.51` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes. Desta vez o log mostrou a causa funcional com clareza: depois de tocar em `+20%`, o repositório ainda retornava `safetyMarginPercent = 0` (`expected:<20> but was:<0>`). Portanto, não era apenas uma divergência de semântica `Selected`; o gesto de seleção não estava resultando numa alteração persistida de forma confiável no fluxo testado.
+A versão `1.0.53-kotlin-alpha.26` foi preparada a partir do `Android-Kotlin-APK-25-logs.zip`. A `1.0.52` teve testes unitários e compilação do APK aprovados e o Android 15 terminou novamente com 4/5 testes. A falha mudou para `Assert failed: The component is not displayed!`, portanto **não é o mesmo erro funcional** da execução anterior (`expected:<20> but was:<0>`).
 
-O seletor foi refeito usando o padrão recomendado de grupo de rádio do Compose: a **linha inteira** de cada opção é agora o único alvo `selectable`, com `Role.RadioButton`, enquanto o `RadioButton` interno tem `onClick = null` e funciona apenas como indicador visual. Assim não há dois alvos clicáveis concorrentes nem dependência da pequena área do círculo. O callback genérico de transformação imediata também foi substituído por `setSafetyMargin(Int)`, dedicado a essa escolha. Para escolhas discretas, a persistência usa `SharedPreferences.commit()` dentro do mesmo bloqueio/revisão já usado para impedir que snapshots antigos sobrescrevam o estado. Campos digitados continuam com debounce e gravação fora da thread da interface.
+A análise encontrou um deslocamento real no seletor: quando +20% era selecionado, o texto mudava para `✓ +20%`. Como as opções ficam em um `FlowRow`, a largura extra podia provocar uma nova quebra de linha exatamente após a recomposição. O teste então localizava o estado, mas o nó de texto podia ficar fora da viewport. As opções agora mantêm texto e largura estáveis; o `RadioButton`, a semântica `Selected` e as cores indicam a seleção sem mover o controle. O teste passa a validar o próprio nó marcado, reposicionando-o com `performScrollTo()` antes de exigir visibilidade e estado.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-24-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 53 s.
-- `:app:assembleDebug` passou em 17 s.
+- `Android-Kotlin-APK-25-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 57 s.
+- `:app:assembleDebug` passou em 18 s.
 - No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha foi `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
-- O seletor de margem agora usa uma `Row` inteira com `Modifier.selectable(...)` e `selectableGroup()`. O `RadioButton` interno não possui ação própria, eliminando alvos de clique concorrentes.
-- A alteração de margem agora usa um setter dedicado (`setSafetyMargin`) em vez de uma transformação genérica do rascunho.
-- A gravação imediata da margem usa `commit()` sob o mesmo lock/revisão; o debounce de 300 ms continua apenas nos campos de digitação.
-- O teste continua exigindo ação de clique, `✓ +20%`, `Selected=true`, valor 20 no repositório, geração do plano, navegação, recriação da Activity e restauração integral.
+- A falha foi `Assert failed: The component is not displayed!`, diferente do `expected:<20> but was:<0>` da execução anterior.
+- A seleção não prefixa mais `✓` ao texto das opções, evitando mudança de largura/reflow após o clique.
+- O próprio controle `planning-margin-20` é reposicionado e validado quanto a visibilidade, texto, clique e `Selected=true` após a seleção e após recriar a Activity.
+- Persistência imediata da margem, proteção contra gravações antigas e debounce dos campos numéricos permanecem intactos.
 - A tela **Sobre** e os metadados foram atualizados. O módulo **Backup** não foi alterado.
 
 **Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.

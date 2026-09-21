@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.53-kotlin-alpha.26
+
+### Planejamento: seleção sem deslocamento após recomposição
+
+- Analisado `Android-Kotlin-APK-25-logs.zip`, correspondente à versão `1.0.52-kotlin-alpha.25`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 57s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 18s`).
+- Os testes instrumentados Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha mudou para `Assert failed: The component is not displayed!`; portanto não é o mesmo erro funcional `expected:<20> but was:<0>` da execução anterior.
+- A análise encontrou uma causa visual concreta: a opção selecionada trocava o texto de `+20%` para `✓ +20%`. Isso aumentava a largura do item dentro do `FlowRow` exatamente após o clique/recomposição e podia fazê-lo quebrar para outra linha, deixando o nó de texto fora da viewport mesmo com o estado selecionado.
+- O texto das opções agora permanece estável (`Sem margem`, `+10%`, `+20%`). O `RadioButton`, as cores e a semântica `Selected` comunicam a seleção sem alterar a geometria do controle.
+- O teste foi ajustado para validar o próprio nó `planning-margin-20`: após a recomposição ele executa `performScrollTo()`, exige visibilidade, texto `+20%` e `Selected=true`. Depois de `Activity.recreate()`, repete a verificação e exige também que 0% e +10% estejam desmarcados.
+- Persistência imediata da margem, proteção contra snapshots antigos e debounce de 300 ms dos campos digitados foram preservados.
+- Backup, `applicationId`, `namespace` e dados existentes foram preservados.
+- Versão e metadados sincronizados: `1.0.53-kotlin-alpha.26` / `100053`.
+
 ## 1.0.52-kotlin-alpha.25
 
 ### Planejamento: correção funcional do clique e persistência da margem

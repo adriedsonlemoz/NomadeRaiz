@@ -1,36 +1,56 @@
-# Validação — 1.0.52-kotlin-alpha.25
+# Validação — 1.0.53-kotlin-alpha.26
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.51-alpha.24`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100052`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.52-alpha.25`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100053`.
 
 ## Resultado real dos logs recebidos
 
-O arquivo `Android-Kotlin-APK-24-logs.zip` foi analisado antes desta correção.
+O arquivo `Android-Kotlin-APK-25-logs.zip` foi analisado antes desta correção.
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 53s`.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 17s`.
-- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 5 testes; 4 passaram e 1 falhou.
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 57s`.
+- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 18s`.
+- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram executados 5 testes; 4 passaram e 1 falhou.
 - Teste que falhou: `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- Falha registrada: `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
+- Falha registrada: `Assert failed: The component is not displayed!` em `assertIsDisplayed()`.
 - A Release permaneceu corretamente bloqueada.
 
-## Diagnóstico e correção aplicada
+## Diagnóstico desta execução
 
-O novo log diferencia esta falha das anteriores de `Selected = true`: antes de verificar a semântica, o teste leu o `AppRepository` e encontrou `safetyMarginPercent = 0`. Isso demonstra que o problema restante era funcional no caminho clique → estado → persistência, e não apenas uma leitura instável da árvore semântica.
+Esta falha **não é a mesma da execução imediatamente anterior**. No log 24 o clique em +20% ainda resultava em `safetyMarginPercent = 0`. No log 25 essa mensagem não reapareceu; o erro observado passou a ser exclusivamente de visibilidade de um componente após a recomposição.
 
-A correção foi feita em três camadas:
+O seletor tinha uma fonte concreta de deslocamento: a opção ativa mudava o texto de `+20%` para `✓ +20%`. Dentro de um `FlowRow`, os caracteres extras alteravam a largura do item e podiam causar uma nova quebra de linha exatamente depois do clique ou da restauração. O teste procurava o texto alterado e exigia `assertIsDisplayed()`, então uma opção funcional podia ser considerada não visível por ter sido reposicionada abaixo do limite atual da viewport.
 
-1. O seletor usa agora o padrão canônico de rádio do Compose: `selectableGroup()` no grupo e uma `Row` inteira como único alvo `selectable`/`Role.RadioButton`. O `RadioButton` interno tem `onClick = null`, eliminando ações concorrentes ou uma área de toque restrita ao círculo.
-2. O callback genérico de transformação imediata foi substituído por `setSafetyMargin(Int)`. A opção escolhida é aplicada explicitamente ao `PlanningDraft` mais atual e só então o novo `PlanningSession` é persistido.
-3. Para escolhas discretas, foi adicionado `savePlanningSessionImmediate()`, usando `SharedPreferences.commit()` dentro do lock/revision já existente. Assim, ao terminar o clique, uma nova instância de `AppRepository` deve enxergar o valor gravado e uma gravação debounced antiga não pode sobrescrevê-lo. Os campos digitados continuam usando debounce de 300 ms e gravação em IO.
+## Correção aplicada
 
-O teste não foi enfraquecido. Depois de localizar a opção ele exige `assertHasClickAction()`, executa o clique, verifica `✓ +20%`, `assertIsSelected()` e então exige `safetyMarginPercent = 20` no repositório. Depois continuam geração, navegação, `Activity.recreate()`, restauração de todos os campos, cálculo de dias e `lastGenerated`.
+1. O texto das opções de margem ficou estável. Selecionar uma opção não muda mais `+20%` para `✓ +20%`.
+2. A seleção continua visível pelo `RadioButton`, pelas cores e pela semântica `Selected` da `Row` selecionável.
+3. O teste deixou de depender de um `Text` filho cuja geometria mudava. Ele valida o próprio nó `planning-margin-20`, executa `performScrollTo()` depois da recomposição e então exige `assertIsDisplayed()`, `+20%` e `assertIsSelected()`.
+4. Após `Activity.recreate()`, o teste repete a validação do próprio nó e exige que `planning-margin-0` e `planning-margin-10` estejam desmarcados.
+5. Persistência imediata da margem, `SharedPreferences.commit()` protegido por revisão/lock e debounce de 300 ms dos campos digitados foram preservados.
 
 O módulo Backup não foi alterado.
 
+## Histórico recente do mesmo teste
+
+| Log | Versão testada | Resultado Android 15 | Falha principal | Mesmo erro exato? |
+| --- | --- | --- | --- | --- |
+| 15 | 1.0.42-alpha.15 | 4/5 | `expected:<20> but was:<0>` | Persistência |
+| 16 | 1.0.43-alpha.16 | 4/5 | `Selected = true` | Semântica |
+| 17 | 1.0.44-alpha.17 | 4/5 | `Selected = true` | Semântica |
+| 18 | 1.0.45-alpha.18 | 4/5 | `ComposeTimeoutException` | Timeout/persistência |
+| 19 | 1.0.46-alpha.19 | 4/5 | `Selected = true` | Semântica |
+| 20 | 1.0.47-alpha.20 | 4/5 | `ComposeTimeoutException` | Timeout/persistência |
+| 21 | 1.0.48-alpha.21 | 4/5 | `Selected = true` | Semântica |
+| 22 | 1.0.49-alpha.22 | 4/5 | `Selected = true` | Semântica |
+| 23 | 1.0.50-alpha.23 | 4/5 | `Selected = true` | Semântica |
+| 24 | 1.0.51-alpha.24 | 4/5 | clique em +20% persistiu `0` | Persistência funcional |
+| 25 | 1.0.52-alpha.25 | 4/5 | `The component is not displayed!` | **Novo: visibilidade/layout** |
+
+Em resumo, é o **mesmo teste e a mesma área da tela**, mas os erros não foram todos iguais. As execuções alternaram entre persistência, semântica de seleção, timeout e agora visibilidade/layout. Cada correção removeu uma camada e permitiu que o teste chegasse à próxima verificação.
+
 ## Verificações desta nova entrega
 
-- Metadados preparados para `1.0.52-kotlin-alpha.25` / `100052`.
-- Revisão estática do fluxo de clique, atualização de estado, serialização e persistência concluída.
+- Metadados preparados para `1.0.53-kotlin-alpha.26` / `100053`.
+- Revisão estática do seletor, persistência e teste instrumentado concluída.
 - O ambiente atual não possui Gradle/Android SDK configurados para executar o build completo ou o emulador Android 15. Portanto, **não** é declarado que os 5/5 testes passaram nesta nova versão.
 
 A próxima execução do GitHub Actions deve repetir: metadados → testes unitários → build APK → testes instrumentados Android 15. A Release deve continuar bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.

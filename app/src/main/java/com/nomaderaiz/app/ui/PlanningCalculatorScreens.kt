@@ -285,10 +285,14 @@ private fun PlanningMarginChoice(value:Int,label:String,selected:Boolean,onSelec
         horizontalArrangement=Arrangement.spacedBy(2.dp)
     ){
         RadioButton(selected=selected,onClick=null)
+        // O texto permanece estável quando a seleção muda. Antes, prefixar "✓ "
+        // aumentava a largura da opção selecionada e podia fazê-la quebrar para outra
+        // linha do FlowRow justamente após o clique, deslocando o alvo para fora da
+        // viewport. O RadioButton e o estado Selected já comunicam a seleção.
         Text(
-            if(selected) "✓ $label" else label,
+            label,
             color=contentColor,
-            fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,
+            fontWeight=FontWeight.Medium,
             fontSize=13.sp
         )
     }
