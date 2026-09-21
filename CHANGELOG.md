@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.54-kotlin-alpha.27
+
+### Planejamento: mudança de arquitetura em vez de novos remendos
+
+- Analisado `Android-Kotlin-APK-26-logs.zip`, correspondente à versão `1.0.53-kotlin-alpha.26`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 58s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 17s`).
+- Android 15 executou 5 testes: 4 passaram e 1 falhou novamente na área do Planejamento.
+- A falha retornou ao erro funcional `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
+- Após várias versões alternando entre persistência, semântica `Selected`, timeout e visibilidade, a estratégia foi alterada: o fluxo do Planejamento foi centralizado em `PlanningAction` + `reducePlanning`.
+- Campos, margem e geração do plano agora entram por uma única função `dispatchPlanning`, sempre reduzindo sobre o `PlanningSession` mais recente.
+- O seletor de margem foi reescrito com botões Material3 comuns e largura fixa. Foram removidos desse controle `selectable`, `selectableGroup`, `RadioButton`, `Role.RadioButton` e a dependência de `assertIsSelected()`.
+- A seleção passa a ser comprovada por duas fontes funcionais: `Margem atual: +20%` na UI e `safetyMarginPercent=20` no repositório.
+- O teste instrumentado monolítico foi dividido em um teste exclusivo de margem e outro para campos, geração, navegação e recriação da Activity.
+- Adicionados testes unitários do redutor para provar que uma edição posterior não apaga a margem e que `GeneratePlan` preserva todo o snapshot.
+- Persistência imediata continua restrita a ações discretas; campos digitados mantêm debounce de 300 ms para desempenho.
+- Backup, `applicationId`, `namespace`, dados existentes e regras de Release foram preservados.
+- Versão e metadados sincronizados: `1.0.54-kotlin-alpha.27` / `100054`.
+
 ## 1.0.53-kotlin-alpha.26
 
 ### Planejamento: seleção sem deslocamento após recomposição

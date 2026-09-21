@@ -1,10 +1,6 @@
 package com.nomaderaiz.app.ui
 
 import android.app.DatePickerDialog
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -14,12 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,9 +26,8 @@ import kotlin.math.ceil
 @Composable
 internal fun PlanningScreen(
     modifier:Modifier,equipment:List<EquipmentItem>,session:PlanningSession,
-    updateDraft:((PlanningDraft)->PlanningDraft)->Unit,
-    setSafetyMargin:(Int)->Unit,
-    commitCurrent:()->Unit,onPoints:()->Unit,onManual:()->Unit,back:(()->Unit)?=null
+    dispatch:(PlanningAction)->Unit,
+    onPoints:()->Unit,onManual:()->Unit,back:(()->Unit)?=null
 ){
     val draft=session.draft
     val issues=remember(draft){draft.issues}
@@ -54,6 +47,10 @@ internal fun PlanningScreen(
     val scroll=rememberLazyListState()
     val scope=rememberCoroutineScope()
     val focus=LocalFocusManager.current
+    val changeDraft:(((PlanningDraft)->PlanningDraft)->Unit)={transform->
+        saveFeedback=false
+        dispatch(PlanningAction.EditDraft(transform))
+    }
 
     Column(modifier.fillMaxSize()){
         LazyColumn(
@@ -72,21 +69,15 @@ internal fun PlanningScreen(
             }
 
             item{
-                PlanningTripFields(draft){transform->
-                    saveFeedback=false
-                    updateDraft(transform)
-                }
+                PlanningTripFields(draft,changeDraft)
             }
             item{
                 PlanningRideFields(
                     draft=draft,
-                    change={transform->
-                        saveFeedback=false
-                        updateDraft(transform)
-                    },
+                    change=changeDraft,
                     setSafetyMargin={value->
                         saveFeedback=false
-                        setSafetyMargin(value)
+                        dispatch(PlanningAction.SetSafetyMargin(value))
                     }
                 )
             }
@@ -94,16 +85,12 @@ internal fun PlanningScreen(
             if(scenarios.isNotEmpty()){
                 item{
                     ScenarioSuggestions(draft,scenarios){hours->
-                        saveFeedback=false
-                        updateDraft{it.copy(hoursPerDay=hours.toInt().toString())}
+                        changeDraft{it.copy(hoursPerDay=hours.toInt().toString())}
                     }
                 }
             }
             item{
-                EssentialResourcesCard(draft,essentials){transform->
-                    saveFeedback=false
-                    updateDraft(transform)
-                }
+                EssentialResourcesCard(draft,essentials,changeDraft)
             }
 
             item{
@@ -115,19 +102,19 @@ internal fun PlanningScreen(
             }
 
             if(advanced){
-                item{AdvancedPlanningFields(draft,updateDraft)}
+                item{AdvancedPlanningFields(draft,changeDraft)}
                 item{
                     val people=draft.people.wholeNumberOrNull()?:1
                     val food=remember(draft.foodForm,people){Calculator.food(Calculator.buildFoodLines(foodConfigs,foodInputs(draft.foodForm),people))}
                     SectionCard("Alimentação detalhada",Icons.Outlined.Restaurant){
                         Text("Opcional. Use apenas se quiser controlar os alimentos individualmente; o cálculo rápido acima usa gasto por pessoa/dia.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
-                        FoodEditor(draft.foodForm,{food->updateDraft{it.copy(foodForm=food)}},people)
+                        FoodEditor(draft.foodForm,{food->changeDraft{it.copy(foodForm=food)}},people)
                         if(foodFormErrors(draft.foodForm).isEmpty()&&food.valid){
                             Text("Autonomia do inventário: ${food.days?:0} dia(s) • valor carregado: ${money(food.totalValue)}",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
                         }
                     }
                 }
-                item{PlanningWaterFields(draft,updateDraft,onPoints)}
+                item{PlanningWaterFields(draft,changeDraft,onPoints)}
             }
         }
 
@@ -144,7 +131,7 @@ internal fun PlanningScreen(
                 Button(
                     onClick={
                         focus.clearFocus()
-                        commitCurrent()
+                        dispatch(PlanningAction.GeneratePlan)
                         saveFeedback=true
                         scope.launch{scroll.animateScrollToItem(0)}
                     },
@@ -230,7 +217,6 @@ private fun PlanningTripFields(draft:PlanningDraft,change:((PlanningDraft)->Plan
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PlanningRideFields(
     draft:PlanningDraft,
@@ -244,13 +230,10 @@ private fun PlanningRideFields(
         }
         Text("Use a velocidade média que você espera manter enquanto estiver pedalando. Paradas entram na margem, não na velocidade.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
         Text("Margem de segurança",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
-        FlowRow(
-            modifier=Modifier.selectableGroup(),
-            horizontalArrangement=Arrangement.spacedBy(6.dp),
-            verticalArrangement=Arrangement.spacedBy(6.dp)
-        ){
-            listOf(0 to "Sem margem",10 to "+10%",20 to "+20%").forEach{(value,label)->
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
+            listOf(0 to "0%",10 to "+10%",20 to "+20%").forEach{(value,label)->
                 PlanningMarginChoice(
+                    modifier=Modifier.weight(1f),
                     value=value,
                     label=label,
                     selected=draft.safetyMarginPercent==value,
@@ -258,43 +241,37 @@ private fun PlanningRideFields(
                 )
             }
         }
+        Text(
+            "Margem atual: ${if(draft.safetyMarginPercent==0) "0%" else "+${draft.safetyMarginPercent}%"}",
+            modifier=Modifier.testTag("planning-margin-current"),
+            fontWeight=FontWeight.SemiBold,fontSize=12.sp,color=MaterialTheme.colorScheme.primary
+        )
         Text("A margem acrescenta tempo ao planejamento para imprevistos, sem alterar a distância real da rota.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 
 @Composable
-private fun PlanningMarginChoice(value:Int,label:String,selected:Boolean,onSelect:()->Unit){
-    // Padrão recomendado para grupos de rádio no Compose: a linha inteira é o único
-    // alvo clicável/selecionável e o RadioButton interno é apenas o indicador visual.
-    // Isso evita depender da área pequena do círculo ou de nós semânticos internos.
-    val shape=MaterialTheme.shapes.small
-    val backgroundColor=if(selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface
-    val contentColor=if(selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
-    val outlineColor=if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-    Row(
-        modifier=Modifier
-            .heightIn(min=48.dp)
-            .clip(shape)
-            .background(backgroundColor)
-            .border(1.dp,outlineColor,shape)
-            .selectable(selected=selected,onClick=onSelect,role=Role.RadioButton)
-            .testTag("planning-margin-$value")
-            .padding(horizontal=10.dp,vertical=4.dp),
-        verticalAlignment=Alignment.CenterVertically,
-        horizontalArrangement=Arrangement.spacedBy(2.dp)
+private fun PlanningMarginChoice(
+    modifier:Modifier=Modifier,
+    value:Int,
+    label:String,
+    selected:Boolean,
+    onSelect:()->Unit
+){
+    // Estratégia nova: botão Material3 comum e estável. Não usamos selectable,
+    // RadioButton nem semântica Selected neste controle. O requisito funcional é
+    // comprovado pelo estado visível "Margem atual" e pelo valor persistido.
+    Button(
+        onClick=onSelect,
+        modifier=modifier.heightIn(min=48.dp).testTag("planning-margin-$value"),
+        colors=ButtonDefaults.buttonColors(
+            containerColor=if(selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor=if(selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        contentPadding=PaddingValues(horizontal=6.dp,vertical=8.dp)
     ){
-        RadioButton(selected=selected,onClick=null)
-        // O texto permanece estável quando a seleção muda. Antes, prefixar "✓ "
-        // aumentava a largura da opção selecionada e podia fazê-la quebrar para outra
-        // linha do FlowRow justamente após o clique, deslocando o alvo para fora da
-        // viewport. O RadioButton e o estado Selected já comunicam a seleção.
-        Text(
-            label,
-            color=contentColor,
-            fontWeight=FontWeight.Medium,
-            fontSize=13.sp
-        )
+        Text(label,fontWeight=if(selected)FontWeight.Bold else FontWeight.Medium,fontSize=13.sp,maxLines=1)
     }
 }
 

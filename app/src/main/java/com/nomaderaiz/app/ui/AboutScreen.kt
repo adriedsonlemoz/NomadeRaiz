@@ -29,11 +29,11 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigida a instabilidade visual do seletor de margem do Planejamento observada no Android 15.")
-                Text("• A opção selecionada não muda mais de largura ao receber o estado ativo; o RadioButton e as cores comunicam a seleção sem deslocar o controle dentro do FlowRow.")
-                Text("• O teste agora valida o próprio controle +20% após a recomposição e após recriar a Activity, incluindo visibilidade, Selected=true e opções concorrentes desmarcadas.")
-                Text("• Persistência imediata da margem e debounce dos campos numéricos foram preservados.")
-                Text("• Os logs da versão anterior tiveram unitários e APK aprovados, com 4/5 testes Android 15; esta versão ainda precisa de nova validação.")
+                Text("• O Planejamento mudou de estratégia: o estado agora passa por um único redutor, em vez de callbacks paralelos para campos, margem e geração do plano.")
+                Text("• A margem 0% / +10% / +20% foi reescrita com botões Material3 comuns e largura fixa, removendo selectable, RadioButton e dependência da semântica Selected que vinha oscilando no Android 15.")
+                Text("• A seleção mostra um estado explícito 'Margem atual', e escolhas discretas continuam com persistência imediata; digitação mantém debounce para preservar desempenho.")
+                Text("• O antigo teste gigante foi dividido: um teste exclusivo valida a margem e outro valida campos, geração, navegação e recriação da Activity.")
+                Text("• O log anterior repetiu o erro funcional 20 esperado / 0 salvo; esta versão ainda precisa da nova execução do GitHub Actions.")
             }
         }
         item{

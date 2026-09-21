@@ -2,28 +2,35 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.53-kotlin-alpha.26`
+**Versão atual:** `1.0.54-kotlin-alpha.27`
 
-**versionCode:** `100053`
+**versionCode:** `100054`
 
-### Correção desta entrega
+### Mudança de estratégia desta entrega
 
-A versão `1.0.53-kotlin-alpha.26` foi preparada a partir do `Android-Kotlin-APK-25-logs.zip`. A `1.0.52` teve testes unitários e compilação do APK aprovados e o Android 15 terminou novamente com 4/5 testes. A falha mudou para `Assert failed: The component is not displayed!`, portanto **não é o mesmo erro funcional** da execução anterior (`expected:<20> but was:<0>`).
+A versão `1.0.54-kotlin-alpha.27` foi preparada a partir do `Android-Kotlin-APK-26-logs.zip`. A `1.0.53` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes. A falha voltou a ser funcional: `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
 
-A análise encontrou um deslocamento real no seletor: quando +20% era selecionado, o texto mudava para `✓ +20%`. Como as opções ficam em um `FlowRow`, a largura extra podia provocar uma nova quebra de linha exatamente após a recomposição. O teste então localizava o estado, mas o nó de texto podia ficar fora da viewport. As opções agora mantêm texto e largura estáveis; o `RadioButton`, a semântica `Selected` e as cores indicam a seleção sem mover o controle. O teste passa a validar o próprio nó marcado, reposicionando-o com `performScrollTo()` antes de exigir visibilidade e estado.
+Depois de várias versões alternando entre `Selected=true`, timeout, visibilidade e valor persistido incorreto, esta entrega **abandona a sequência de remendos no mesmo seletor**. O Planejamento agora possui uma única porta de entrada de estado (`PlanningAction` + `reducePlanning`). Campos, margem e geração do plano deixam de usar caminhos independentes de mutação.
+
+A margem também foi reescrita. `0%`, `+10%` e `+20%` são botões Material3 comuns, com geometria fixa e `onClick` direto. Não há mais `selectable`, `RadioButton`, `Role.RadioButton` nem teste baseado em `Selected`. O efeito funcional fica explícito em `Margem atual: ...` e no valor realmente persistido no `AppRepository`.
+
+O antigo teste instrumentado monolítico foi dividido em dois: um dedicado ao clique/persistência da margem e outro dedicado aos campos, geração do plano, navegação e `Activity.recreate()`. Isso mantém a cobertura e torna a próxima falha localizada em vez de mascarada por uma sequência extensa.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-25-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 57 s.
-- `:app:assembleDebug` passou em 18 s.
-- No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha foi `Assert failed: The component is not displayed!`, diferente do `expected:<20> but was:<0>` da execução anterior.
-- A seleção não prefixa mais `✓` ao texto das opções, evitando mudança de largura/reflow após o clique.
-- O próprio controle `planning-margin-20` é reposicionado e validado quanto a visibilidade, texto, clique e `Selected=true` após a seleção e após recriar a Activity.
-- Persistência imediata da margem, proteção contra gravações antigas e debounce dos campos numéricos permanecem intactos.
-- A tela **Sobre** e os metadados foram atualizados. O módulo **Backup** não foi alterado.
+- `Android-Kotlin-APK-26-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 58 s.
+- `:app:assembleDebug` passou em 17 s.
+- No Android 15 foram executados 5 testes: 4 passaram e 1 falhou no teste do Planejamento.
+- A falha voltou a ser `expected:<20> but was:<0>` após clicar em `+20%`.
+- Criado `PlanningState.kt` com `PlanningAction`, `reducePlanning` e política de persistência centralizada.
+- `NomadeRaizApp` agora despacha toda mudança do Planejamento por esse único redutor.
+- O seletor de margem foi reescrito com três botões Material3 estáveis e um texto explícito `Margem atual`.
+- O teste antigo foi dividido em `planningMarginButtonsPersistImmediately` e `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`.
+- Adicionados testes unitários do redutor para garantir que edições posteriores não apaguem a margem e que `GeneratePlan` preserve o valor.
+- Persistência imediata continua reservada a margem/geração; campos digitados permanecem com debounce de 300 ms.
+- A tela **Sobre**, README, CHANGELOG, VALIDACAO e metadados foram atualizados. O módulo **Backup** não foi alterado.
 
 **Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.
 

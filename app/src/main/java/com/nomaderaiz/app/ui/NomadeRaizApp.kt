@@ -96,10 +96,21 @@ fun NomadeRaizApp(){
     fun persistPlanningImmediate(value:PlanningSession){
         planningRevision.incrementAndGet()
         planningSaveJob.getAndSet(null)?.cancel()
-        // Escolhas discretas usam commit() dentro do mesmo lock. Isso garante que,
-        // ao terminar o clique, outra instância de AppRepository já enxergue o valor
-        // persistido e nenhuma gravação debounced antiga possa sobrescrevê-lo.
+        // Ações discretas são raras e pequenas. commit() é deliberado aqui: quando
+        // o clique termina, qualquer nova instância de AppRepository já deve ler o
+        // mesmo snapshot. Campos de digitação continuam fora da UI thread.
         synchronized(planningWriteLock){repo.savePlanningSessionImmediate(value)}
+    }
+
+    fun dispatchPlanning(action:PlanningAction){
+        // Única porta de entrada do estado do Planejamento. O redutor sempre recebe
+        // o PlanningSession mais recente, eliminando caminhos paralelos de atualização.
+        val updated=reducePlanning(planning,action)
+        planning=updated
+        when(persistenceFor(action)){
+            PlanningPersistence.DEBOUNCED->persistPlanningDebounced(updated)
+            PlanningPersistence.IMMEDIATE->persistPlanningImmediate(updated)
+        }
     }
 
     // A Calculadora permanece com debounce serializado porque só recebe digitação
@@ -174,25 +185,7 @@ fun NomadeRaizApp(){
                 Screen.Verify->VerifyScreen(repo,activeCheckMode,{mode->activeCheckMode=mode;repo.saveActiveCheckMode(mode)},{back()})
                 Screen.Planning->PlanningScreen(
                     modifier=Modifier,equipment=items,session=planning,
-                    updateDraft={transform->
-                        val current=planning
-                        val updated=current.copy(draft=transform(current.draft))
-                        planning=updated
-                        persistPlanningDebounced(updated)
-                    },
-                    setSafetyMargin={value->
-                        val margin=value.coerceIn(0,50)
-                        val current=planning
-                        val updated=current.copy(draft=current.draft.copy(safetyMarginPercent=margin))
-                        planning=updated
-                        persistPlanningImmediate(updated)
-                    },
-                    commitCurrent={
-                        val snapshot=planning.draft.snapshotForPlanning()
-                        val updated=planning.copy(draft=snapshot,lastGenerated=snapshot)
-                        planning=updated
-                        persistPlanningImmediate(updated)
-                    },
+                    dispatch=::dispatchPlanning,
                     onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},
                     back=if(navigation.canGoBack)({back()})else null
                 )

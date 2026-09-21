@@ -53,52 +53,63 @@ class NavigationUiTest {
         }
     }
 
-    @Test fun planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation(){
+    private fun openPlanning(){
         compose.onNodeWithTag("nav-More").performClick()
         openMoreModule("Planning")
-        compose.onNodeWithTag("generate-plan").assertIsNotEnabled()
-        fun enter(label:String,value:String){
-            val matcher=hasSetTextAction() and hasText(label)
-            compose.onNodeWithTag("planning-list").performScrollToNode(matcher)
-            compose.onNode(matcher).performTextReplacement(value)
-        }
-        enter("Destino (opcional)","Serra do Rio do Rastro")
-        enter("Distância prevista","500")
-        enter("Velocidade média","20")
-        enter("Horas/dia","7")
-        enter("Alimentação por pessoa/dia","40")
-        enter("Água por pessoa/dia","3")
-        enter("Consumo de energia do grupo","25")
+    }
+
+    private fun enterPlanningField(label:String,value:String){
+        val matcher=hasSetTextAction() and hasText(label)
+        compose.onNodeWithTag("planning-list").performScrollToNode(matcher)
+        compose.onNode(matcher).performTextReplacement(value)
+    }
+
+    @Test fun planningMarginButtonsPersistImmediately(){
+        openPlanning()
+        val context=InstrumentationRegistry.getInstrumentation().targetContext
+
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        // A margem é uma escolha discreta: o estado visual deve mudar na mesma
-        // interação e o repositório deve enxergar 20 imediatamente. SharedPreferences
-        // apply() atualiza a memória de processo antes de retornar, então não há razão
-        // para mascarar uma regressão real com polling de cinco segundos.
         compose.onNodeWithTag("planning-margin-20").assertHasClickAction().performClick()
         compose.waitForIdle()
-        val context=InstrumentationRegistry.getInstrumentation().targetContext
-        // Primeiro prova o efeito funcional do gesto. Assim, se houver nova falha, o
-        // log diferencia persistência de uma eventual questão apenas visual/semântica.
-        assertEquals("O clique em +20% não atualizou/persistiu a margem",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
-        // A opção selecionada mantém largura/texto estáveis. Reposicionamos o próprio
-        // alvo após a recomposição para provar que ele segue visível e selecionado sem
-        // depender de um Text filho que possa mudar de linha dentro do FlowRow.
-        compose.onNodeWithTag("planning-margin-20")
-            .performScrollTo()
-            .assertIsDisplayed()
-            .assertTextContains("+20%")
-            .assertIsSelected()
+        assertEquals(20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
+        compose.onNodeWithTag("planning-margin-current").assertTextContains("+20%").assertIsDisplayed()
+
+        compose.onNodeWithTag("planning-margin-10").assertHasClickAction().performClick()
+        compose.waitForIdle()
+        assertEquals(10,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
+        compose.onNodeWithTag("planning-margin-current").assertTextContains("+10%").assertIsDisplayed()
+    }
+
+    @Test fun planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation(){
+        openPlanning()
+        compose.onNodeWithTag("generate-plan").assertIsNotEnabled()
+
+        enterPlanningField("Destino (opcional)","Serra do Rio do Rastro")
+        enterPlanningField("Distância prevista","500")
+        enterPlanningField("Velocidade média","20")
+        enterPlanningField("Horas/dia","7")
+        enterPlanningField("Alimentação por pessoa/dia","40")
+        enterPlanningField("Água por pessoa/dia","3")
+        enterPlanningField("Consumo de energia do grupo","25")
+
+        compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
+        compose.onNodeWithTag("planning-margin-20").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("planning-margin-current").assertTextContains("+20%")
+
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
-        enter("Dinheiro disponível","1.500,50")
+        enterPlanningField("Dinheiro disponível","1.500,50")
         compose.onNodeWithTag("generate-plan").assertIsEnabled().performClick()
         compose.waitForIdle()
+
         back()
         assertScreen("More")
         openMoreModule("Planning")
         compose.activityRule.scenario.recreate()
         compose.waitForIdle()
         assertScreen("Planning")
+
         val repo=AppRepository(InstrumentationRegistry.getInstrumentation().targetContext)
         val saved=repo.loadPlanningSession()
         assertEquals("Serra do Rio do Rastro",saved.draft.destination)
@@ -112,19 +123,9 @@ class NavigationUiTest {
         assertEquals(3.0,saved.draft.waterDailyPerPerson.numberOrNull()!!,0.0)
         assertEquals(25.0,saved.draft.energyDailyWh.numberOrNull()!!,0.0)
         assertEquals(saved.draft,saved.lastGenerated)
-        // Depois de Activity.recreate(), validamos novamente o próprio nó estável da
-        // margem. A opção precisa reaparecer visível, clicável e selecionada, enquanto
-        // as outras duas opções permanecem explicitamente desmarcadas.
-        compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        compose.waitForIdle()
-        compose.onNodeWithTag("planning-margin-20")
-            .performScrollTo()
-            .assertIsDisplayed()
-            .assertHasClickAction()
-            .assertTextContains("+20%")
-            .assertIsSelected()
-        compose.onNodeWithTag("planning-margin-10").assertIsNotSelected()
-        compose.onNodeWithTag("planning-margin-0").assertIsNotSelected()
+
+        compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-current"))
+        compose.onNodeWithTag("planning-margin-current").assertTextContains("+20%").assertIsDisplayed()
         compose.onNodeWithTag("planning-list").performScrollToIndex(0)
         compose.onNodeWithContentDescription("Voltar").performClick()
         assertScreen("More")

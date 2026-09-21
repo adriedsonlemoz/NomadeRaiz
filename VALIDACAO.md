@@ -1,56 +1,69 @@
-# Validação — 1.0.53-kotlin-alpha.26
+# Validação — 1.0.54-kotlin-alpha.27
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.52-alpha.25`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100053`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.53-alpha.26`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100054`.
 
 ## Resultado real dos logs recebidos
 
-O arquivo `Android-Kotlin-APK-25-logs.zip` foi analisado antes desta correção.
+O arquivo `Android-Kotlin-APK-26-logs.zip` foi analisado antes desta mudança.
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 57s`.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 18s`.
-- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram executados 5 testes; 4 passaram e 1 falhou.
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 58s`.
+- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 17s`.
+- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 5 testes; 4 chegaram concluídos sem falha e 1 falhou.
 - Teste que falhou: `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- Falha registrada: `Assert failed: The component is not displayed!` em `assertIsDisplayed()`.
+- Falha: `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
 - A Release permaneceu corretamente bloqueada.
 
-## Diagnóstico desta execução
+Os avisos iniciais de `adb`/Emulator Console não foram a causa final: o emulador iniciou os testes e a falha determinante foi a asserção funcional acima.
 
-Esta falha **não é a mesma da execução imediatamente anterior**. No log 24 o clique em +20% ainda resultava em `safetyMarginPercent = 0`. No log 25 essa mensagem não reapareceu; o erro observado passou a ser exclusivamente de visibilidade de um componente após a recomposição.
+## Por que a tática mudou
 
-O seletor tinha uma fonte concreta de deslocamento: a opção ativa mudava o texto de `+20%` para `✓ +20%`. Dentro de um `FlowRow`, os caracteres extras alteravam a largura do item e podiam causar uma nova quebra de linha exatamente depois do clique ou da restauração. O teste procurava o texto alterado e exigia `assertIsDisplayed()`, então uma opção funcional podia ser considerada não visível por ter sido reposicionada abaixo do limite atual da viewport.
+O mesmo trecho já havia recebido várias correções locais. O histórico mostrou quatro classes de falha alternando no mesmo teste: persistência (`20` esperado, `0` salvo), semântica (`Selected=true`), `ComposeTimeoutException` e visibilidade do componente. O log 26 voltou ao primeiro tipo, mostrando que continuar trocando apenas o componente visual não estava produzindo uma base estável.
 
-## Correção aplicada
+Por isso a versão 1.0.54 **não aplica outro remendo no mesmo seletor**. O estado do Planejamento foi reorganizado e o controle foi reescrito com uma solução mais simples.
 
-1. O texto das opções de margem ficou estável. Selecionar uma opção não muda mais `+20%` para `✓ +20%`.
-2. A seleção continua visível pelo `RadioButton`, pelas cores e pela semântica `Selected` da `Row` selecionável.
-3. O teste deixou de depender de um `Text` filho cuja geometria mudava. Ele valida o próprio nó `planning-margin-20`, executa `performScrollTo()` depois da recomposição e então exige `assertIsDisplayed()`, `+20%` e `assertIsSelected()`.
-4. Após `Activity.recreate()`, o teste repete a validação do próprio nó e exige que `planning-margin-0` e `planning-margin-10` estejam desmarcados.
-5. Persistência imediata da margem, `SharedPreferences.commit()` protegido por revisão/lock e debounce de 300 ms dos campos digitados foram preservados.
+## Nova arquitetura do Planejamento
 
-O módulo Backup não foi alterado.
+1. Novo `PlanningState.kt` define `PlanningAction`, `reducePlanning` e `PlanningPersistence`.
+2. `NomadeRaizApp` possui agora uma única porta de entrada (`dispatchPlanning`) para campos, margem e geração do plano.
+3. O redutor recebe sempre o `PlanningSession` mais recente; uma edição posterior transforma esse estado atual, em vez de reconstruir o fluxo por callbacks independentes.
+4. Ações discretas (`SetSafetyMargin` e `GeneratePlan`) persistem imediatamente; `EditDraft` mantém debounce de 300 ms.
+5. O mecanismo de revisão/cancelamento de gravações pendentes permanece para impedir snapshot antigo de sobrescrever estado novo.
 
-## Histórico recente do mesmo teste
+## Seletor de margem reescrito
 
-| Log | Versão testada | Resultado Android 15 | Falha principal | Mesmo erro exato? |
-| --- | --- | --- | --- | --- |
-| 15 | 1.0.42-alpha.15 | 4/5 | `expected:<20> but was:<0>` | Persistência |
-| 16 | 1.0.43-alpha.16 | 4/5 | `Selected = true` | Semântica |
-| 17 | 1.0.44-alpha.17 | 4/5 | `Selected = true` | Semântica |
-| 18 | 1.0.45-alpha.18 | 4/5 | `ComposeTimeoutException` | Timeout/persistência |
-| 19 | 1.0.46-alpha.19 | 4/5 | `Selected = true` | Semântica |
-| 20 | 1.0.47-alpha.20 | 4/5 | `ComposeTimeoutException` | Timeout/persistência |
-| 21 | 1.0.48-alpha.21 | 4/5 | `Selected = true` | Semântica |
-| 22 | 1.0.49-alpha.22 | 4/5 | `Selected = true` | Semântica |
-| 23 | 1.0.50-alpha.23 | 4/5 | `Selected = true` | Semântica |
-| 24 | 1.0.51-alpha.24 | 4/5 | clique em +20% persistiu `0` | Persistência funcional |
-| 25 | 1.0.52-alpha.25 | 4/5 | `The component is not displayed!` | **Novo: visibilidade/layout** |
+- `0%`, `+10%` e `+20%` agora são três `Button` Material3 comuns em uma `Row` de largura fixa.
+- Não são mais usados `FlowRow`, `selectable`, `selectableGroup`, `RadioButton`, `Role.RadioButton` ou uma árvore semântica de seleção customizada nesse controle.
+- O estado escolhido aparece explicitamente no texto com tag `planning-margin-current`, por exemplo `Margem atual: +20%`.
+- A seleção funcional é validada também pelo valor salvo em `AppRepository`.
 
-Em resumo, é o **mesmo teste e a mesma área da tela**, mas os erros não foram todos iguais. As execuções alternaram entre persistência, semântica de seleção, timeout e agora visibilidade/layout. Cada correção removeu uma camada e permitiu que o teste chegasse à próxima verificação.
+## Testes reorganizados
+
+O teste gigante anterior foi dividido sem reduzir a cobertura:
+
+- `planningMarginButtonsPersistImmediately`: valida os botões `+20%` e `+10%`, o texto `Margem atual` e o valor persistido imediatamente.
+- `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`: valida destino, distância, velocidade, horas, recursos, margem, dinheiro, geração, retorno, reabertura, `Activity.recreate()` e `lastGenerated`.
+- `PlanningStateTest` adiciona testes unitários do redutor: margem, edição posterior sem apagar margem e geração do snapshot.
+
+## Histórico recente
+
+| Log | Versão testada | Resultado Android 15 | Falha principal |
+| --- | --- | --- | --- |
+| 15 | 1.0.42-alpha.15 | 4/5 | `expected:<20> but was:<0>` |
+| 16 | 1.0.43-alpha.16 | 4/5 | `Selected = true` |
+| 17 | 1.0.44-alpha.17 | 4/5 | `Selected = true` |
+| 18 | 1.0.45-alpha.18 | 4/5 | `ComposeTimeoutException` |
+| 19 | 1.0.46-alpha.19 | 4/5 | `Selected = true` |
+| 20 | 1.0.47-alpha.20 | 4/5 | `ComposeTimeoutException` |
+| 21 | 1.0.48-alpha.21 | 4/5 | `Selected = true` |
+| 22 | 1.0.49-alpha.22 | 4/5 | `Selected = true` |
+| 23 | 1.0.50-alpha.23 | 4/5 | `Selected = true` |
+| 24 | 1.0.51-alpha.24 | 4/5 | clique em +20% manteve `0` |
+| 25 | 1.0.52-alpha.25 | 4/5 | `The component is not displayed!` |
+| 26 | 1.0.53-alpha.26 | 4/5 | clique em +20% manteve `0` |
 
 ## Verificações desta nova entrega
 
-- Metadados preparados para `1.0.53-kotlin-alpha.26` / `100053`.
-- Revisão estática do seletor, persistência e teste instrumentado concluída.
-- O ambiente atual não possui Gradle/Android SDK configurados para executar o build completo ou o emulador Android 15. Portanto, **não** é declarado que os 5/5 testes passaram nesta nova versão.
-
-A próxima execução do GitHub Actions deve repetir: metadados → testes unitários → build APK → testes instrumentados Android 15. A Release deve continuar bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.
+- A lógica Kotlin pura de `PlanningState.kt` foi compilada localmente com `kotlinc` junto das dependências de dados do Planejamento: **OK**.
+- Hash do `BackupScreen.kt` é idêntico ao da versão-base: o módulo Backup não foi alterado.
+- O ambiente atual não possui `gradle` nem Gradle Wrapper no projeto, portanto o build Android completo e o emulador Android 15 **não foram executados nesta nova versão**.
+- A próxima execução do GitHub Actions deve validar metadados → testes unitários → APK → testes instrumentados Android 15. A Release deve permanecer bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.
