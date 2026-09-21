@@ -1,48 +1,60 @@
-# Validação — 1.0.54-kotlin-alpha.27
+# Validação — 1.0.55-kotlin-alpha.28
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.53-alpha.26`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100054`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.54-alpha.27`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100055`.
 
-## Resultado real dos logs recebidos
+## Resultado real do log 27
 
-O arquivo `Android-Kotlin-APK-26-logs.zip` foi analisado antes desta mudança.
+O arquivo `Android-Kotlin-APK-27-logs.zip` foi analisado antes desta correção.
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 58s`.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 17s`.
-- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 5 testes; 4 chegaram concluídos sem falha e 1 falhou.
-- Teste que falhou: `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- Falha: `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 43s`.
+- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 12s`.
+- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 6 testes; 4 passaram e 2 falharam.
+- Falharam `planningMarginButtonsPersistImmediately` e `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`.
+- As duas mensagens foram iguais: `Text + InputText + EditableText contains '+20%'`.
 - A Release permaneceu corretamente bloqueada.
 
-Os avisos iniciais de `adb`/Emulator Console não foram a causa final: o emulador iniciou os testes e a falha determinante foi a asserção funcional acima.
+Os avisos de `adb`/Emulator Console ocorreram durante a inicialização, mas não foram a causa determinante: o emulador iniciou e executou os seis testes.
 
-## Por que a tática mudou
+## O que o log provou sobre a nova arquitetura
 
-O mesmo trecho já havia recebido várias correções locais. O histórico mostrou quatro classes de falha alternando no mesmo teste: persistência (`20` esperado, `0` salvo), semântica (`Selected=true`), `ComposeTimeoutException` e visibilidade do componente. O log 26 voltou ao primeiro tipo, mostrando que continuar trocando apenas o componente visual não estava produzindo uma base estável.
+No teste `planningMarginButtonsPersistImmediately`, a sequência era: clicar em `+20%` → esperar Compose → carregar o repositório → exigir `safetyMarginPercent == 20` → conferir o texto da UI. A falha aconteceu apenas na última etapa. Portanto, a asserção de persistência de 20% **passou**.
 
-Por isso a versão 1.0.54 **não aplica outro remendo no mesmo seletor**. O estado do Planejamento foi reorganizado e o controle foi reescrito com uma solução mais simples.
+Isso é diferente dos logs 24 e 26, nos quais o valor persistido permanecia em `0`. A mudança arquitetural da 1.0.54 (`PlanningAction` + `reducePlanning` + persistência imediata) resolveu o defeito funcional que vinha motivando os remendos.
 
-## Nova arquitetura do Planejamento
+## Causa das duas falhas atuais
 
-1. Novo `PlanningState.kt` define `PlanningAction`, `reducePlanning` e `PlanningPersistence`.
-2. `NomadeRaizApp` possui agora uma única porta de entrada (`dispatchPlanning`) para campos, margem e geração do plano.
-3. O redutor recebe sempre o `PlanningSession` mais recente; uma edição posterior transforma esse estado atual, em vez de reconstruir o fluxo por callbacks independentes.
-4. Ações discretas (`SetSafetyMargin` e `GeneratePlan`) persistem imediatamente; `EditDraft` mantém debounce de 300 ms.
-5. O mecanismo de revisão/cancelamento de gravações pendentes permanece para impedir snapshot antigo de sobrescrever estado novo.
+O teste usava:
 
-## Seletor de margem reescrito
+```kotlin
+assertTextContains("+20%")
+```
 
-- `0%`, `+10%` e `+20%` agora são três `Button` Material3 comuns em uma `Row` de largura fixa.
-- Não são mais usados `FlowRow`, `selectable`, `selectableGroup`, `RadioButton`, `Role.RadioButton` ou uma árvore semântica de seleção customizada nesse controle.
-- O estado escolhido aparece explicitamente no texto com tag `planning-margin-current`, por exemplo `Margem atual: +20%`.
-- A seleção funcional é validada também pelo valor salvo em `AppRepository`.
+O nó com tag `planning-margin-current` contém o item textual completo `Margem atual: +20%`. Na API de teste do Compose, `assertTextContains` usa `substring = false` por padrão, portanto exige correspondência completa de um item da lista de textos. `+20%` sozinho não corresponde a `Margem atual: +20%`.
 
-## Testes reorganizados
+A mesma inconsistência existia para `+10%`. Isso explica por que dois testes diferentes falharam com a mesma mensagem depois de o estado já estar correto.
 
-O teste gigante anterior foi dividido sem reduzir a cobertura:
+## Correção aplicada
 
-- `planningMarginButtonsPersistImmediately`: valida os botões `+20%` e `+10%`, o texto `Margem atual` e o valor persistido imediatamente.
-- `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`: valida destino, distância, velocidade, horas, recursos, margem, dinheiro, geração, retorno, reabertura, `Activity.recreate()` e `lastGenerated`.
-- `PlanningStateTest` adiciona testes unitários do redutor: margem, edição posterior sem apagar margem e geração do snapshot.
+As quatro verificações do estado visível foram convertidas para correspondência exata do texto realmente exibido:
+
+```kotlin
+assertTextEquals("Margem atual: +20%")
+assertTextEquals("Margem atual: +10%")
+```
+
+Não foram removidas verificações. O teste continua validando:
+
+- clique nos botões de margem;
+- persistência imediata no `AppRepository`;
+- estado visível da margem;
+- preenchimento dos campos;
+- geração do plano;
+- navegação;
+- `Activity.recreate()`;
+- restauração dos dados;
+- `lastGenerated`.
+
+A arquitetura nova do Planejamento não foi alterada nesta entrega porque o log 27 mostrou que o fluxo funcional já chegou corretamente ao repositório.
 
 ## Histórico recente
 
@@ -60,10 +72,12 @@ O teste gigante anterior foi dividido sem reduzir a cobertura:
 | 24 | 1.0.51-alpha.24 | 4/5 | clique em +20% manteve `0` |
 | 25 | 1.0.52-alpha.25 | 4/5 | `The component is not displayed!` |
 | 26 | 1.0.53-alpha.26 | 4/5 | clique em +20% manteve `0` |
+| 27 | 1.0.54-alpha.27 | 4/6 | asserção textual incorreta após persistência de 20% passar |
 
 ## Verificações desta nova entrega
 
-- A lógica Kotlin pura de `PlanningState.kt` foi compilada localmente com `kotlinc` junto das dependências de dados do Planejamento: **OK**.
-- Hash do `BackupScreen.kt` é idêntico ao da versão-base: o módulo Backup não foi alterado.
+- Todas as ocorrências de `assertTextContains` no teste instrumentado do Planejamento foram revisadas; as quatro verificações de `planning-margin-current` agora usam o texto completo.
+- `python3 scripts/sync-github-manager.py --check`: deve permanecer sincronizado após a atualização dos metadados.
+- O hash do `BackupScreen.kt` deve permanecer idêntico ao da versão-base; o módulo Backup não foi alterado.
 - O ambiente atual não possui `gradle` nem Gradle Wrapper no projeto, portanto o build Android completo e o emulador Android 15 **não foram executados nesta nova versão**.
 - A próxima execução do GitHub Actions deve validar metadados → testes unitários → APK → testes instrumentados Android 15. A Release deve permanecer bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.

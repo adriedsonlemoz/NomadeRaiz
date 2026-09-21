@@ -72,12 +72,12 @@ class NavigationUiTest {
         compose.onNodeWithTag("planning-margin-20").assertHasClickAction().performClick()
         compose.waitForIdle()
         assertEquals(20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
-        compose.onNodeWithTag("planning-margin-current").assertTextContains("+20%").assertIsDisplayed()
+        compose.onNodeWithTag("planning-margin-current").assertTextEquals("Margem atual: +20%").assertIsDisplayed()
 
         compose.onNodeWithTag("planning-margin-10").assertHasClickAction().performClick()
         compose.waitForIdle()
         assertEquals(10,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
-        compose.onNodeWithTag("planning-margin-current").assertTextContains("+10%").assertIsDisplayed()
+        compose.onNodeWithTag("planning-margin-current").assertTextEquals("Margem atual: +10%").assertIsDisplayed()
     }
 
     @Test fun planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation(){
@@ -95,7 +95,7 @@ class NavigationUiTest {
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
         compose.onNodeWithTag("planning-margin-20").performClick()
         compose.waitForIdle()
-        compose.onNodeWithTag("planning-margin-current").assertTextContains("+20%")
+        compose.onNodeWithTag("planning-margin-current").assertTextEquals("Margem atual: +20%")
 
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
@@ -125,7 +125,7 @@ class NavigationUiTest {
         assertEquals(saved.draft,saved.lastGenerated)
 
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-current"))
-        compose.onNodeWithTag("planning-margin-current").assertTextContains("+20%").assertIsDisplayed()
+        compose.onNodeWithTag("planning-margin-current").assertTextEquals("Margem atual: +20%").assertIsDisplayed()
         compose.onNodeWithTag("planning-list").performScrollToIndex(0)
         compose.onNodeWithContentDescription("Voltar").performClick()
         assertScreen("More")

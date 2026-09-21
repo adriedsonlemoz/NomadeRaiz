@@ -10,8 +10,8 @@ android {
         applicationId = "com.nomaderaiz.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 100054
-        versionName = "1.0.54-kotlin-alpha.27"
+        versionCode = 100055
+        versionName = "1.0.55-kotlin-alpha.28"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {

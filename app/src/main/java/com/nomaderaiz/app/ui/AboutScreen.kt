@@ -29,11 +29,11 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• O Planejamento mudou de estratégia: o estado agora passa por um único redutor, em vez de callbacks paralelos para campos, margem e geração do plano.")
-                Text("• A margem 0% / +10% / +20% foi reescrita com botões Material3 comuns e largura fixa, removendo selectable, RadioButton e dependência da semântica Selected que vinha oscilando no Android 15.")
-                Text("• A seleção mostra um estado explícito 'Margem atual', e escolhas discretas continuam com persistência imediata; digitação mantém debounce para preservar desempenho.")
-                Text("• O antigo teste gigante foi dividido: um teste exclusivo valida a margem e outro valida campos, geração, navegação e recriação da Activity.")
-                Text("• O log anterior repetiu o erro funcional 20 esperado / 0 salvo; esta versão ainda precisa da nova execução do GitHub Actions.")
+                Text("• A nova arquitetura do Planejamento passou pela parte funcional da margem no Android 15: após tocar em +20%, o repositório já retornou 20% corretamente.")
+                Text("• As duas falhas restantes estavam no próprio teste: ele procurava '+20%' como item textual completo, mas a tela exibe 'Margem atual: +20%'.")
+                Text("• As verificações agora exigem a frase completa com assertTextEquals, mantendo a cobertura de clique, persistência, estado visível, navegação e recriação da Activity.")
+                Text("• O redutor único, a persistência imediata das escolhas e o debounce dos campos foram mantidos sem novos remendos no seletor.")
+                Text("• O GitHub Actions ainda precisa confirmar esta nova execução antes da Release.")
             }
         }
         item{

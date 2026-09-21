@@ -2,34 +2,28 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.54-kotlin-alpha.27`
+**Versão atual:** `1.0.55-kotlin-alpha.28`
 
-**versionCode:** `100054`
+**versionCode:** `100055`
 
-### Mudança de estratégia desta entrega
+### Resultado da nova estratégia
 
-A versão `1.0.54-kotlin-alpha.27` foi preparada a partir do `Android-Kotlin-APK-26-logs.zip`. A `1.0.53` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes. A falha voltou a ser funcional: `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
+A versão `1.0.54-kotlin-alpha.27` finalmente separou o problema funcional do problema de teste. No `Android-Kotlin-APK-27-logs.zip`, a gravação imediata de `+20%` passou antes da falha: o repositório já retornava `safetyMarginPercent = 20`. Os dois testes que falharam pararam depois, somente ao conferir o texto visível `Margem atual`.
 
-Depois de várias versões alternando entre `Selected=true`, timeout, visibilidade e valor persistido incorreto, esta entrega **abandona a sequência de remendos no mesmo seletor**. O Planejamento agora possui uma única porta de entrada de estado (`PlanningAction` + `reducePlanning`). Campos, margem e geração do plano deixam de usar caminhos independentes de mutação.
+A causa foi localizada no próprio teste. `assertTextContains("+20%")` estava sendo usado com o comportamento padrão de correspondência exata de item textual, enquanto o nó realmente contém `Margem atual: +20%`. A versão `1.0.55-kotlin-alpha.28` troca essas verificações por `assertTextEquals` com a frase completa. A cobertura fica mais forte e a arquitetura nova do Planejamento permanece intacta.
 
-A margem também foi reescrita. `0%`, `+10%` e `+20%` são botões Material3 comuns, com geometria fixa e `onClick` direto. Não há mais `selectable`, `RadioButton`, `Role.RadioButton` nem teste baseado em `Selected`. O efeito funcional fica explícito em `Margem atual: ...` e no valor realmente persistido no `AppRepository`.
-
-O antigo teste instrumentado monolítico foi dividido em dois: um dedicado ao clique/persistência da margem e outro dedicado aos campos, geração do plano, navegação e `Activity.recreate()`. Isso mantém a cobertura e torna a próxima falha localizada em vez de mascarada por uma sequência extensa.
+Não houve novo redesenho do seletor nem nova mudança no fluxo de persistência nesta entrega, porque o log 27 mostrou que esse fluxo já chegou ao valor correto.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-26-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 58 s.
-- `:app:assembleDebug` passou em 17 s.
-- No Android 15 foram executados 5 testes: 4 passaram e 1 falhou no teste do Planejamento.
-- A falha voltou a ser `expected:<20> but was:<0>` após clicar em `+20%`.
-- Criado `PlanningState.kt` com `PlanningAction`, `reducePlanning` e política de persistência centralizada.
-- `NomadeRaizApp` agora despacha toda mudança do Planejamento por esse único redutor.
-- O seletor de margem foi reescrito com três botões Material3 estáveis e um texto explícito `Margem atual`.
-- O teste antigo foi dividido em `planningMarginButtonsPersistImmediately` e `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`.
-- Adicionados testes unitários do redutor para garantir que edições posteriores não apaguem a margem e que `GeneratePlan` preserve o valor.
-- Persistência imediata continua reservada a margem/geração; campos digitados permanecem com debounce de 300 ms.
+- `Android-Kotlin-APK-27-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 43 s.
+- `:app:assembleDebug` passou em 12 s.
+- Android 15 iniciou 6 testes: 4 passaram e 2 falharam nas verificações textuais do estado da margem.
+- No teste exclusivo da margem, `safetyMarginPercent == 20` já havia passado antes da falha, confirmando persistência imediata correta.
+- Corrigido o uso incorreto de `assertTextContains`: agora o teste exige exatamente `Margem atual: +20%` ou `Margem atual: +10%`.
+- `PlanningAction`, `reducePlanning`, persistência imediata da margem e debounce de 300 ms dos campos foram mantidos.
 - A tela **Sobre**, README, CHANGELOG, VALIDACAO e metadados foram atualizados. O módulo **Backup** não foi alterado.
 
 **Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.

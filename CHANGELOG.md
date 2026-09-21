@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.55-kotlin-alpha.28
+
+### Planejamento: correção do teste após a nova arquitetura
+
+- Analisado `Android-Kotlin-APK-27-logs.zip`, correspondente à versão `1.0.54-kotlin-alpha.27`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 43s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 12s`).
+- Android 15 iniciou 6 testes; 4 passaram e 2 falharam. As duas falhas ocorreram apenas nas novas verificações do texto `Margem atual`.
+- Em `planningMarginButtonsPersistImmediately`, a asserção funcional `safetyMarginPercent == 20` passou antes da falha visual. Isso confirma que a nova arquitetura corrigiu o caminho clique → estado → persistência.
+- A causa desta execução não era outro bug da margem: `assertTextContains("+20%")` foi usado sem `substring = true`. Na API de teste do Compose, o padrão exige que o valor fornecido corresponda a um item textual completo; o nó contém `Margem atual: +20%`, portanto `+20%` isolado falhava mesmo com a UI correta.
+- As quatro verificações de `planning-margin-current` foram substituídas por `assertTextEquals(...)` com o texto completo (`Margem atual: +20%` / `Margem atual: +10%`). Isso torna o teste mais estrito e elimina a ambiguidade, sem reduzir cobertura.
+- A arquitetura `PlanningAction` + `reducePlanning`, a persistência imediata das escolhas discretas e o debounce dos campos foram preservados sem novos remendos no seletor.
+- Backup, `applicationId`, `namespace`, dados existentes e regras de Release foram preservados.
+- Versão e metadados sincronizados: `1.0.55-kotlin-alpha.28` / `100055`.
+
 ## 1.0.54-kotlin-alpha.27
 
 ### Planejamento: mudança de arquitetura em vez de novos remendos
