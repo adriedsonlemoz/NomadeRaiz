@@ -1,7 +1,10 @@
 package com.nomaderaiz.app.ui
 
 import android.app.DatePickerDialog
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -11,10 +14,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,7 +33,7 @@ import kotlin.math.ceil
 internal fun PlanningScreen(
     modifier:Modifier,equipment:List<EquipmentItem>,session:PlanningSession,
     updateDraft:((PlanningDraft)->PlanningDraft)->Unit,
-    updateDraftImmediate:((PlanningDraft)->PlanningDraft)->Unit,
+    setSafetyMargin:(Int)->Unit,
     commitCurrent:()->Unit,onPoints:()->Unit,onManual:()->Unit,back:(()->Unit)?=null
 ){
     val draft=session.draft
@@ -79,9 +84,9 @@ internal fun PlanningScreen(
                         saveFeedback=false
                         updateDraft(transform)
                     },
-                    changeImmediate={transform->
+                    setSafetyMargin={value->
                         saveFeedback=false
-                        updateDraftImmediate(transform)
+                        setSafetyMargin(value)
                     }
                 )
             }
@@ -230,7 +235,7 @@ private fun PlanningTripFields(draft:PlanningDraft,change:((PlanningDraft)->Plan
 private fun PlanningRideFields(
     draft:PlanningDraft,
     change:((PlanningDraft)->PlanningDraft)->Unit,
-    changeImmediate:((PlanningDraft)->PlanningDraft)->Unit
+    setSafetyMargin:(Int)->Unit
 ){
     SectionCard("2. Como quer pedalar?",Icons.Outlined.DirectionsBike){
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
@@ -239,13 +244,17 @@ private fun PlanningRideFields(
         }
         Text("Use a velocidade média que você espera manter enquanto estiver pedalando. Paradas entram na margem, não na velocidade.",fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
         Text("Margem de segurança",fontWeight=FontWeight.SemiBold,fontSize=13.sp)
-        FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
+        FlowRow(
+            modifier=Modifier.selectableGroup(),
+            horizontalArrangement=Arrangement.spacedBy(6.dp),
+            verticalArrangement=Arrangement.spacedBy(6.dp)
+        ){
             listOf(0 to "Sem margem",10 to "+10%",20 to "+20%").forEach{(value,label)->
                 PlanningMarginChoice(
                     value=value,
                     label=label,
                     selected=draft.safetyMarginPercent==value,
-                    onSelect={changeImmediate{it.copy(safetyMarginPercent=value)}}
+                    onSelect={setSafetyMargin(value)}
                 )
             }
         }
@@ -256,34 +265,32 @@ private fun PlanningRideFields(
 
 @Composable
 private fun PlanningMarginChoice(value:Int,label:String,selected:Boolean,onSelect:()->Unit){
-    // O Android 15 vinha lendo Selected=false no nó customizado Surface+selectable,
-    // mesmo depois do clique. Para tornar a semântica determinística usamos o
-    // RadioButton Material3 como o próprio nó identificado pelo teste. O componente
-    // padrão publica Selected e OnClick no mesmo nó acessível; a Surface fica apenas
-    // responsável pelo visual do seletor.
-    Surface(
-        modifier=Modifier.heightIn(min=48.dp),
-        shape=MaterialTheme.shapes.small,
-        color=if(selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
-        contentColor=if(selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
-        border=BorderStroke(1.dp,if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+    // Padrão recomendado para grupos de rádio no Compose: a linha inteira é o único
+    // alvo clicável/selecionável e o RadioButton interno é apenas o indicador visual.
+    // Isso evita depender da área pequena do círculo ou de nós semânticos internos.
+    val shape=MaterialTheme.shapes.small
+    val backgroundColor=if(selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface
+    val contentColor=if(selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+    val outlineColor=if(selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+    Row(
+        modifier=Modifier
+            .heightIn(min=48.dp)
+            .clip(shape)
+            .background(backgroundColor)
+            .border(1.dp,outlineColor,shape)
+            .selectable(selected=selected,onClick=onSelect,role=Role.RadioButton)
+            .testTag("planning-margin-$value")
+            .padding(horizontal=10.dp,vertical=4.dp),
+        verticalAlignment=Alignment.CenterVertically,
+        horizontalArrangement=Arrangement.spacedBy(2.dp)
     ){
-        Row(
-            Modifier.padding(horizontal=8.dp,vertical=4.dp),
-            verticalAlignment=Alignment.CenterVertically,
-            horizontalArrangement=Arrangement.spacedBy(2.dp)
-        ){
-            RadioButton(
-                selected=selected,
-                onClick=onSelect,
-                modifier=Modifier.testTag("planning-margin-$value")
-            )
-            Text(
-                if(selected) "✓ $label" else label,
-                fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,
-                fontSize=13.sp
-            )
-        }
+        RadioButton(selected=selected,onClick=null)
+        Text(
+            if(selected) "✓ $label" else label,
+            color=contentColor,
+            fontWeight=if(selected) FontWeight.Bold else FontWeight.Medium,
+            fontSize=13.sp
+        )
     }
 }
 

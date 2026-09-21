@@ -29,10 +29,10 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigido o seletor de margem do Planejamento que ainda publicava Selected=false no Android 15 após o clique.")
-                Text("• 0%, +10% e +20% agora usam RadioButton Material3 como nó acessível/testável, mantendo o cartão visual ao redor.")
-                Text("• O teste continua exigindo persistência imediata, indicador ✓ +20% e semântica Selected=true; nenhuma dessas verificações foi removida.")
-                Text("• A ordem do teste foi melhorada para distinguir falha de clique/persistência de falha puramente semântica.")
+                Text("• Corrigido o fluxo real do seletor de margem do Planejamento após o Android 15 confirmar que +20% continuava persistindo como 0%.")
+                Text("• A linha inteira de 0%, +10% e +20% agora é o alvo selecionável; o RadioButton interno é apenas o indicador visual.")
+                Text("• Escolhas de margem usam gravação síncrona protegida contra snapshots antigos; campos digitados continuam com debounce para manter a tela leve.")
+                Text("• O teste continua exigindo clique, indicador ✓ +20%, Selected=true, persistência, geração do plano e restauração após recriar a Activity.")
                 Text("• Os logs da versão anterior tiveram unitários e APK aprovados, com 4/5 testes Android 15; esta versão ainda precisa de nova validação.")
             }
         }

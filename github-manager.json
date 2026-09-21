@@ -1,8 +1,8 @@
 {
   "name": "Nômade Raiz",
-  "version": "1.0.51-kotlin-alpha.24",
-  "versionName": "1.0.51-kotlin-alpha.24",
-  "versionCode": 100051,
+  "version": "1.0.52-kotlin-alpha.25",
+  "versionName": "1.0.52-kotlin-alpha.25",
+  "versionCode": 100052,
   "applicationId": "com.nomaderaiz.app",
   "namespace": "com.nomaderaiz.app",
   "language": "Kotlin",

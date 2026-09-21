@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.52-kotlin-alpha.25
+
+### Planejamento: correção funcional do clique e persistência da margem
+
+- Analisado `Android-Kotlin-APK-24-logs.zip`, correspondente à versão `1.0.51-kotlin-alpha.24`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 53s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 17s`).
+- Os testes instrumentados Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A nova mensagem foi conclusiva: `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`. Isso confirma que o problema não era apenas a leitura de `Selected`; a seleção ainda não chegava de forma confiável ao estado persistido.
+- O seletor foi refeito no padrão de grupo de rádio recomendado pelo Compose: `FlowRow.selectableGroup()` e uma `Row` inteira por opção com `Modifier.selectable(..., role = Role.RadioButton)`. O `RadioButton` interno usa `onClick = null` e é somente visual.
+- O callback genérico `updateDraftImmediate` foi removido desse fluxo. A margem agora usa `setSafetyMargin(Int)`, reduzindo indirection e garantindo uma atualização explícita do `PlanningDraft`.
+- Foi criado `AppRepository.savePlanningSessionImmediate()`, usando `SharedPreferences.commit()` somente para escolhas discretas. O lock/revision existente continua impedindo que uma gravação debounced antiga sobrescreva a escolha.
+- Campos de texto continuam com debounce de 300 ms e gravação em IO, preservando a melhoria de desempenho.
+- O teste instrumentado continua validando clique, indicação visual, `Selected=true`, persistência real, geração do planejamento, navegação, `Activity.recreate()`, restauração dos campos e `lastGenerated`; nenhuma dessas coberturas foi removida.
+- Backup, `applicationId`, `namespace` e dados existentes foram preservados.
+- Versão e metadados sincronizados: `1.0.52-kotlin-alpha.25` / `100052`.
+
 ## 1.0.51-kotlin-alpha.24
 
 ### Planejamento: seletor de margem com RadioButton Material3

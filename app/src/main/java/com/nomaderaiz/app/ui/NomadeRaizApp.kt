@@ -96,9 +96,10 @@ fun NomadeRaizApp(){
     fun persistPlanningImmediate(value:PlanningSession){
         planningRevision.incrementAndGet()
         planningSaveJob.getAndSet(null)?.cancel()
-        // SharedPreferences.apply() atualiza o valor em memória antes de retornar.
-        // O bloco sincronizado garante que uma gravação antiga nunca termine depois.
-        synchronized(planningWriteLock){repo.savePlanningSession(value)}
+        // Escolhas discretas usam commit() dentro do mesmo lock. Isso garante que,
+        // ao terminar o clique, outra instância de AppRepository já enxergue o valor
+        // persistido e nenhuma gravação debounced antiga possa sobrescrevê-lo.
+        synchronized(planningWriteLock){repo.savePlanningSessionImmediate(value)}
     }
 
     // A Calculadora permanece com debounce serializado porque só recebe digitação
@@ -179,9 +180,10 @@ fun NomadeRaizApp(){
                         planning=updated
                         persistPlanningDebounced(updated)
                     },
-                    updateDraftImmediate={transform->
+                    setSafetyMargin={value->
+                        val margin=value.coerceIn(0,50)
                         val current=planning
-                        val updated=current.copy(draft=transform(current.draft))
+                        val updated=current.copy(draft=current.draft.copy(safetyMarginPercent=margin))
                         planning=updated
                         persistPlanningImmediate(updated)
                     },

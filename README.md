@@ -2,27 +2,28 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.51-kotlin-alpha.24`
+**Versão atual:** `1.0.52-kotlin-alpha.25`
 
-**versionCode:** `100051`
+**versionCode:** `100052`
 
 ### Correção desta entrega
 
-A versão `1.0.51-kotlin-alpha.24` foi preparada a partir do `Android-Kotlin-APK-23-logs.zip`. A `1.0.50` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes por `Failed to assert the following: (Selected = 'true')` no teste `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+A versão `1.0.52-kotlin-alpha.25` foi preparada a partir do `Android-Kotlin-APK-24-logs.zip`. A `1.0.51` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes. Desta vez o log mostrou a causa funcional com clareza: depois de tocar em `+20%`, o repositório ainda retornava `safetyMarginPercent = 0` (`expected:<20> but was:<0>`). Portanto, não era apenas uma divergência de semântica `Selected`; o gesto de seleção não estava resultando numa alteração persistida de forma confiável no fluxo testado.
 
-Como a `1.0.50` já possuía apenas uma chamada a `assertIsSelected()`, o novo log confirmou que a falha ocorre imediatamente após tocar em `+20%`, e não depois da recriação da Activity. O seletor customizado `Surface + selectable` foi substituído, no nó testado, por um `RadioButton` Material3 real. O `testTag` fica no próprio `RadioButton`, que publica `Selected` e `OnClick` por meio da implementação padrão do Compose. O cartão visual e o indicador `✓` foram preservados. O teste continua validando persistência, indicação visual e `Selected=true`; apenas a ordem das asserções foi melhorada para separar claramente uma falha de estado de uma falha semântica.
+O seletor foi refeito usando o padrão recomendado de grupo de rádio do Compose: a **linha inteira** de cada opção é agora o único alvo `selectable`, com `Role.RadioButton`, enquanto o `RadioButton` interno tem `onClick = null` e funciona apenas como indicador visual. Assim não há dois alvos clicáveis concorrentes nem dependência da pequena área do círculo. O callback genérico de transformação imediata também foi substituído por `setSafetyMargin(Int)`, dedicado a essa escolha. Para escolhas discretas, a persistência usa `SharedPreferences.commit()` dentro do mesmo bloqueio/revisão já usado para impedir que snapshots antigos sobrescrevam o estado. Campos digitados continuam com debounce e gravação fora da thread da interface.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-23-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 49 s.
-- A compilação do APK também passou antes dos testes instrumentados.
+- `Android-Kotlin-APK-24-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 53 s.
+- `:app:assembleDebug` passou em 17 s.
 - No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha registrada foi novamente `Failed to assert the following: (Selected = 'true')`.
-- Como a versão anterior já não tinha uma segunda `assertIsSelected()` após `Activity.recreate()`, ficou confirmado que o problema restante está no nó semântico imediatamente após o clique.
-- O seletor de margem agora usa `RadioButton` Material3 como o próprio nó com `planning-margin-*`; o `Surface` ao redor é somente visual.
-- O teste agora verifica primeiro se o clique persistiu `20`, depois o `✓ +20%` visível e então `assertIsSelected()`. Todas as três verificações permanecem obrigatórias.
+- A falha foi `O clique em +20% não atualizou/persistiu a margem expected:<20> but was:<0>`.
+- O seletor de margem agora usa uma `Row` inteira com `Modifier.selectable(...)` e `selectableGroup()`. O `RadioButton` interno não possui ação própria, eliminando alvos de clique concorrentes.
+- A alteração de margem agora usa um setter dedicado (`setSafetyMargin`) em vez de uma transformação genérica do rascunho.
+- A gravação imediata da margem usa `commit()` sob o mesmo lock/revisão; o debounce de 300 ms continua apenas nos campos de digitação.
+- O teste continua exigindo ação de clique, `✓ +20%`, `Selected=true`, valor 20 no repositório, geração do plano, navegação, recriação da Activity e restauração integral.
 - A tela **Sobre** e os metadados foram atualizados. O módulo **Backup** não foi alterado.
 
 **Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.

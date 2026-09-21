@@ -74,12 +74,14 @@ class NavigationUiTest {
         // interação e o repositório deve enxergar 20 imediatamente. SharedPreferences
         // apply() atualiza a memória de processo antes de retornar, então não há razão
         // para mascarar uma regressão real com polling de cinco segundos.
-        compose.onNodeWithTag("planning-margin-20").performClick()
+        compose.onNodeWithTag("planning-margin-20").assertHasClickAction().performClick()
         compose.waitForIdle()
-        val context=InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("O clique em +20% não atualizou/persistiu a margem",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
+        // Primeiro confirma que o gesto realmente atualizou a UI/semântica. Só então
+        // confere a persistência síncrona; assim um próximo log aponta a camada exata.
         compose.onNodeWithText("✓ +20%").assertIsDisplayed()
         compose.onNodeWithTag("planning-margin-20").assertIsSelected()
+        val context=InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("A UI marcou +20%, mas a persistência imediata não gravou a margem",20,AppRepository(context).loadPlanningSession().draft.safetyMarginPercent)
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
         enter("Dinheiro disponível","1.500,50")

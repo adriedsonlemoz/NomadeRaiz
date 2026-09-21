@@ -111,6 +111,13 @@ class AppRepository(context: Context) {
 
     fun loadPlanningSession():PlanningSession = TravelFormJson.decodePlanning(prefs.getString("planning_session_v1",null))
     fun savePlanningSession(v:PlanningSession){prefs.edit().putString("planning_session_v1",TravelFormJson.encodePlanning(v)).apply()}
+    /**
+     * Gravação síncrona reservada a escolhas discretas que precisam estar persistidas
+     * quando o gesto termina (por exemplo, a margem de segurança do Planejamento).
+     * Campos de digitação continuam usando savePlanningSession() fora da UI thread.
+     */
+    fun savePlanningSessionImmediate(v:PlanningSession):Boolean =
+        prefs.edit().putString("planning_session_v1",TravelFormJson.encodePlanning(v)).commit()
     fun loadCalculatorDraft():CalculatorDraft = TravelFormJson.decodeCalculator(prefs.getString("calculator_draft_v1",null))
     fun saveCalculatorDraft(v:CalculatorDraft){prefs.edit().putString("calculator_draft_v1",TravelFormJson.encodeCalculator(v)).apply()}
 
