@@ -29,11 +29,12 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• O log 28 confirmou que a nova arquitetura da margem funciona no teste dedicado; apenas o fluxo longo com vários campos ainda falhou ao conferir o texto após usar o teclado.")
-                Text("• A seleção de margem agora encerra o foco do campo numérico antes de aplicar 0%, +10% ou +20%, reduzindo interferência do IME.")
-                Text("• Os testes foram separados por responsabilidade: o teste da margem continua usando toque físico; o teste longo aciona a mesma ação sem depender da janela do teclado e valida estado, persistência e recriação.")
-                Text("• Foi adicionada uma verificação imediata do valor persistido no fluxo longo para que uma próxima falha identifique exatamente estado, UI ou restauração.")
-                Text("• O GitHub Actions ainda precisa confirmar esta nova execução antes da Release.")
+                Text("• O Planejar foi reorganizado como gerenciador de rotas: a tela principal mostra apenas as viagens cadastradas e um botão para criar nova rota.")
+                Text("• Criar/editar rota virou um fluxo separado, com destino, distância, ritmo e estimativa instantânea; recursos e opções avançadas ficam recolhidos por padrão.")
+                Text("• Cada rota ganhou uma tela própria de detalhes com resumo, custos/recomendações sob demanda, editar, duplicar e excluir.")
+                Text("• Nova Sugestão do Nômade compara o ritmo informado com uma referência automática e permite aplicar a sugestão com um toque.")
+                Text("• O planejamento antigo é migrado para a nova lista de rotas sem alterar applicationId nem apagar os dados existentes.")
+                Text("• A lista deixou de executar os cálculos pesados de recomendações para todas as viagens; a análise completa só é calculada ao abrir os detalhes.")
             }
         }
         item{

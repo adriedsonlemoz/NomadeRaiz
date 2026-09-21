@@ -41,9 +41,9 @@ private val NavigationStateSaver = listSaver<NavigationState, String>(
     }
 )
 
-private val PlanningSessionSaver = Saver<PlanningSession,String>(
-    save = { TravelFormJson.encodePlanning(it) },
-    restore = { TravelFormJson.decodePlanning(it) }
+private val PlanningWorkspaceSaver = Saver<PlanningWorkspace,String>(
+    save = { TravelFormJson.encodePlanningWorkspace(it) },
+    restore = { TravelFormJson.decodePlanningWorkspace(it) }
 )
 
 private val CalculatorDraftSaver = Saver<CalculatorDraft,String>(
@@ -66,7 +66,7 @@ fun NomadeRaizApp(){
     var activeCheckMode by remember{mutableStateOf(repo.loadActiveCheckMode())}
     var favoriteManual by remember{mutableStateOf(repo.loadFavoriteManual())}
     var masteredSkills by remember{mutableStateOf(repo.loadMasteredSkills())}
-    var planning by rememberSaveable(stateSaver=PlanningSessionSaver){mutableStateOf(repo.loadPlanningSession())}
+    var planning by rememberSaveable(stateSaver=PlanningWorkspaceSaver){mutableStateOf(repo.loadPlanningWorkspace())}
     var calculator by rememberSaveable(stateSaver=CalculatorDraftSaver){mutableStateOf(repo.loadCalculatorDraft())}
     val savedScreens=rememberSaveableStateHolder()
 
@@ -79,32 +79,38 @@ fun NomadeRaizApp(){
     val planningSaveJob=remember{AtomicReference<Job?>(null)}
     val planningWriteLock=remember{Any()}
 
-    fun persistPlanningDebounced(value:PlanningSession){
+    fun persistPlanningDebounced(value:PlanningWorkspace){
         val revision=planningRevision.incrementAndGet()
         planningSaveJob.getAndSet(null)?.cancel()
         val job=persistenceScope.launch{
             delay(300)
             withContext(Dispatchers.IO){
                 synchronized(planningWriteLock){
-                    if(planningRevision.get()==revision) repo.savePlanningSession(value)
+                    if(planningRevision.get()==revision) repo.savePlanningWorkspace(value)
                 }
             }
         }
         planningSaveJob.set(job)
     }
 
-    fun persistPlanningImmediate(value:PlanningSession){
-        planningRevision.incrementAndGet()
+    fun persistPlanningImmediate(value:PlanningWorkspace){
+        val revision=planningRevision.incrementAndGet()
         planningSaveJob.getAndSet(null)?.cancel()
-        // Ações discretas são raras e pequenas. commit() é deliberado aqui: quando
-        // o clique termina, qualquer nova instância de AppRepository já deve ler o
-        // mesmo snapshot. Campos de digitação continuam fora da UI thread.
-        synchronized(planningWriteLock){repo.savePlanningSessionImmediate(value)}
+        // A escrita síncrona em SharedPreferences não bloqueia mais a UI. A ação é
+        // imediata no estado Compose e o commit é serializado em Dispatchers.IO.
+        val job=persistenceScope.launch{
+            withContext(Dispatchers.IO){
+                synchronized(planningWriteLock){
+                    if(planningRevision.get()==revision) repo.savePlanningWorkspaceImmediate(value)
+                }
+            }
+        }
+        planningSaveJob.set(job)
     }
 
     fun dispatchPlanning(action:PlanningAction){
         // Única porta de entrada do estado do Planejamento. O redutor sempre recebe
-        // o PlanningSession mais recente, eliminando caminhos paralelos de atualização.
+        // o PlanningWorkspace mais recente, eliminando caminhos paralelos de atualização.
         val updated=reducePlanning(planning,action)
         planning=updated
         when(persistenceFor(action)){
@@ -130,7 +136,7 @@ fun NomadeRaizApp(){
         items=repo.loadItems();journal=repo.loadJournal();points=repo.loadPoints();minimums=repo.loadMinimums()
         favoriteTips=repo.loadFavoriteTips();settings=repo.loadSettings();quickNote=repo.loadQuickNote();activeCheckMode=repo.loadActiveCheckMode()
         favoriteManual=repo.loadFavoriteManual();masteredSkills=repo.loadMasteredSkills()
-        planning=repo.loadPlanningSession();calculator=repo.loadCalculatorDraft()
+        planning=repo.loadPlanningWorkspace();calculator=repo.loadCalculatorDraft()
     }
     fun open(target:Screen){navigation=navigation.open(target)}
     fun selectTopLevel(target:Screen){navigation=navigation.selectTopLevel(target)}
@@ -184,7 +190,7 @@ fun NomadeRaizApp(){
                 Screen.Gear->EquipmentScreen(Modifier,items,{items=it;repo.saveItems(it)},{back()},repo)
                 Screen.Verify->VerifyScreen(repo,activeCheckMode,{mode->activeCheckMode=mode;repo.saveActiveCheckMode(mode)},{back()})
                 Screen.Planning->PlanningScreen(
-                    modifier=Modifier,equipment=items,session=planning,
+                    modifier=Modifier,equipment=items,workspace=planning,
                     dispatch=::dispatchPlanning,
                     onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},
                     back=if(navigation.canGoBack)({back()})else null

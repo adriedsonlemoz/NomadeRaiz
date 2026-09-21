@@ -24,16 +24,17 @@ class DraftPersistenceTest {
         repo.saveSettings(AppSettings(accent=AppAccent.LARANJA))
         repo.saveQuickNote("Minha nota")
         val before=prefs.all.toMap()
-        val planning=PlanningSession(PlanningDraft(days="20",km="500",dailyKm="50"),PlanningDraft(days="10"))
+        val route=PlannedRoute("route",PlanningDraft(destination="Serra",days="20",km="500",speedKmh="20",hoursPerDay="7"),10L,20L)
+        val planning=PlanningWorkspace(routes=listOf(route),editorDraft=PlanningDraft(destination="Rascunho"))
         val calculator=CalculatorDraft(fields=mapOf("people" to "2","available" to "10,50"))
-        repo.savePlanningSession(planning)
+        repo.savePlanningWorkspaceImmediate(planning)
         repo.saveCalculatorDraft(calculator)
         before.forEach{(key,value)->assertEquals("Existing key: $key",value,prefs.all[key])}
         val reopened=AppRepository(context)
-        assertEquals(planning,reopened.loadPlanningSession())
+        assertEquals(planning,reopened.loadPlanningWorkspace())
         assertEquals(calculator,reopened.loadCalculatorDraft())
         reopened.clearAll()
-        assertEquals(PlanningSession(),reopened.loadPlanningSession())
+        assertEquals(PlanningWorkspace(),reopened.loadPlanningWorkspace())
         assertEquals(CalculatorDraft(),reopened.loadCalculatorDraft())
     }
 }

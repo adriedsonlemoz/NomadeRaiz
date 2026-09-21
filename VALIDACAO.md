@@ -1,59 +1,88 @@
-# Validação — 1.0.56-kotlin-alpha.29
+# Validação — 1.0.57-kotlin-alpha.30
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.55-alpha.28`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100056`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.56-alpha.29`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100057`.
 
-## Resultado real do log 28
+## Objetivo desta entrega
 
-O arquivo `Android-Kotlin-APK-28-logs.zip` foi analisado antes desta correção.
+Esta versão não continua o ciclo de pequenos remendos no Planejar. A tela foi reorganizada para reduzir complexidade visual e trabalho de composição:
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 58s`.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 16s`.
-- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU** com 6 testes executados, **5 aprovados e 1 falho**.
-- Falhou somente `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`.
-- Mensagem: `Failed to assert the following: (Text + EditableText = [Margem atual: +20%])`.
-- A Release permaneceu corretamente bloqueada.
+1. tela principal = lista de rotas + **Criar nova rota**;
+2. editor separado = campos da rota e cálculos instantâneos;
+3. detalhes separados = resumo e análise completa somente quando solicitada.
 
-Os avisos iniciais de `adb`/Emulator Console não foram a causa: o emulador iniciou e executou todos os seis testes.
+O armazenamento também foi alterado de um único `PlanningSession` para `PlanningWorkspace`, que contém uma coleção de `PlannedRoute` e um único rascunho de edição.
 
-## O que mudou em relação ao log 27
+## Compatibilidade e migração
 
-No log 27 havia duas falhas. No log 28, o teste exclusivo `planningMarginButtonsPersistImmediately` **passou**. Portanto, a nova arquitetura de `PlanningAction` + `reducePlanning` e a persistência imediata da margem estão funcionando no caminho direto de usuário: botão tocado → estado alterado → repositório atualizado → texto da margem atualizado.
+- `applicationId`/`namespace`: `com.nomaderaiz.app` — inalterados.
+- O antigo `planning_session_v1` não foi removido.
+- O novo formato usa `planning_routes_v1`.
+- Na primeira abertura, se `planning_routes_v1` ainda não existir, `AppRepository.loadPlanningWorkspace()` importa o planejamento antigo.
+- O `lastGenerated` antigo vira uma rota.
+- Se o rascunho antigo for diferente do plano salvo e contiver dados, ele também vira uma rota, evitando perda silenciosa.
+- O módulo `BackupScreen.kt` não foi alterado nesta etapa.
 
-A única falha restante aparece no teste grande depois da edição consecutiva de vários campos numéricos. Esse fluxo mantinha o IME/foco de entrada envolvido e, em seguida, repetia um teste de toque físico que já é coberto pelo teste exclusivo da margem.
+## Desempenho
 
-## Correção aplicada
+A lista de rotas não executa `buildPlanningResult(...)`, recomendações, segurança, custos ou formulários avançados. Ela calcula apenas os dados leves necessários ao card: estimativa de ritmo, datas e totais essenciais quando existirem.
 
-1. `PlanningRideFields` agora limpa explicitamente o foco com `clearFocus(force = true)` antes de despachar `SetSafetyMargin`. Isso reduz a possibilidade de um evento tardio do campo/IME competir com uma escolha discreta.
-2. `planningMarginButtonsPersistImmediately` continua usando `performClick()` e continua sendo o teste de gesto real + persistência imediata.
-3. No teste longo, a margem é acionada pela ação semântica `SemanticsActions.OnClick` do mesmo botão. Assim esse teste valida estado, persistência e ciclo de vida sem depender da sobreposição/temporização da janela do teclado.
-4. Logo após selecionar +20%, o teste longo exige `safetyMarginPercent == 20` no `AppRepository` e `Margem atual: +20%` na UI. Isso torna uma eventual próxima falha diagnóstica: saberemos se o problema ficou no estado persistido, na recomposição da UI ou apenas depois da recriação.
-5. Depois disso o teste mantém as verificações de geração, navegação, `Activity.recreate()`, todos os campos, `tripEstimate`, `days` e `lastGenerated`.
+`buildPlanningResult(...)` só é criado na tela de detalhes e a UI só compõe a análise completa quando o usuário toca em **Ver custos e recomendações**. Alimentação detalhada, reabastecimento e opções avançadas também só são compostos quando expandidos no editor.
 
-Nenhuma cobertura de persistência ou recriação foi removida; apenas foi eliminada a duplicação de responsabilidade entre dois testes.
+Além disso, ações discretas (salvar rota, margem, duplicar/excluir) atualizam o estado Compose imediatamente, mas o `SharedPreferences.commit()` é feito em `Dispatchers.IO`. Uma revisão monotônica cancela/invalida gravações antigas para evitar regressão de estado sem bloquear a UI thread.
 
-## Histórico recente
+## Sugestão do Nômade
 
-| Log | Versão testada | Resultado Android 15 | Falha principal |
-| --- | --- | --- | --- |
-| 15 | 1.0.42-alpha.15 | 4/5 | `expected:<20> but was:<0>` |
-| 16 | 1.0.43-alpha.16 | 4/5 | `Selected = true` |
-| 17 | 1.0.44-alpha.17 | 4/5 | `Selected = true` |
-| 18 | 1.0.45-alpha.18 | 4/5 | `ComposeTimeoutException` |
-| 19 | 1.0.46-alpha.19 | 4/5 | `Selected = true` |
-| 20 | 1.0.47-alpha.20 | 4/5 | `ComposeTimeoutException` |
-| 21 | 1.0.48-alpha.21 | 4/5 | `Selected = true` |
-| 22 | 1.0.49-alpha.22 | 4/5 | `Selected = true` |
-| 23 | 1.0.50-alpha.23 | 4/5 | `Selected = true` |
-| 24 | 1.0.51-alpha.24 | 4/5 | clique em +20% manteve `0` |
-| 25 | 1.0.52-alpha.25 | 4/5 | `The component is not displayed!` |
-| 26 | 1.0.53-alpha.26 | 4/5 | clique em +20% manteve `0` |
-| 27 | 1.0.54-alpha.27 | 4/6 | asserção textual incorreta |
-| 28 | 1.0.55-alpha.28 | **5/6** | somente fluxo longo após edição/IME |
+Foi adicionada `nomadRouteSuggestion(draft)`. Ela mantém a distância, velocidade e margem do usuário e propõe uma referência de horas/dia:
 
-## Verificações desta nova entrega
+- até 120 km: 4 h/dia;
+- de 120 a 500 km: 5 h/dia;
+- acima de 500 km: 6 h/dia.
 
-- `python3 scripts/sync-github-manager.py --check`: deve permanecer sincronizado com `app/build.gradle.kts`.
-- O módulo `BackupScreen.kt` foi comparado por SHA-256 com a versão-base e permaneceu idêntico.
-- Foi feita inspeção estática das alterações de Compose/testes e da sincronização de versão.
-- O ambiente atual não possui `gradle` nem Gradle Wrapper no projeto; portanto o build Android completo e o emulador Android 15 **não foram executados nesta nova versão**.
-- A próxima execução do GitHub Actions deve validar metadados → testes unitários → APK → testes instrumentados Android 15. A Release deve permanecer bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.
+A sugestão não substitui automaticamente o valor digitado. A alteração só ocorre ao tocar em **Usar sugestão**.
+
+Exemplo validado: 2.000 km, 15 km/h e +10% de margem. O plano de 5 h/dia resulta em 30 dias; a sugestão de 6 h/dia resulta em 90 km/dia e 25 dias.
+
+## Testes alterados
+
+### Unitários
+
+- `PlanningStateTest`: margem sobre o rascunho mais recente, edição sem apagar margem, criação de rota independente, atualização apenas da rota selecionada e duplicação.
+- `TravelFormJsonTest`: round-trip de várias rotas, migração do planejamento único e preservação de rascunho antigo diferente.
+- `TripPlannerTest`: cálculo da Sugestão do Nômade e garantia de que a sugestão não altera silenciosamente o ritmo do usuário.
+
+### Instrumentados Android 15
+
+`NavigationUiTest` agora cobre:
+
+- navegação repetida Mais → módulos → voltar;
+- criação de uma rota;
+- persistência imediata de +20%/+10% dentro do editor;
+- salvamento e retorno automático à lista;
+- preservação da rota após `Activity.recreate()`;
+- abertura dos detalhes e edição;
+- múltiplas rotas e duplicação;
+- telas principais, equipamentos, alertas e configurações.
+
+`DraftPersistenceTest` foi atualizado para validar `PlanningWorkspace` sem alterar outras preferências.
+
+## Validação executada neste ambiente
+
+Foi executado `kotlinc` sobre a camada Kotlin pura usada pelo novo fluxo (`Models`, `NumberInput`, `SeedData`, `Calculator`, `TravelForms`, `TripPlanner` e `PlanningState`). Resultado: **compilação concluída sem erros**.
+
+Também foi executado um programa de verificação do novo redutor e da sugestão. Resultado real:
+
+```text
+OK routes=1 current=30 suggested=25
+```
+
+Isso confirma no ambiente atual o fluxo: editar → calcular sugestão → salvar rota, preservando o plano atual de 30 dias e a sugestão independente de 25 dias.
+
+## O que não foi possível validar localmente
+
+O projeto não possui Gradle Wrapper e o ambiente atual não possui o executável `gradle`. Portanto **não** foram executados nesta entrega:
+
+- `:app:testDebugUnitTest` pelo Gradle;
+- `:app:assembleDebug`;
+- `:app:connectedDebugAndroidTest` no Android 15.
+
+A próxima execução do GitHub Actions deve validar, nesta ordem, sincronização de metadados → testes unitários → APK → testes instrumentados Android 15. A Release deve permanecer bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.

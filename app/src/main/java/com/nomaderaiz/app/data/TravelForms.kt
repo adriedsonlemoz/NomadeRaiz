@@ -87,6 +87,33 @@ data class PlanningDraft(
 
 data class PlanningSession(val draft: PlanningDraft = PlanningDraft(), val lastGenerated: PlanningDraft? = null)
 
+/** Uma rota salva de forma independente. A tela Planejar lista apenas estas rotas. */
+data class PlannedRoute(
+    val id: String,
+    val plan: PlanningDraft,
+    val createdAt: Long,
+    val updatedAt: Long
+)
+
+/**
+ * Estado persistente do novo Planejar.
+ *
+ * routes: viagens já cadastradas;
+ * editorDraft: rascunho da rota que está sendo criada/editada;
+ * editingRouteId: nulo para rota nova ou id da rota em edição.
+ */
+data class PlanningWorkspace(
+    val routes: List<PlannedRoute> = emptyList(),
+    val editorDraft: PlanningDraft = PlanningDraft(),
+    val editingRouteId: String? = null
+)
+
+fun PlanningDraft.hasPlanningContent(): Boolean =
+    destination.isNotBlank() || km.isNotBlank() || days.isNotBlank() || dailyKm.isNotBlank() ||
+        availableMoney.isNotBlank() || waterLiters.isNotBlank() || departureDate.isNotBlank() ||
+        foodDailyCost.isNotBlank() || waterDailyPerPerson.isNotBlank() || energyDailyWh.isNotBlank() ||
+        foodForm.isNotEmpty() || waterPlaces.isNotBlank()
+
 /** Text is retained verbatim, including incomplete edits, so returning never loses input. */
 data class CalculatorDraft(
     val fields: Map<String, String> = mapOf("people" to "1"),

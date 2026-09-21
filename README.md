@@ -2,40 +2,47 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.56-kotlin-alpha.29`
+**Versão atual:** `1.0.57-kotlin-alpha.30`
 
-**versionCode:** `100056`
+**versionCode:** `100057`
 
-### Resultado da nova estratégia
+### Planejar reorganizado por rotas
 
-O `Android-Kotlin-APK-28-logs.zip` mostrou um avanço importante: a versão `1.0.55-kotlin-alpha.28` executou 6 testes no Android 15 e apenas **1 falhou**. O teste exclusivo `planningMarginButtonsPersistImmediately` passou, portanto o botão de margem, o clique físico e a persistência imediata estão funcionando na arquitetura nova.
+A `1.0.57-kotlin-alpha.30` muda a estrutura da tela **Planejar**. A tela principal deixou de ser um formulário/relatório único e agora funciona como um gerenciador leve de rotas. Ela mostra somente o botão **Criar nova rota** e os cards das viagens cadastradas.
 
-A única falha restante ocorreu no teste longo `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`, depois de vários campos numéricos terem sido editados. Nesse momento o teclado/IME ainda fazia parte da interação e o teste tentava tocar novamente no botão de margem antes de conferir `Margem atual: +20%`. Isso mistura duas responsabilidades: testar o toque físico do botão e testar persistência/recriação de um formulário grande.
+Criar ou editar uma rota acontece em uma tela separada. Os campos principais são destino, distância, pessoas, data de saída, velocidade média, horas por dia e margem de segurança. Alimentação, água e energia ficam em uma seção opcional recolhida; os controles avançados legados continuam disponíveis em outra seção recolhida.
 
-Na `1.0.56-kotlin-alpha.29`, a seleção de margem limpa o foco do campo numérico antes de aplicar a escolha. Além disso, o teste longo aciona a mesma ação semântica do botão para validar especificamente **estado → persistência → geração → navegação → recriação**, enquanto o teste dedicado continua usando `performClick()` e continua sendo responsável por validar o toque real. Foi adicionada ainda uma asserção imediata do valor persistido após selecionar `+20%`, para que uma próxima falha identifique exatamente qual camada falhou.
+Cada rota salva possui uma tela de detalhes própria. Nela ficam o resumo, a estimativa de chegada, recursos essenciais e, somente quando solicitado, custos, inventário, segurança e recomendações. Isso evita executar os cálculos mais pesados durante a simples abertura da lista.
+
+Foi adicionada a **Sugestão do Nômade**. A partir da distância, velocidade e margem informadas, o app monta uma referência de horas por dia e mostra quantos km/dia e quantos dias aquela ideia produziria. A sugestão pode ser aplicada ao editor com um toque, sem substituir silenciosamente a escolha do usuário.
+
+O planejamento único usado até a alpha.29 é migrado para a nova lista de rotas. Se existir um rascunho antigo diferente do último plano salvo, os dois são preservados para evitar perda de dados.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-28-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 58 s.
-- `:app:assembleDebug` passou em 16 s.
-- Android 15 executou 6 testes: **5 passaram e 1 falhou**.
-- O teste dedicado da margem passou, confirmando clique físico e persistência imediata de `+20%`/`+10%`.
-- A única falha ficou no fluxo longo após edição de vários campos, ao conferir `Margem atual: +20%`.
-- A seleção de margem agora limpa o foco do campo/IME antes de despachar `SetSafetyMargin`.
-- O teste longo deixou de duplicar o teste de toque físico: ele aciona a ação semântica do mesmo botão e valida imediatamente `safetyMarginPercent == 20`, texto visível, geração, navegação, recriação e restauração.
-- `PlanningAction`, `reducePlanning`, persistência imediata da margem e debounce de 300 ms dos campos foram mantidos.
+- Tela principal do Planejar reduzida a **lista de rotas + Criar nova rota**.
+- Novo editor separado para criar e editar viagens.
+- Nova tela de detalhes por rota com **Editar, Duplicar e Excluir**.
+- Recursos de alimentação, água e energia ficam recolhidos por padrão.
+- Opções antigas/avançadas continuam disponíveis, mas deixam de pesar na tela principal.
+- Nova **Sugestão do Nômade**, com cenário calculado e ação para aplicar a ideia.
+- Análise completa de custos/recomendações é calculada apenas quando o usuário abre os detalhes e pede essa seção.
+- Gravações imediatas do Planejar deixaram de executar `SharedPreferences.commit()` na UI thread; o estado visual muda na hora e a escrita é serializada em `Dispatchers.IO`.
+- Persistência passa a armazenar múltiplas rotas em `planning_routes_v1`, mantendo o formato antigo somente para migração.
+- Migração automática preserva o último planejamento e rascunhos antigos relevantes.
+- Testes foram reestruturados para validar múltiplas rotas, margem, persistência, recriação da Activity, duplicação e migração do formato antigo.
 - A tela **Sobre**, README, CHANGELOG, VALIDACAO e metadados foram atualizados. O módulo **Backup** não foi alterado.
 
-**Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.
+**Validação desta entrega:** a lógica Kotlin pura do novo estado de rotas e da Sugestão do Nômade foi compilada e executada localmente. O build Android completo e os testes instrumentados Android 15 ainda precisam do GitHub Actions, pois este ambiente não possui Gradle/Wrapper.
 
 ## Estado funcional atual
 
 - Home visual para cicloviagem com imagem de abertura, progresso real do inventário, alertas clicáveis, nota rápida, diário e atalhos.
 - Equipamentos com as 9 categorias e 20 itens-base do original, CRUD, status, quantidade, preço, observações, prioridade, filtros, ordenação e totais financeiros.
 - Cinco modos de checklist. Como no original, apenas `Antes de sair` e `Bike/Manutenção` são persistentes; os demais são temporários.
-- Planejamento como assistente de viagem: destino, distância, pessoas, velocidade média, horas/dia, margem de segurança, data de saída opcional, estimativa instantânea de dias/horas/km por dia, comparação de cenários e cálculo simples de alimentação, água e energia; controles detalhados antigos continuam acessíveis numa seção opcional.
+- Planejamento por múltiplas rotas: lista leve de viagens, editor separado, detalhes por rota, destino/distância/ritmo/data, estimativa instantânea, alimentação/água/energia opcionais e Sugestão do Nômade; controles avançados antigos continuam acessíveis sob demanda.
 - Calculadora simplificada para uso na estrada: gasto diário com alimentação, água carregada/consumo diário e energia disponível/consumo diário, com autonomia e totais quando aplicáveis.
 - Diário com cadastro, edição, clima, quilometragem, notas, exclusão, totais e persistência.
 - Pontos de apoio com os tipos originais, filtro por tipo, cadastro, edição, confirmação de exclusão, avaliação e estado aberto/fechado.

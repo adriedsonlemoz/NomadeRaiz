@@ -1,5 +1,6 @@
 package com.nomaderaiz.app.data
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 /** Local draft format. It does not change the existing backup schema or keys. */
@@ -57,6 +58,64 @@ object TravelFormJson {
             val o = JSONObject(raw)
             PlanningSession(o.optJSONObject("draft")?.let(::readPlanning) ?: PlanningDraft(), o.optJSONObject("lastGenerated")?.let(::readPlanning))
         }.getOrDefault(PlanningSession())
+    }
+
+    private fun route(v: PlannedRoute) = JSONObject()
+        .put("id", v.id)
+        .put("plan", planning(v.plan))
+        .put("createdAt", v.createdAt)
+        .put("updatedAt", v.updatedAt)
+
+    fun encodePlanningWorkspace(v: PlanningWorkspace): String {
+        val routes = JSONArray()
+        v.routes.forEach { routes.put(route(it)) }
+        return JSONObject()
+            .put("schemaVersion", 1)
+            .put("routes", routes)
+            .put("editorDraft", planning(v.editorDraft))
+            .put("editingRouteId", v.editingRouteId ?: JSONObject.NULL)
+            .toString()
+    }
+
+    fun decodePlanningWorkspace(raw: String?): PlanningWorkspace {
+        if (raw.isNullOrBlank()) return PlanningWorkspace()
+        return runCatching {
+            val o = JSONObject(raw)
+            val array = o.optJSONArray("routes") ?: JSONArray()
+            val routes = buildList {
+                for (i in 0 until array.length()) {
+                    val item = array.optJSONObject(i) ?: continue
+                    val id = item.optString("id").takeIf { it.isNotBlank() } ?: continue
+                    val plan = item.optJSONObject("plan")?.let(::readPlanning) ?: PlanningDraft()
+                    add(PlannedRoute(id, plan, item.optLong("createdAt", 0L), item.optLong("updatedAt", 0L)))
+                }
+            }
+            PlanningWorkspace(
+                routes = routes,
+                editorDraft = o.optJSONObject("editorDraft")?.let(::readPlanning) ?: PlanningDraft(),
+                editingRouteId = o.optString("editingRouteId").takeUnless { it.isBlank() || it == "null" }
+                    ?.takeIf { id -> routes.any { it.id == id } }
+            )
+        }.getOrDefault(PlanningWorkspace())
+    }
+
+    /**
+     * Migra o planejamento único usado até a alpha.29 para a lista de rotas.
+     * O último plano salvo é preservado; um rascunho diferente também é mantido
+     * como segunda rota para que nenhuma informação digitada seja descartada.
+     */
+    fun migrateLegacyPlanning(session: PlanningSession, now: Long): PlanningWorkspace {
+        val routes = mutableListOf<PlannedRoute>()
+        session.lastGenerated?.takeIf { it.hasPlanningContent() }?.let {
+            routes += PlannedRoute("legacy-route", it, now, now)
+        }
+        if (session.draft.hasPlanningContent() && session.draft != session.lastGenerated) {
+            routes += PlannedRoute("legacy-draft", session.draft, now, now)
+        }
+        if (routes.isEmpty() && session.draft.hasPlanningContent()) {
+            routes += PlannedRoute("legacy-route", session.draft, now, now)
+        }
+        return PlanningWorkspace(routes = routes)
     }
 
     fun encodeCalculator(v: CalculatorDraft): String = JSONObject().put("schemaVersion", 1).put("fields", strings(v.fields))

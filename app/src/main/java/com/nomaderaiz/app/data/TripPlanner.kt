@@ -111,3 +111,27 @@ fun estimatedArrivalDate(departureDate: String, days: Int): LocalDate? {
 fun formatPlanningDate(value: LocalDate?): String = value?.format(brDateFormatter).orEmpty()
 
 private fun round1(value: Double): Double = round(value * 10.0) / 10.0
+
+/** Sugestão simples de ritmo para servir como ponto de partida, não como limite físico. */
+data class NomadRouteSuggestion(
+    val hoursPerDay: Double,
+    val estimate: TripEstimate,
+    val reason: String
+)
+
+fun nomadRouteSuggestion(draft: PlanningDraft): NomadRouteSuggestion? {
+    val distance = draft.km.numberOrNull()?.takeIf { it.isFinite() && it > 0 } ?: return null
+    val speed = draft.speedKmh.numberOrNull()?.takeIf { it.isFinite() && it > 0 } ?: return null
+    val suggestedHours = when {
+        distance <= 120.0 -> 4.0
+        distance <= 500.0 -> 5.0
+        else -> 6.0
+    }
+    val estimate = estimateTrip(distance, speed, suggestedHours, draft.safetyMarginPercent) ?: return null
+    val reason = when {
+        distance <= 120.0 -> "Para uma rota curta, 4 h/dia deixa mais espaço para paradas e ajustes no caminho."
+        distance <= 500.0 -> "Para essa distância, 5 h/dia é um ponto de partida equilibrado entre avanço e tempo fora da bicicleta."
+        else -> "Em uma rota longa, 6 h/dia oferece uma referência equilibrada sem transformar 8 h/dia em padrão obrigatório."
+    }
+    return NomadRouteSuggestion(suggestedHours, estimate, reason)
+}

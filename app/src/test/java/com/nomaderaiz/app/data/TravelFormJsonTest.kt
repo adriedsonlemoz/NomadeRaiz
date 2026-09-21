@@ -61,4 +61,30 @@ class TravelFormJsonTest {
         assertEquals(20,restored.lastGenerated!!.safetyMarginPercent)
     }
 
+    @Test fun planningWorkspaceRoundTripPreservesMultipleRoutesAndEditor(){
+        val a=PlannedRoute("a",PlanningDraft(destination="Argentina",km="2000",speedKmh="15",hoursPerDay="5",safetyMarginPercent=10),100,120)
+        val b=PlannedRoute("b",PlanningDraft(destination="Canastra",km="300",speedKmh="20",hoursPerDay="7"),200,220)
+        val workspace=PlanningWorkspace(listOf(a,b),editorDraft=b.plan.copy(destination="Editando"),editingRouteId="b")
+        val restored=TravelFormJson.decodePlanningWorkspace(TravelFormJson.encodePlanningWorkspace(workspace))
+        assertEquals(workspace,restored)
+    }
+
+    @Test fun legacySinglePlanMigratesToRouteWithoutLosingData(){
+        val plan=PlanningDraft(destination="Argentina",km="2000",speedKmh="15",hoursPerDay="5",safetyMarginPercent=10)
+        val migrated=TravelFormJson.migrateLegacyPlanning(PlanningSession(plan,plan),123L)
+        assertEquals(1,migrated.routes.size)
+        assertEquals("Argentina",migrated.routes.single().plan.destination)
+        assertEquals(10,migrated.routes.single().plan.safetyMarginPercent)
+        assertEquals(123L,migrated.routes.single().updatedAt)
+    }
+
+    @Test fun differentLegacyDraftAndGeneratedPlanAreBothPreserved(){
+        val generated=PlanningDraft(destination="Salva",km="100",speedKmh="20",hoursPerDay="5")
+        val draft=generated.copy(destination="Rascunho alterado",km="120")
+        val migrated=TravelFormJson.migrateLegacyPlanning(PlanningSession(draft,generated),123L)
+        assertEquals(2,migrated.routes.size)
+        assertTrue(migrated.routes.any{it.plan.destination=="Salva"})
+        assertTrue(migrated.routes.any{it.plan.destination=="Rascunho alterado"})
+    }
+
 }

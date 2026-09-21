@@ -118,6 +118,21 @@ class AppRepository(context: Context) {
      */
     fun savePlanningSessionImmediate(v:PlanningSession):Boolean =
         prefs.edit().putString("planning_session_v1",TravelFormJson.encodePlanning(v)).commit()
+
+    /** Novo armazenamento do Planejar por rotas. O formato antigo fica intacto para migração. */
+    fun loadPlanningWorkspace():PlanningWorkspace {
+        val current=prefs.getString("planning_routes_v1",null)
+        if(!current.isNullOrBlank()) return TravelFormJson.decodePlanningWorkspace(current)
+        val migrated=TravelFormJson.migrateLegacyPlanning(loadPlanningSession(),System.currentTimeMillis())
+        // Commit somente na migração para garantir que o mesmo plano legado não seja importado duas vezes.
+        prefs.edit().putString("planning_routes_v1",TravelFormJson.encodePlanningWorkspace(migrated)).commit()
+        return migrated
+    }
+    fun savePlanningWorkspace(v:PlanningWorkspace){
+        prefs.edit().putString("planning_routes_v1",TravelFormJson.encodePlanningWorkspace(v)).apply()
+    }
+    fun savePlanningWorkspaceImmediate(v:PlanningWorkspace):Boolean =
+        prefs.edit().putString("planning_routes_v1",TravelFormJson.encodePlanningWorkspace(v)).commit()
     fun loadCalculatorDraft():CalculatorDraft = TravelFormJson.decodeCalculator(prefs.getString("calculator_draft_v1",null))
     fun saveCalculatorDraft(v:CalculatorDraft){prefs.edit().putString("calculator_draft_v1",TravelFormJson.encodeCalculator(v)).apply()}
 

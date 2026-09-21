@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.0.57-kotlin-alpha.30
+
+### Planejar por rotas: lista leve, editor separado e Sugestão do Nômade
+
+- A tela Planejar foi reestruturada para deixar de carregar formulário, relatório, recomendações e inventário ao mesmo tempo.
+- A tela principal agora mostra apenas **Criar nova rota** e os cards das rotas cadastradas.
+- Criar/editar rota virou um fluxo separado com destino, distância, pessoas, data de saída, velocidade, horas/dia e margem.
+- Alimentação, água e energia continuam disponíveis, mas ficam recolhidas em **Recursos opcionais**; controles legados ficam em **Opções avançadas**.
+- Cada rota salva ganhou uma tela de detalhes com resumo, recursos, **Editar**, **Duplicar**, **Excluir** e análise completa sob demanda.
+- `buildPlanningResult(...)`, recomendações, segurança e custos deixam de ser calculados na lista; a análise pesada só é criada ao abrir os detalhes e pedir essa seção.
+- Persistências discretas do Planejar não bloqueiam mais a UI com `SharedPreferences.commit()`: o estado Compose é aplicado imediatamente e o commit ordenado roda em `Dispatchers.IO`, protegido por revisão para uma gravação antiga não sobrescrever a nova.
+- Adicionada **Sugestão do Nômade**: para rotas curtas usa 4 h/dia como referência, médias 5 h/dia e longas 6 h/dia, sempre mantendo a velocidade e margem informadas pelo usuário. A sugestão é explícita e só altera o editor quando o usuário toca em aplicar.
+- Novo estado `PlanningWorkspace` armazena várias `PlannedRoute` independentes e um único rascunho de edição.
+- `PlanningAction`/`reducePlanning` foram adaptados para criar, editar, salvar, duplicar e excluir rotas sem voltar ao antigo modelo `draft + lastGenerated`.
+- Novo armazenamento `planning_routes_v1`; o antigo `planning_session_v1` é mantido somente para compatibilidade/migração.
+- A migração preserva o último planejamento antigo e também um rascunho diferente, quando existir, para evitar perda de dados.
+- Testes unitários passaram a cobrir criação/edição/duplicação de rotas, serialização da coleção e migração do formato antigo.
+- Testes instrumentados foram atualizados para validar lista de rotas, criação, margem imediata, persistência após `Activity.recreate()`, edição e duplicação.
+- A lógica Kotlin pura do novo estado e da sugestão foi compilada com `kotlinc` e executada com sucesso no ambiente atual.
+- O build Android completo e o emulador Android 15 não foram executados localmente porque o projeto segue sem Gradle Wrapper e o ambiente não possui `gradle`; o GitHub Actions continua responsável por essa validação antes da Release.
+- `applicationId` e `namespace` permanecem `com.nomaderaiz.app`; o módulo Backup não foi alterado.
+- Versão e metadados: `1.0.57-kotlin-alpha.30` / `100057`.
+
 ## 1.0.56-kotlin-alpha.29
 
 ### Planejamento: separar IME/toque do teste de persistência
