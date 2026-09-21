@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.49-kotlin-alpha.22
+
+### Planejamento: nó único para seleção da margem
+
+- Analisado `Android-Kotlin-APK-21-logs.zip`, correspondente à versão `1.0.48-kotlin-alpha.21`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 56s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 17s`).
+- Os testes instrumentados no Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha foi novamente `Failed to assert the following: (Selected = 'true')`. Portanto, a persistência deixou de ser o ponto observado neste log; o problema voltou à árvore semântica do seletor de margem.
+- O `FilterChip` foi removido apenas desse seletor. `PlanningMarginChoice` volta a ser um `Surface` visual com `Modifier.testTag(...).selectable(...)` aplicado diretamente ao mesmo `LayoutNode`, sem `clearAndSetSemantics`, sem `clickable` duplicado e sem ação semântica manual.
+- O indicador visual `✓` permanece na opção selecionada, e o `Role.RadioButton` é fornecido pelo `selectable` padrão do Compose.
+- Foi preservada a persistência serializada da 1.0.48: campos digitados usam debounce de 300 ms e escolhas discretas invalidam/cancelam snapshots antigos antes da gravação imediata.
+- O teste instrumentado continua exigindo `assertIsSelected()`, `✓ +20%`, persistência real em `AppRepository`, geração, navegação, `Activity.recreate()`, restauração integral dos campos e `lastGenerated`. Nenhuma verificação foi removida.
+- Backup, `applicationId`, `namespace`, dados existentes e fluxo de Release foram preservados.
+- Versão e metadados sincronizados: `1.0.49-kotlin-alpha.22` / `100049`.
+
 ## 1.0.48-kotlin-alpha.21
 
 ### Planejamento: fim da corrida de persistência e semântica padrão

@@ -2,26 +2,26 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.48-kotlin-alpha.21`
+**Versão atual:** `1.0.49-kotlin-alpha.22`
 
-**versionCode:** `100048`
+**versionCode:** `100049`
 
 ### Correção desta entrega
 
-A versão `1.0.48-kotlin-alpha.21` corrige o novo `ComposeTimeoutException` observado em `Android-Kotlin-APK-20-logs.zip`. Os testes unitários e o APK da `1.0.47` passaram, mas o Android 15 terminou novamente com 4/5 testes por falha no teste do Planejamento.
+A versão `1.0.49-kotlin-alpha.22` corrige a falha `Selected = true` observada em `Android-Kotlin-APK-21-logs.zip`. A versão `1.0.48` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou com 4/5 testes porque o nó encontrado pela `testTag` do seletor `+20%` ainda podia não ser o mesmo nó que expunha a semântica `Selected`.
 
-A correção trata duas fontes de instabilidade: o seletor de margem volta a usar o `FilterChip` Material padrão, evitando uma árvore semântica customizada, e a persistência do Planejamento passa a ter uma única política explícita de gravação. Campos digitados continuam com debounce de 300 ms; escolhas discretas invalidam qualquer snapshot pendente e são salvas imediatamente, impedindo que um estado antigo sobrescreva `+20%`.
+O seletor de margem agora usa um `Surface` visual com `Modifier.testTag(...).selectable(...)` diretamente no mesmo `LayoutNode`. Não há `FilterChip`, `clearAndSetSemantics`, `clickable` duplicado nem ação semântica manual. Assim, tag, seleção, clique e `Role.RadioButton` pertencem ao mesmo controle testável. A persistência serializada introduzida na versão anterior foi mantida.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- Os logs `Android-Kotlin-APK-20-logs.zip` confirmaram `:app:testDebugUnitTest` com sucesso em 55 s e `:app:assembleDebug` com sucesso em 18 s na `1.0.47-kotlin-alpha.20`.
+- `Android-Kotlin-APK-21-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 56 s e `:app:assembleDebug` com sucesso em 17 s na `1.0.48-kotlin-alpha.21`.
 - No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha registrada foi `ComposeTimeoutException: Condition still not satisfied after 5000 ms`. O log padrão do runner não informa qual dos pontos de espera internos expirou.
-- O Planejamento deixou de depender de `snapshotFlow` para sua persistência. A gravação agora é disparada junto da alteração do estado, com cancelamento/invalidação de snapshots antigos.
-- A margem `0% / +10% / +20%` usa novamente `FilterChip`, que fornece a semântica `Selected` padrão do Material3; o indicador `✓` continua visível na opção selecionada.
-- O teste não foi removido nem relaxado: continua verificando seleção, persistência, geração, navegação, `Activity.recreate()`, campos restaurados e `lastGenerated`. O polling genérico foi trocado por asserções determinísticas, de modo que uma nova falha aponte diretamente UI ou persistência.
+- A falha registrada foi `Failed to assert the following: (Selected = 'true')`.
+- O `FilterChip` foi substituído somente no seletor de margem por um controle Material simples baseado em `Surface + selectable`, reaproveitando a abordagem que já expunha corretamente `Selected`, agora combinada com a persistência corrigida da 1.0.48.
+- O indicador `✓` permanece na opção selecionada e `assertIsSelected()` continua obrigatório no teste antes e depois de `Activity.recreate()`.
+- Persistência, geração do plano, restauração de campos, `lastGenerated`, dados legados e instalação sobre versões anteriores permanecem preservados.
 - A tela **Sobre** e os metadados foram atualizados. O módulo **Backup** não foi alterado.
 
 **Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.

@@ -1,37 +1,35 @@
-# Validação — 1.0.48-kotlin-alpha.21
+# Validação — 1.0.49-kotlin-alpha.22
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.47-alpha.20`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100048`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.48-alpha.21`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100049`.
 
 ## Resultado real dos logs recebidos
 
-O arquivo `Android-Kotlin-APK-20-logs.zip` foi analisado antes desta correção.
+O arquivo `Android-Kotlin-APK-21-logs.zip` foi analisado antes desta correção.
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 55s`.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 18s`.
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 56s`.
+- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 17s`.
 - `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 5 testes; 4 passaram e 1 falhou.
 - Teste que falhou: `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- Falha registrada: `androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 5000 ms`.
+- Falha registrada: `java.lang.AssertionError: Failed to assert the following: (Selected = 'true')`.
 - A Release permaneceu corretamente bloqueada.
 
-O log do runner não inclui linha do teste nem o `stdout` dos checkpoints, portanto não permite distinguir com segurança se o timeout ocorreu na espera da semântica `Selected`, na persistência da margem ou na verificação restaurada. A correção desta entrega remove os dois mecanismos ainda suscetíveis a corrida.
+Esta execução não voltou a apresentar o `ComposeTimeoutException` da persistência observado em versões anteriores. O erro registrado está novamente na leitura semântica do estado selecionado do controle `+20%`.
 
 ## Correção aplicada
 
-- `PlanningMarginChoice` agora usa `FilterChip` Material3 padrão. Foram removidos `clearAndSetSemantics`, ação semântica manual e `clickable` duplicado.
-- `testTag` permanece no próprio `FilterChip`; o estado `Selected` passa a ser fornecido pelo componente Material padrão.
-- O Planejamento não usa mais um `snapshotFlow` independente para persistir o mesmo estado que também podia ser salvo imediatamente por um clique.
-- Edições de texto/número continuam com debounce de 300 ms para desempenho.
-- Cada nova edição cancela/invalida a gravação pendente anterior.
-- Margem de segurança e geração do plano cancelam qualquer gravação pendente e salvam o snapshot atual imediatamente.
-- Uma revisão monotônica impede snapshots antigos de serem aceitos; um bloqueio curto ordena a transição final para o repositório.
-- O teste continua verificando seleção visual, `safetyMarginPercent == 20`, geração, navegação, `Activity.recreate()`, restauração dos campos e `lastGenerated`. A espera genérica de 5 s foi substituída por verificações diretas, tornando uma futura falha localizada.
+- O `FilterChip` foi removido somente do seletor de margem `0% / +10% / +20%`.
+- `PlanningMarginChoice` usa agora `Surface` para o visual e `Modifier.testTag(...).selectable(...)` diretamente no mesmo `LayoutNode`.
+- `Selected`, ação de seleção e `Role.RadioButton` são fornecidos pelo `selectable` padrão do Compose; não existe `clearAndSetSemantics`, `clickable` duplicado nem ação semântica manual.
+- O indicador visual `✓` continua aparecendo na opção ativa.
+- A persistência serializada da 1.0.48 foi preservada: digitação usa debounce de 300 ms e escolhas discretas cancelam/invalida snapshots antigos antes de salvar imediatamente.
+- O teste não foi removido nem enfraquecido: continua exigindo `assertIsSelected()` e `✓ +20%`, valor `20` no repositório, geração do plano, navegação, recriação da Activity, restauração de todos os campos e igualdade com `lastGenerated`.
 - O módulo Backup não foi alterado.
 
 ## Verificações desta nova entrega
 
-- Metadados de versão sincronizados para `1.0.48-kotlin-alpha.21` / `100048`.
-- `scripts/sync-github-manager.py --check`: **OK** — metadados sincronizados com `app/build.gradle.kts`.
-- Revisão estática do seletor, persistência e teste instrumentado concluída.
+- Metadados de versão sincronizados para `1.0.49-kotlin-alpha.22` / `100049`.
+- Revisão estática do seletor e do caminho de persistência concluída.
+- Integridade do pacote final deve ser verificada após o empacotamento.
 - Esta nova versão ainda **não** foi executada no emulador Android 15 neste ambiente; portanto não é declarado que os 5/5 testes passaram.
 
 A próxima execução do GitHub Actions deve repetir: metadados → testes unitários → build APK → testes instrumentados Android 15. A Release deve continuar bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.
