@@ -2,27 +2,29 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.55-kotlin-alpha.28`
+**Versão atual:** `1.0.56-kotlin-alpha.29`
 
-**versionCode:** `100055`
+**versionCode:** `100056`
 
 ### Resultado da nova estratégia
 
-A versão `1.0.54-kotlin-alpha.27` finalmente separou o problema funcional do problema de teste. No `Android-Kotlin-APK-27-logs.zip`, a gravação imediata de `+20%` passou antes da falha: o repositório já retornava `safetyMarginPercent = 20`. Os dois testes que falharam pararam depois, somente ao conferir o texto visível `Margem atual`.
+O `Android-Kotlin-APK-28-logs.zip` mostrou um avanço importante: a versão `1.0.55-kotlin-alpha.28` executou 6 testes no Android 15 e apenas **1 falhou**. O teste exclusivo `planningMarginButtonsPersistImmediately` passou, portanto o botão de margem, o clique físico e a persistência imediata estão funcionando na arquitetura nova.
 
-A causa foi localizada no próprio teste. `assertTextContains("+20%")` estava sendo usado com o comportamento padrão de correspondência exata de item textual, enquanto o nó realmente contém `Margem atual: +20%`. A versão `1.0.55-kotlin-alpha.28` troca essas verificações por `assertTextEquals` com a frase completa. A cobertura fica mais forte e a arquitetura nova do Planejamento permanece intacta.
+A única falha restante ocorreu no teste longo `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`, depois de vários campos numéricos terem sido editados. Nesse momento o teclado/IME ainda fazia parte da interação e o teste tentava tocar novamente no botão de margem antes de conferir `Margem atual: +20%`. Isso mistura duas responsabilidades: testar o toque físico do botão e testar persistência/recriação de um formulário grande.
 
-Não houve novo redesenho do seletor nem nova mudança no fluxo de persistência nesta entrega, porque o log 27 mostrou que esse fluxo já chegou ao valor correto.
+Na `1.0.56-kotlin-alpha.29`, a seleção de margem limpa o foco do campo numérico antes de aplicar a escolha. Além disso, o teste longo aciona a mesma ação semântica do botão para validar especificamente **estado → persistência → geração → navegação → recriação**, enquanto o teste dedicado continua usando `performClick()` e continua sendo responsável por validar o toque real. Foi adicionada ainda uma asserção imediata do valor persistido após selecionar `+20%`, para que uma próxima falha identifique exatamente qual camada falhou.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-27-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 43 s.
-- `:app:assembleDebug` passou em 12 s.
-- Android 15 iniciou 6 testes: 4 passaram e 2 falharam nas verificações textuais do estado da margem.
-- No teste exclusivo da margem, `safetyMarginPercent == 20` já havia passado antes da falha, confirmando persistência imediata correta.
-- Corrigido o uso incorreto de `assertTextContains`: agora o teste exige exatamente `Margem atual: +20%` ou `Margem atual: +10%`.
+- `Android-Kotlin-APK-28-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 58 s.
+- `:app:assembleDebug` passou em 16 s.
+- Android 15 executou 6 testes: **5 passaram e 1 falhou**.
+- O teste dedicado da margem passou, confirmando clique físico e persistência imediata de `+20%`/`+10%`.
+- A única falha ficou no fluxo longo após edição de vários campos, ao conferir `Margem atual: +20%`.
+- A seleção de margem agora limpa o foco do campo/IME antes de despachar `SetSafetyMargin`.
+- O teste longo deixou de duplicar o teste de toque físico: ele aciona a ação semântica do mesmo botão e valida imediatamente `safetyMarginPercent == 20`, texto visível, geração, navegação, recriação e restauração.
 - `PlanningAction`, `reducePlanning`, persistência imediata da margem e debounce de 300 ms dos campos foram mantidos.
 - A tela **Sobre**, README, CHANGELOG, VALIDACAO e metadados foram atualizados. O módulo **Backup** não foi alterado.
 

@@ -223,6 +223,7 @@ private fun PlanningRideFields(
     change:((PlanningDraft)->PlanningDraft)->Unit,
     setSafetyMargin:(Int)->Unit
 ){
+    val focus=LocalFocusManager.current
     SectionCard("2. Como quer pedalar?",Icons.Outlined.DirectionsBike){
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
             NumericField(draft.speedKmh,{value->change{it.copy(speedKmh=value)}},"Velocidade média",Modifier.weight(1f),positive=true,unit="km/h")
@@ -237,7 +238,13 @@ private fun PlanningRideFields(
                     value=value,
                     label=label,
                     selected=draft.safetyMarginPercent==value,
-                    onSelect={setSafetyMargin(value)}
+                    onSelect={
+                        // Ao sair de um campo numérico, encerra primeiro a edição/IME.
+                        // Isso evita que um evento tardio do teclado concorra com a
+                        // escolha discreta da margem em aparelhos/emuladores lentos.
+                        focus.clearFocus(force=true)
+                        setSafetyMargin(value)
+                    }
                 )
             }
         }

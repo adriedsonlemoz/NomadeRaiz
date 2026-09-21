@@ -29,10 +29,10 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• A nova arquitetura do Planejamento passou pela parte funcional da margem no Android 15: após tocar em +20%, o repositório já retornou 20% corretamente.")
-                Text("• As duas falhas restantes estavam no próprio teste: ele procurava '+20%' como item textual completo, mas a tela exibe 'Margem atual: +20%'.")
-                Text("• As verificações agora exigem a frase completa com assertTextEquals, mantendo a cobertura de clique, persistência, estado visível, navegação e recriação da Activity.")
-                Text("• O redutor único, a persistência imediata das escolhas e o debounce dos campos foram mantidos sem novos remendos no seletor.")
+                Text("• O log 28 confirmou que a nova arquitetura da margem funciona no teste dedicado; apenas o fluxo longo com vários campos ainda falhou ao conferir o texto após usar o teclado.")
+                Text("• A seleção de margem agora encerra o foco do campo numérico antes de aplicar 0%, +10% ou +20%, reduzindo interferência do IME.")
+                Text("• Os testes foram separados por responsabilidade: o teste da margem continua usando toque físico; o teste longo aciona a mesma ação sem depender da janela do teclado e valida estado, persistência e recriação.")
+                Text("• Foi adicionada uma verificação imediata do valor persistido no fluxo longo para que uma próxima falha identifique exatamente estado, UI ou restauração.")
                 Text("• O GitHub Actions ainda precisa confirmar esta nova execução antes da Release.")
             }
         }

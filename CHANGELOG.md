@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.56-kotlin-alpha.29
+
+### Planejamento: separar IME/toque do teste de persistência
+
+- Analisado `Android-Kotlin-APK-28-logs.zip`, correspondente à versão `1.0.55-kotlin-alpha.28`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 58s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 16s`).
+- Android 15 executou 6 testes: **5 passaram e 1 falhou**. A única falha foi `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`.
+- O teste exclusivo `planningMarginButtonsPersistImmediately` passou. Isso confirma que, na nova arquitetura, o botão de margem responde ao toque físico e persiste a escolha corretamente.
+- A falha restante ocorreu apenas no fluxo longo depois de vários `TextField`s terem sido editados, quando o teste voltava à margem com o IME ainda envolvido na sequência.
+- A UI agora chama `LocalFocusManager.clearFocus(force = true)` antes de aplicar 0%, +10% ou +20%, reduzindo eventos tardios do teclado ao trocar de uma entrada numérica para uma escolha discreta.
+- O teste longo foi separado por responsabilidade: o teste dedicado continua usando `performClick()` para validar o gesto real; o teste de persistência/recriação usa a ação semântica do mesmo botão para não depender da janela do IME.
+- Após selecionar +20% no fluxo longo, o teste agora exige imediatamente `safetyMarginPercent == 20` no `AppRepository` e também `Margem atual: +20%` na UI. Depois continua validando geração, navegação, `Activity.recreate()`, restauração integral e `lastGenerated`.
+- Nenhuma regra de negócio, dado persistido, Backup ou requisito de Release foi removido.
+- Versão e metadados sincronizados: `1.0.56-kotlin-alpha.29` / `100056`.
+
 ## 1.0.55-kotlin-alpha.28
 
 ### Planejamento: correção do teste após a nova arquitetura

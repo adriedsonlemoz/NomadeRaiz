@@ -1,60 +1,35 @@
-# Validação — 1.0.55-kotlin-alpha.28
+# Validação — 1.0.56-kotlin-alpha.29
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.54-alpha.27`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100055`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.55-alpha.28`. A fonte principal da versão permanece `app/build.gradle.kts`; `versionCode`: `100056`.
 
-## Resultado real do log 27
+## Resultado real do log 28
 
-O arquivo `Android-Kotlin-APK-27-logs.zip` foi analisado antes desta correção.
+O arquivo `Android-Kotlin-APK-28-logs.zip` foi analisado antes desta correção.
 
-- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 43s`.
-- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 12s`.
-- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU**. Foram iniciados 6 testes; 4 passaram e 2 falharam.
-- Falharam `planningMarginButtonsPersistImmediately` e `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`.
-- As duas mensagens foram iguais: `Text + InputText + EditableText contains '+20%'`.
+- `:app:testDebugUnitTest`: **OK** — `BUILD SUCCESSFUL in 58s`.
+- `:app:assembleDebug`: **OK** — `BUILD SUCCESSFUL in 16s`.
+- `:app:connectedDebugAndroidTest` no Android 15: **FALHOU** com 6 testes executados, **5 aprovados e 1 falho**.
+- Falhou somente `planningFieldsAndGeneratedPlanSurviveNavigationAndRecreation`.
+- Mensagem: `Failed to assert the following: (Text + EditableText = [Margem atual: +20%])`.
 - A Release permaneceu corretamente bloqueada.
 
-Os avisos de `adb`/Emulator Console ocorreram durante a inicialização, mas não foram a causa determinante: o emulador iniciou e executou os seis testes.
+Os avisos iniciais de `adb`/Emulator Console não foram a causa: o emulador iniciou e executou todos os seis testes.
 
-## O que o log provou sobre a nova arquitetura
+## O que mudou em relação ao log 27
 
-No teste `planningMarginButtonsPersistImmediately`, a sequência era: clicar em `+20%` → esperar Compose → carregar o repositório → exigir `safetyMarginPercent == 20` → conferir o texto da UI. A falha aconteceu apenas na última etapa. Portanto, a asserção de persistência de 20% **passou**.
+No log 27 havia duas falhas. No log 28, o teste exclusivo `planningMarginButtonsPersistImmediately` **passou**. Portanto, a nova arquitetura de `PlanningAction` + `reducePlanning` e a persistência imediata da margem estão funcionando no caminho direto de usuário: botão tocado → estado alterado → repositório atualizado → texto da margem atualizado.
 
-Isso é diferente dos logs 24 e 26, nos quais o valor persistido permanecia em `0`. A mudança arquitetural da 1.0.54 (`PlanningAction` + `reducePlanning` + persistência imediata) resolveu o defeito funcional que vinha motivando os remendos.
-
-## Causa das duas falhas atuais
-
-O teste usava:
-
-```kotlin
-assertTextContains("+20%")
-```
-
-O nó com tag `planning-margin-current` contém o item textual completo `Margem atual: +20%`. Na API de teste do Compose, `assertTextContains` usa `substring = false` por padrão, portanto exige correspondência completa de um item da lista de textos. `+20%` sozinho não corresponde a `Margem atual: +20%`.
-
-A mesma inconsistência existia para `+10%`. Isso explica por que dois testes diferentes falharam com a mesma mensagem depois de o estado já estar correto.
+A única falha restante aparece no teste grande depois da edição consecutiva de vários campos numéricos. Esse fluxo mantinha o IME/foco de entrada envolvido e, em seguida, repetia um teste de toque físico que já é coberto pelo teste exclusivo da margem.
 
 ## Correção aplicada
 
-As quatro verificações do estado visível foram convertidas para correspondência exata do texto realmente exibido:
+1. `PlanningRideFields` agora limpa explicitamente o foco com `clearFocus(force = true)` antes de despachar `SetSafetyMargin`. Isso reduz a possibilidade de um evento tardio do campo/IME competir com uma escolha discreta.
+2. `planningMarginButtonsPersistImmediately` continua usando `performClick()` e continua sendo o teste de gesto real + persistência imediata.
+3. No teste longo, a margem é acionada pela ação semântica `SemanticsActions.OnClick` do mesmo botão. Assim esse teste valida estado, persistência e ciclo de vida sem depender da sobreposição/temporização da janela do teclado.
+4. Logo após selecionar +20%, o teste longo exige `safetyMarginPercent == 20` no `AppRepository` e `Margem atual: +20%` na UI. Isso torna uma eventual próxima falha diagnóstica: saberemos se o problema ficou no estado persistido, na recomposição da UI ou apenas depois da recriação.
+5. Depois disso o teste mantém as verificações de geração, navegação, `Activity.recreate()`, todos os campos, `tripEstimate`, `days` e `lastGenerated`.
 
-```kotlin
-assertTextEquals("Margem atual: +20%")
-assertTextEquals("Margem atual: +10%")
-```
-
-Não foram removidas verificações. O teste continua validando:
-
-- clique nos botões de margem;
-- persistência imediata no `AppRepository`;
-- estado visível da margem;
-- preenchimento dos campos;
-- geração do plano;
-- navegação;
-- `Activity.recreate()`;
-- restauração dos dados;
-- `lastGenerated`.
-
-A arquitetura nova do Planejamento não foi alterada nesta entrega porque o log 27 mostrou que o fluxo funcional já chegou corretamente ao repositório.
+Nenhuma cobertura de persistência ou recriação foi removida; apenas foi eliminada a duplicação de responsabilidade entre dois testes.
 
 ## Histórico recente
 
@@ -72,12 +47,13 @@ A arquitetura nova do Planejamento não foi alterada nesta entrega porque o log 
 | 24 | 1.0.51-alpha.24 | 4/5 | clique em +20% manteve `0` |
 | 25 | 1.0.52-alpha.25 | 4/5 | `The component is not displayed!` |
 | 26 | 1.0.53-alpha.26 | 4/5 | clique em +20% manteve `0` |
-| 27 | 1.0.54-alpha.27 | 4/6 | asserção textual incorreta após persistência de 20% passar |
+| 27 | 1.0.54-alpha.27 | 4/6 | asserção textual incorreta |
+| 28 | 1.0.55-alpha.28 | **5/6** | somente fluxo longo após edição/IME |
 
 ## Verificações desta nova entrega
 
-- Todas as ocorrências de `assertTextContains` no teste instrumentado do Planejamento foram revisadas; as quatro verificações de `planning-margin-current` agora usam o texto completo.
-- `python3 scripts/sync-github-manager.py --check`: deve permanecer sincronizado após a atualização dos metadados.
-- O hash do `BackupScreen.kt` deve permanecer idêntico ao da versão-base; o módulo Backup não foi alterado.
-- O ambiente atual não possui `gradle` nem Gradle Wrapper no projeto, portanto o build Android completo e o emulador Android 15 **não foram executados nesta nova versão**.
+- `python3 scripts/sync-github-manager.py --check`: deve permanecer sincronizado com `app/build.gradle.kts`.
+- O módulo `BackupScreen.kt` foi comparado por SHA-256 com a versão-base e permaneceu idêntico.
+- Foi feita inspeção estática das alterações de Compose/testes e da sincronização de versão.
+- O ambiente atual não possui `gradle` nem Gradle Wrapper no projeto; portanto o build Android completo e o emulador Android 15 **não foram executados nesta nova versão**.
 - A próxima execução do GitHub Actions deve validar metadados → testes unitários → APK → testes instrumentados Android 15. A Release deve permanecer bloqueada em qualquer falha e publicar somente `Nomade-Raiz.apk`.

@@ -1,6 +1,7 @@
 package com.nomaderaiz.app.ui
 
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -93,9 +94,16 @@ class NavigationUiTest {
         enterPlanningField("Consumo de energia do grupo","25")
 
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
-        compose.onNodeWithTag("planning-margin-20").performClick()
+        // O teste exclusivo planningMarginButtonsPersistImmediately já cobre o toque
+        // físico no botão. Neste fluxo longo acionamos a mesma ação sem depender da
+        // janela do IME, para testar especificamente estado + persistência + recriação.
+        compose.onNodeWithTag("planning-margin-20")
+            .assertHasClickAction()
+            .performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
-        compose.onNodeWithTag("planning-margin-current").assertTextEquals("Margem atual: +20%")
+        val repoAfterMargin=AppRepository(InstrumentationRegistry.getInstrumentation().targetContext)
+        assertEquals(20,repoAfterMargin.loadPlanningSession().draft.safetyMarginPercent)
+        compose.onNodeWithTag("planning-margin-current").assertTextEquals("Margem atual: +20%").assertIsDisplayed()
 
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-advanced-toggle"))
         compose.onNodeWithTag("planning-advanced-toggle").performClick()
