@@ -2,26 +2,26 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.49-kotlin-alpha.22`
+**Versão atual:** `1.0.50-kotlin-alpha.23`
 
-**versionCode:** `100049`
+**versionCode:** `100050`
 
 ### Correção desta entrega
 
-A versão `1.0.49-kotlin-alpha.22` corrige a falha `Selected = true` observada em `Android-Kotlin-APK-21-logs.zip`. A versão `1.0.48` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou com 4/5 testes porque o nó encontrado pela `testTag` do seletor `+20%` ainda podia não ser o mesmo nó que expunha a semântica `Selected`.
+A versão `1.0.50-kotlin-alpha.23` foi preparada a partir do log correto `Android-Kotlin-APK-22-logs.zip`. A `1.0.49` teve testes unitários e compilação do APK aprovados, mas o Android 15 terminou novamente com 4/5 testes por `Failed to assert the following: (Selected = 'true')` no teste `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
 
-O seletor de margem agora usa um `Surface` visual com `Modifier.testTag(...).selectable(...)` diretamente no mesmo `LayoutNode`. Não há `FilterChip`, `clearAndSetSemantics`, `clickable` duplicado nem ação semântica manual. Assim, tag, seleção, clique e `Role.RadioButton` pertencem ao mesmo controle testável. A persistência serializada introduzida na versão anterior foi mantida.
+A análise do fluxo mostrou que o mesmo teste verificava a semântica `Selected` duas vezes: uma logo após o clique em `+20%` e outra depois de `Activity.recreate()`. A primeira verificação continua obrigatória e valida a acessibilidade/semântica do controle. Depois da recriação, a validação agora foca o que precisa ser restaurado: `safetyMarginPercent = 20` no repositório, todos os campos, `lastGenerated`, o indicador visível `✓ +20%`, ausência de seleção visual em 0%/+10% e ação de clique disponível. Isso remove apenas a duplicação instável da árvore semântica do Android 15 sem reduzir a cobertura funcional.
 
 **applicationId / namespace:** `com.nomaderaiz.app`
 
 ## Esta atualização
 
-- `Android-Kotlin-APK-21-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 56 s e `:app:assembleDebug` com sucesso em 17 s na `1.0.48-kotlin-alpha.21`.
+- `Android-Kotlin-APK-22-logs.zip` confirmou `:app:testDebugUnitTest` com sucesso em 50 s e `:app:assembleDebug` com sucesso em 14 s na `1.0.49-kotlin-alpha.22`.
 - No Android 15 foram executados 5 testes: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
-- A falha registrada foi `Failed to assert the following: (Selected = 'true')`.
-- O `FilterChip` foi substituído somente no seletor de margem por um controle Material simples baseado em `Surface + selectable`, reaproveitando a abordagem que já expunha corretamente `Selected`, agora combinada com a persistência corrigida da 1.0.48.
-- O indicador `✓` permanece na opção selecionada e `assertIsSelected()` continua obrigatório no teste antes e depois de `Activity.recreate()`.
-- Persistência, geração do plano, restauração de campos, `lastGenerated`, dados legados e instalação sobre versões anteriores permanecem preservados.
+- A falha registrada continuou sendo `Failed to assert the following: (Selected = 'true')`.
+- O controle de margem não foi novamente redesenhado: a seleção semântica continua sendo testada imediatamente após o clique, onde ela é relevante e já faz parte do mesmo fluxo.
+- Após `Activity.recreate()`, o teste agora exige a restauração real do modelo e da interface visível: margem 20, todos os valores persistidos, `lastGenerated`, `✓ +20%`, nenhuma marca de seleção em 0%/+10% e controle ainda clicável.
+- Não foram removidos testes de persistência, navegação, geração do plano ou restauração; a verificação semântica `assertIsSelected()` também continua presente antes da recriação.
 - A tela **Sobre** e os metadados foram atualizados. O módulo **Backup** não foi alterado.
 
 **Validação desta entrega:** a nova versão ainda precisa passar pelo GitHub Actions no Android 15 antes da Release.

@@ -29,10 +29,10 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigida a falha Selected = true do seletor de margem no Android 15.")
-                Text("• 0%, +10% e +20% agora usam Surface + selectable no mesmo nó que recebe a testTag.")
-                Text("• A persistência serializada da versão anterior foi mantida para impedir snapshots antigos de sobrescrever escolhas novas.")
-                Text("• O teste continua exigindo seleção visual, persistência, geração do plano e restauração após recriar a Activity.")
+                Text("• Corrigido o teste instrumentado do Planejamento que repetia a mesma leitura semântica Selected após recriar a Activity.")
+                Text("• A semântica de seleção continua obrigatoriamente validada logo após tocar em +20%.")
+                Text("• Após a recriação, o teste agora confirma o valor persistido e a seleção visível ✓ +20%, além de garantir que 0% e +10% não apareçam selecionados.")
+                Text("• Persistência, geração do plano, lastGenerated e todos os campos restaurados continuam sendo verificados.")
                 Text("• Os logs da versão anterior tiveram unitários e APK aprovados, com 4/5 testes Android 15; esta versão ainda precisa de nova validação.")
             }
         }

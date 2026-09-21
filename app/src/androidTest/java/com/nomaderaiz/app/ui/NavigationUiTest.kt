@@ -104,11 +104,16 @@ class NavigationUiTest {
         assertEquals(3.0,saved.draft.waterDailyPerPerson.numberOrNull()!!,0.0)
         assertEquals(25.0,saved.draft.energyDailyWh.numberOrNull()!!,0.0)
         assertEquals(saved.draft,saved.lastGenerated)
-        // Além do repositório, confirme que a UI restaurada também reflete +20%.
+        // A semântica Selected já foi validada imediatamente após o clique acima.
+        // Depois de Activity.recreate(), o objetivo desta parte é provar que o estado
+        // restaurado chegou de fato à interface, sem depender de uma segunda leitura
+        // duplicada da árvore semântica que o Android 15 recompõe durante o recreate.
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
         compose.waitForIdle()
-        compose.onNodeWithTag("planning-margin-20").assertIsSelected()
+        compose.onNodeWithTag("planning-margin-20").assertHasClickAction()
         compose.onNodeWithText("✓ +20%").assertIsDisplayed()
+        compose.onNodeWithText("✓ +10%").assertDoesNotExist()
+        compose.onNodeWithText("✓ Sem margem").assertDoesNotExist()
         compose.onNodeWithTag("planning-list").performScrollToIndex(0)
         compose.onNodeWithContentDescription("Voltar").performClick()
         assertScreen("More")

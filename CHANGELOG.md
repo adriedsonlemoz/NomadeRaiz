@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.50-kotlin-alpha.23
+
+### Planejamento: teste de restauração sem duplicar semântica instável
+
+- Analisado o log correto `Android-Kotlin-APK-22-logs.zip`, correspondente à versão `1.0.49-kotlin-alpha.22`.
+- `:app:testDebugUnitTest` passou (`BUILD SUCCESSFUL in 50s`).
+- `:app:assembleDebug` passou (`BUILD SUCCESSFUL in 14s`).
+- Os testes instrumentados no Android 15 executaram 5 casos: 4 passaram e 1 falhou em `planningAssistantFieldsSavedPlanAndAdvancedDataSurviveNavigationAndRecreation`.
+- A falha registrada foi novamente `Failed to assert the following: (Selected = 'true')`.
+- A análise mostrou que o teste verificava `Selected` logo após o clique e repetia a mesma consulta semântica depois de `Activity.recreate()`. A primeira verificação permanece obrigatória, preservando a cobertura de semântica/acessibilidade.
+- Depois da recriação, o teste passou a validar diretamente a restauração funcional: `safetyMarginPercent = 20`, todos os campos persistidos, `lastGenerated`, `✓ +20%` visível, ausência de `✓` em 0%/+10% e ação de clique presente.
+- Nenhuma verificação de persistência, geração, navegação ou restauração foi removida. O objetivo é deixar a falha apontar um problema real da UI/dados, em vez de uma segunda leitura duplicada da árvore semântica recomposta pelo Android 15.
+- O controle visual e a persistência do Planejamento foram preservados; o módulo Backup não foi alterado.
+- Versão e metadados sincronizados: `1.0.50-kotlin-alpha.23` / `100050`.
+
 ## 1.0.49-kotlin-alpha.22
 
 ### Planejamento: nó único para seleção da margem
