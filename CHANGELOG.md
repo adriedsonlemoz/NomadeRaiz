@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.62-kotlin-alpha.35
+
+### Teste Android 15: visibilidade determinística nas listas do Planejar
+
+- Analisado `Android-Kotlin-APK-34-logs.zip`, correspondente à versão `1.0.61-kotlin-alpha.34`.
+- Testes unitários passaram (`BUILD SUCCESSFUL in 1m 1s`) e o APK compilou (`BUILD SUCCESSFUL in 18s`).
+- No Android 15 foram executados 7 testes; 6 passaram e apenas `savedRouteReturnsToListAndSurvivesActivityRecreation` falhou.
+- Erro real: `Assert failed: The component is not displayed!`.
+- A lógica do Planejar não falhou; o teste ainda fazia `assertIsDisplayed()` diretamente em itens filhos de `LazyColumn` após salvar/recriar a Activity, sem garantir que aqueles itens estavam dentro da viewport atual.
+- O fluxo de teste agora obtém a rota persistida primeiro, rola `planning-routes-list` até o card pelo `id`, rola `planning-details` até o resumo/ação de editar e, ao reabrir o editor, rola `planning-list` até `planning-margin-current` antes da asserção.
+- As verificações de destino, margem, recursos, dinheiro, recriação da Activity e igualdade do workspace foram preservadas; nenhum teste de negócio foi removido ou enfraquecido.
+- Nenhuma tela, cálculo, persistência, catálogo ou módulo Backup foi alterado nesta correção.
+- Versão sincronizada para `1.0.62-kotlin-alpha.35` / `100062`.
+
 ## 1.0.61-kotlin-alpha.34
 
 ### Correção do teste Android 15 no Planejar por rotas

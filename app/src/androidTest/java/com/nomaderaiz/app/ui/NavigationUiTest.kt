@@ -105,14 +105,17 @@ class NavigationUiTest {
         compose.onNodeWithTag("save-route").assertIsEnabled().performClick()
         compose.waitForIdle()
 
-        compose.onNodeWithTag("planning-routes-list").assertIsDisplayed()
-        compose.onNodeWithText("Serra do Rio do Rastro").assertIsDisplayed()
-
         val context=InstrumentationRegistry.getInstrumentation().targetContext
         compose.waitUntil(5_000){AppRepository(context).loadPlanningWorkspace().routes.size==1}
         val before=AppRepository(context).loadPlanningWorkspace()
         assertEquals(1,before.routes.size)
         val route=before.routes.single()
+
+        compose.onNodeWithTag("planning-routes-list").assertIsDisplayed()
+        compose.onNodeWithTag("planning-routes-list")
+            .performScrollToNode(hasTestTag("planning-route-${route.id}"))
+        compose.onNodeWithTag("planning-route-${route.id}").assertIsDisplayed()
+        compose.onNodeWithText("Serra do Rio do Rastro").assertIsDisplayed()
         assertEquals(20,route.plan.safetyMarginPercent)
         assertEquals(5,route.plan.tripEstimate!!.days)
         assertEquals("5",route.plan.days)
@@ -127,12 +130,20 @@ class NavigationUiTest {
         val after=AppRepository(context).loadPlanningWorkspace()
         assertEquals(before.routes,after.routes)
 
-        compose.onNodeWithTag("planning-route-${route.id}").performClick()
+        compose.onNodeWithTag("planning-routes-list")
+            .performScrollToNode(hasTestTag("planning-route-${route.id}"))
+        compose.onNodeWithTag("planning-route-${route.id}").assertIsDisplayed().performClick()
         compose.onNodeWithTag("planning-details").assertIsDisplayed()
+        compose.onNodeWithTag("planning-details").performScrollToNode(hasText("Resumo da rota"))
         compose.onNodeWithText("Resumo da rota").assertIsDisplayed()
-        compose.onNodeWithTag("edit-route").performClick()
+        compose.onNodeWithTag("planning-details").performScrollToNode(hasTestTag("edit-route"))
+        compose.onNodeWithTag("edit-route").assertIsDisplayed().performClick()
         compose.onNodeWithTag("planning-editor").assertIsDisplayed()
-        compose.onNodeWithTag("planning-margin-current").assertTextEquals("Margem atual: +20%").assertIsDisplayed()
+        compose.onNodeWithTag("planning-list")
+            .performScrollToNode(hasTestTag("planning-margin-current"))
+        compose.onNodeWithTag("planning-margin-current")
+            .assertTextEquals("Margem atual: +20%")
+            .assertIsDisplayed()
     }
 
     @Test fun routeListSupportsMultipleRoutesAndDuplicate(){

@@ -1,14 +1,14 @@
-# Validação — 1.0.61-kotlin-alpha.34
+# Validação — 1.0.62-kotlin-alpha.35
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.60-alpha.33`. Fonte principal da versão: `app/build.gradle.kts`; `versionCode`: `100061`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.61-alpha.34`. Fonte principal da versão: `app/build.gradle.kts`; `versionCode`: `100062`.
 
 ## Resultado real do GitHub Actions anterior
 
-Foi analisado `Android-Kotlin-APK-33-logs.zip`.
+Foi analisado `Android-Kotlin-APK-34-logs.zip`.
 
 - Verificação de metadados: **PASSOU**.
-- Testes unitários / regras de negócio: **PASSOU** (`BUILD SUCCESSFUL in 1m 3s`).
-- Compilação do APK: **PASSOU** (`BUILD SUCCESSFUL in 1m 24s`).
+- Testes unitários / regras de negócio: **PASSOU** (`BUILD SUCCESSFUL in 1m 1s`).
+- Compilação do APK: **PASSOU** (`BUILD SUCCESSFUL in 18s`).
 - Android 15: **7 testes executados, 6 passaram e 1 falhou**.
 - Release: **bloqueada corretamente** pela falha instrumentada.
 
@@ -16,44 +16,39 @@ Falha exata:
 
 ```text
 com.nomaderaiz.app.ui.NavigationUiTest > savedRouteReturnsToListAndSurvivesActivityRecreation FAILED
-java.lang.AssertionError: Action performScrollTo() failed.
-Reason: Expected exactly '1' node but could not find any node that satisfies:
-(TestTag = 'planning-resources-toggle')
+java.lang.AssertionError: Assert failed: The component is not displayed!
+    at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
 ```
 
 ## Causa
 
-`planning-resources-toggle` existe em `PlanningCalculatorScreens.kt`, dentro da `LazyColumn` do editor de rota.
+A correção da alpha.34 resolveu a busca de `planning-resources-toggle`, mas o mesmo teste ainda continha outras verificações diretas de visibilidade em filhos de `LazyColumn`. Em Compose, um nó pode existir na árvore semântica ou ser recriado após navegação/recriação da Activity sem estar atualmente dentro da viewport. `assertIsDisplayed()` então falha mesmo quando a rota e os dados estão corretos.
 
-O teste tentava executar `onNodeWithTag("planning-resources-toggle").performScrollTo()` diretamente. Em uma `LazyColumn`, itens fora da viewport podem não estar compostos e, portanto, não aparecem na árvore semântica para serem encontrados dessa forma. O teste falhava antes mesmo de conseguir rolar.
-
-Logo, esta execução **não indicou defeito no botão Recursos opcionais, nos cálculos ou na persistência**; indicou uma estratégia incorreta do teste para localizar item virtualizado.
+O log não inclui a linha Kotlin exata da asserção, por isso a correção foi aplicada a todos os pontos equivalentes desse teste: card da rota após salvar, card após recriação, resumo/ação da tela de detalhes e indicador de margem ao reabrir o editor.
 
 ## Correção aplicada
 
-O teste passou a rolar através do contêiner que sempre está composto:
+Antes de qualquer asserção de visibilidade nesses itens virtuais, o teste agora rola pelo contêiner estável:
 
 ```kotlin
-compose.onNodeWithTag("planning-list")
-    .performScrollToNode(hasTestTag("planning-resources-toggle"))
-compose.onNodeWithTag("planning-resources-toggle")
-    .assertIsDisplayed()
-    .performClick()
+compose.onNodeWithTag("planning-routes-list")
+    .performScrollToNode(hasTestTag("planning-route-${route.id}"))
+compose.onNodeWithTag("planning-route-${route.id}").assertIsDisplayed()
 ```
 
-O mesmo padrão foi aplicado preventivamente ao card de rota usado no teste de duplicação, através de `planning-routes-list.performScrollToNode(...)`.
+O mesmo padrão foi usado com `planning-details` e `planning-list`. A rota persistida é lida antes da verificação visual, permitindo usar o `id` real como alvo determinístico.
 
-Nenhum componente de produção precisou ser alterado para fazer o teste passar. O módulo Backup também não foi alterado.
+As asserções de persistência continuam verificando margem 20%, 5 dias, dinheiro, alimentação, água, energia e igualdade do `PlanningWorkspace` depois de `Activity.recreate()`.
 
 ## Verificações desta entrega
 
-- `planning-resources-toggle` confirmado no código de produção: **PASSOU**.
-- Correção do padrão de scroll para `LazyColumn`: **APLICADA**.
-- Busca por outro uso equivalente e correção preventiva no card de rota: **APLICADA**.
+- Todos os filhos de `LazyColumn` usados por `savedRouteReturnsToListAndSurvivesActivityRecreation` foram revisados: **PASSOU**.
+- Scroll por contêiner antes das asserções de visibilidade: **APLICADO**.
+- Regras de negócio/UI de produção alteradas: **NÃO**.
 - `python3 scripts/sync-github-manager.py --check`: **PASSOU**.
-- `versionName`/`versionCode`: `1.0.61-kotlin-alpha.34` / `100061`.
-- Integridade do ZIP final: **PASSOU** após empacotamento e teste do arquivo.
+- `versionName`/`versionCode`: `1.0.62-kotlin-alpha.35` / `100062`.
+- Integridade do ZIP final: verificar após empacotamento.
 
 ## Validação ainda necessária
 
-Este ambiente não possui Gradle/Gradle Wrapper para executar o conjunto Android completo. A `1.0.61-kotlin-alpha.34` ainda precisa passar pelo GitHub Actions para confirmar novamente testes unitários, APK e os 7 testes instrumentados no Android 15.
+Este ambiente não possui Gradle/Gradle Wrapper para executar o conjunto Android completo. A `1.0.62-kotlin-alpha.35` ainda precisa passar pelo GitHub Actions para confirmar novamente testes unitários, APK e os 7 testes instrumentados no Android 15.

@@ -2,9 +2,9 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.61-kotlin-alpha.34`
+**Versão atual:** `1.0.62-kotlin-alpha.35`
 
-**versionCode:** `100061`
+**versionCode:** `100062`
 
 ### Planejar reorganizado por rotas
 
@@ -22,14 +22,14 @@ O planejamento único usado até a alpha.29 é migrado para a nova lista de rota
 
 ## Esta atualização
 
-- Corrigida a única falha restante do `Android-Kotlin-APK-33-logs.zip`.
-- A interface já continha `planning-resources-toggle`; o teste Android 15 não conseguia encontrá-lo porque o item estava fora da viewport de uma `LazyColumn` e, portanto, ainda não estava composto.
-- A navegação do teste agora usa `planning-list.performScrollToNode(...)` antes de interagir com Recursos opcionais.
-- O mesmo padrão foi aplicado preventivamente à lista de rotas para evitar falhas equivalentes quando um card estiver fora da área visível.
-- A correção é exclusiva da infraestrutura de teste: nenhuma regra de negócio, dado, tela, inventário, planejamento ou Backup foi alterado.
-- Gradle, `github-manager.json`, README, CHANGELOG, VALIDACAO e Sobre foram sincronizados para `1.0.61-kotlin-alpha.34` / `100061`.
+- Analisado `Android-Kotlin-APK-34-logs.zip`: testes unitários passaram em `1m 1s`, o APK compilou em `18s` e o Android 15 executou 7 testes com 6 aprovados e 1 falha.
+- A única falha continuou em `savedRouteReturnsToListAndSurvivesActivityRecreation`, agora com `Assert failed: The component is not displayed!`.
+- A causa é novamente de visibilidade em listas virtuais: o teste ainda possuía verificações diretas de filhos de `LazyColumn` depois de salvar/recriar a Activity, sem primeiro rolar o contêiner até o card, resumo ou indicador de margem.
+- O teste foi tornado determinístico: antes de cada `assertIsDisplayed()` em item virtualizado, a própria `planning-routes-list`, `planning-details` ou `planning-list` executa `performScrollToNode(...)`.
+- A regra de negócio, os dados salvos, cálculos, inventário e UI de produção não foram alterados; a correção é exclusivamente da infraestrutura de teste Android 15.
+- Gradle, `github-manager.json`, README, CHANGELOG e VALIDACAO foram sincronizados para `1.0.62-kotlin-alpha.35` / `100062`.
 
-**Validação do log anterior:** testes unitários e build do APK passaram; Android 15 executou 7 testes e teve 1 falha causada pelo modo incorreto de rolar até um item virtual da `LazyColumn`. A nova versão ainda precisa do GitHub Actions para confirmar 7/7.
+**Validação do log anterior:** metadados, testes unitários e build do APK passaram; Android 15 ficou em 6/7 por uma asserção de visibilidade do teste. A nova versão ainda precisa do GitHub Actions para confirmar 7/7.
 
 ## Estado funcional atual
 
