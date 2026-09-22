@@ -16,6 +16,7 @@ internal fun categoryIcon(id:String):ImageVector=when(id){
     "cozinha"->Icons.Outlined.Restaurant
     "agua"->Icons.Outlined.WaterDrop
     "energia"->Icons.Outlined.Bolt
+    "tecnologia"->Icons.Outlined.Videocam
     "ferramentas"->Icons.Outlined.Build
     "seguranca"->Icons.Outlined.Shield
     "vestuario"->Icons.Outlined.Checkroom

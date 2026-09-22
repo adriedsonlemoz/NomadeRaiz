@@ -12,7 +12,7 @@ class AppRepository(context: Context) {
         val raw=prefs.getString("items",null)?:return seedItems
         return runCatching {
             val a=JSONArray(raw)
-            List(a.length()){i->
+            val stored=List(a.length()){i->
                 val o=a.getJSONObject(i)
                 val now=System.currentTimeMillis()
                 EquipmentItem(
@@ -28,6 +28,7 @@ class AppRepository(context: Context) {
                     updatedAt=o.optLong("updatedAt",now)
                 )
             }
+            mergeEquipmentCatalog(stored)
         }.getOrElse{seedItems}
     }
 

@@ -29,12 +29,11 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• O Planejar foi reorganizado como gerenciador de rotas: a tela principal mostra apenas as viagens cadastradas e um botão para criar nova rota.")
-                Text("• Criar/editar rota virou um fluxo separado, com destino, distância, ritmo e estimativa instantânea; recursos e opções avançadas ficam recolhidos por padrão.")
-                Text("• Cada rota ganhou uma tela própria de detalhes com resumo, custos/recomendações sob demanda, editar, duplicar e excluir.")
-                Text("• Nova Sugestão do Nômade compara o ritmo informado com uma referência automática e permite aplicar a sugestão com um toque.")
-                Text("• O planejamento antigo é migrado para a nova lista de rotas sem alterar applicationId nem apagar os dados existentes.")
-                Text("• A lista deixou de executar os cálculos pesados de recomendações para todas as viagens; a análise completa só é calculada ao abrir os detalhes.")
+                Text("• O Planejar agora mostra os itens da cicloviagem dentro dos detalhes da rota, com status e custo de referência.")
+                Text("• O catálogo recebeu preços econômicos de referência para power bank, bomba, câmaras, ferramentas, iluminação, painel solar e itens de acampamento.")
+                Text("• Foram adicionados ESP32-CAM, câmera de ação, ESP32 DevKit, sensor Hall e sensor de temperatura para o conjunto tecnológico da bike.")
+                Text("• Inventários antigos são enriquecidos sem apagar quantidade, status, prioridade ou preços já informados pelo usuário.")
+                Text("• Os preços pesquisados são apenas referência e podem variar por vendedor, frete, cupom e especificação.")
             }
         }
         item{

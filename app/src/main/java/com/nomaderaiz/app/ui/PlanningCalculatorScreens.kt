@@ -36,6 +36,7 @@ internal fun PlanningScreen(
     dispatch: (PlanningAction) -> Unit,
     onPoints: () -> Unit,
     onManual: () -> Unit,
+    onGear: () -> Unit,
     back: (() -> Unit)? = null
 ) {
     var view by rememberSaveable { mutableStateOf(PLANNING_LIST) }
@@ -78,6 +79,7 @@ internal fun PlanningScreen(
                 route = route,
                 equipment = equipment,
                 onManual = onManual,
+                onGear = onGear,
                 onBack = { returnToList() },
                 onEdit = {
                     dispatch(PlanningAction.StartEditRoute(route.id))
@@ -352,6 +354,7 @@ private fun PlanningRouteDetails(
     route: PlannedRoute,
     equipment: List<EquipmentItem>,
     onManual: () -> Unit,
+    onGear: () -> Unit,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onDuplicate: () -> Unit,
@@ -403,7 +406,7 @@ private fun PlanningRouteDetails(
             }
         }
         if (showFullAnalysis) {
-            if (result != null) item { PlanningResultDetails(plan, result, onManual) }
+            if (result != null) item { PlanningResultDetails(plan, result, equipment, onManual, onGear) }
             else item {
                 SectionCard("Rota precisa de revisão", Icons.Outlined.WarningAmber) {
                     plan.issues.take(4).forEach { Text("• $it") }
@@ -632,7 +635,13 @@ private fun PlanningWaterFields(draft: PlanningDraft, change: ((PlanningDraft) -
 }
 
 @Composable
-private fun PlanningResultDetails(draft: PlanningDraft, result: PlanningResult, onManual: () -> Unit) {
+private fun PlanningResultDetails(
+    draft: PlanningDraft,
+    result: PlanningResult,
+    equipment: List<EquipmentItem>,
+    onManual: () -> Unit,
+    onGear: () -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         result.essential?.let { essential ->
             SectionCard("Resumo essencial", Icons.Outlined.Assessment) {
@@ -640,6 +649,44 @@ private fun PlanningResultDetails(draft: PlanningDraft, result: PlanningResult, 
                 essential.foodCost?.let { Text("Alimentação: ${money(it)}") }
                 essential.waterLiters?.let { Text("Água planejada: ${decimal(it)} L") }
                 essential.energyWh?.let { Text("Energia planejada: ${decimal(it)} Wh") }
+            }
+        }
+        val routeGear = remember(equipment) {
+            val order = planningGearIds.withIndex().associate { it.value to it.index }
+            equipment.asSequence()
+                .filter { it.id in order }
+                .sortedBy { order[it.id] ?: Int.MAX_VALUE }
+                .toList()
+        }
+        SectionCard("Itens da cicloviagem", Icons.Outlined.Backpack) {
+            Text(
+                "Preços de referência econômica. Ajuste conforme o anúncio e marque como adquirido quando comprar.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            routeGear.forEach { item ->
+                val total = item.price * item.quantity.coerceAtLeast(0)
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        if (item.status == ItemStatus.COMPRADO) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = if (item.status == ItemStatus.COMPRADO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Column(Modifier.weight(1f)) {
+                        Text(item.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        if (item.quantity > 1) Text("Qtd. ${item.quantity}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text(if (total > 0.0) money(total) else "Definir", fontSize = 12.sp)
+                }
+            }
+            OutlinedButton(onClick = onGear, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.Backpack, contentDescription = null)
+                Text(" ABRIR EQUIPAMENTOS")
             }
         }
         SectionCard("Custos e reservas", Icons.Outlined.Payments) {

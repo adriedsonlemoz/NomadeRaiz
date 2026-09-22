@@ -192,7 +192,7 @@ fun NomadeRaizApp(){
                 Screen.Planning->PlanningScreen(
                     modifier=Modifier,equipment=items,workspace=planning,
                     dispatch=::dispatchPlanning,
-                    onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},
+                    onPoints={open(Screen.Points)},onManual={open(Screen.Manual)},onGear={open(Screen.Gear)},
                     back=if(navigation.canGoBack)({back()})else null
                 )
                 Screen.Journal->JournalScreen(Modifier,journal,{journal=it;repo.saveJournal(it)},repo)
