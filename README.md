@@ -2,9 +2,9 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.60-kotlin-alpha.33`
+**Versão atual:** `1.0.61-kotlin-alpha.34`
 
-**versionCode:** `100060`
+**versionCode:** `100061`
 
 ### Planejar reorganizado por rotas
 
@@ -22,14 +22,14 @@ O planejamento único usado até a alpha.29 é migrado para a nova lista de rota
 
 ## Esta atualização
 
-- Corrigido o erro de compilação detectado no `Android-Kotlin-APK-32-logs.zip`.
-- A chamada de `NomadSuggestionCard` no editor de rotas usava uma trailing lambda, mas a função possui o parâmetro opcional `actionLabel` depois do callback `apply`; o compilador interpretava a lambda na posição errada.
-- O callback agora é passado explicitamente como `apply = { ... }`, preservando a Sugestão do Nômade e eliminando o erro `No value passed for parameter 'apply'`.
-- `app/build.gradle.kts`, `github-manager.json`, README, CHANGELOG, VALIDACAO e Sobre foram sincronizados para `1.0.60-kotlin-alpha.33` / `100060`.
-- Nenhuma regra de negócio, rota salva, inventário, persistência ou módulo Backup foi alterado nesta correção.
-- O workflow continua bloqueando a Release se testes ou build falharem.
+- Corrigida a única falha restante do `Android-Kotlin-APK-33-logs.zip`.
+- A interface já continha `planning-resources-toggle`; o teste Android 15 não conseguia encontrá-lo porque o item estava fora da viewport de uma `LazyColumn` e, portanto, ainda não estava composto.
+- A navegação do teste agora usa `planning-list.performScrollToNode(...)` antes de interagir com Recursos opcionais.
+- O mesmo padrão foi aplicado preventivamente à lista de rotas para evitar falhas equivalentes quando um card estiver fora da área visível.
+- A correção é exclusiva da infraestrutura de teste: nenhuma regra de negócio, dado, tela, inventário, planejamento ou Backup foi alterado.
+- Gradle, `github-manager.json`, README, CHANGELOG, VALIDACAO e Sobre foram sincronizados para `1.0.61-kotlin-alpha.34` / `100061`.
 
-**Validação desta entrega:** o log `Android-Kotlin-APK-32-logs.zip` mostrou que a checagem de metadados passou, mas a etapa de testes parou durante a compilação Kotlin do código principal. A correção foi aplicada exatamente no arquivo e linha apontados pelo compilador. A nova versão ainda precisa do GitHub Actions para confirmar testes unitários, APK e Android 15.
+**Validação do log anterior:** testes unitários e build do APK passaram; Android 15 executou 7 testes e teve 1 falha causada pelo modo incorreto de rolar até um item virtual da `LazyColumn`. A nova versão ainda precisa do GitHub Actions para confirmar 7/7.
 
 ## Estado funcional atual
 

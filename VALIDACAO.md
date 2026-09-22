@@ -1,57 +1,59 @@
-# Validação — 1.0.60-kotlin-alpha.33
+# Validação — 1.0.61-kotlin-alpha.34
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.59-alpha.32`. Fonte principal da versão: `app/build.gradle.kts`; `versionCode`: `100060`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.60-alpha.33`. Fonte principal da versão: `app/build.gradle.kts`; `versionCode`: `100061`.
 
-## Erro encontrado no GitHub Actions
+## Resultado real do GitHub Actions anterior
 
-Foi analisado `Android-Kotlin-APK-32-logs.zip`. A checagem de metadados passou e o workflow avançou para **Test navigation and business rules**, mas a compilação Kotlin falhou antes de concluir os testes.
+Foi analisado `Android-Kotlin-APK-33-logs.zip`.
 
-Mensagens reais do compilador:
+- Verificação de metadados: **PASSOU**.
+- Testes unitários / regras de negócio: **PASSOU** (`BUILD SUCCESSFUL in 1m 3s`).
+- Compilação do APK: **PASSOU** (`BUILD SUCCESSFUL in 1m 24s`).
+- Android 15: **7 testes executados, 6 passaram e 1 falhou**.
+- Release: **bloqueada corretamente** pela falha instrumentada.
+
+Falha exata:
 
 ```text
-PlanningCalculatorScreens.kt:285:65 No value passed for parameter 'apply'.
-PlanningCalculatorScreens.kt:285:69 Argument type mismatch ... but 'String' was expected.
-PlanningCalculatorScreens.kt:285:71 Cannot infer type for this parameter. Specify it explicitly.
+com.nomaderaiz.app.ui.NavigationUiTest > savedRouteReturnsToListAndSurvivesActivityRecreation FAILED
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies:
+(TestTag = 'planning-resources-toggle')
 ```
-
-O build terminou com `CompilationErrorException` e `BUILD FAILED in 56s`.
 
 ## Causa
 
-`NomadSuggestionCard` possui a assinatura:
+`planning-resources-toggle` existe em `PlanningCalculatorScreens.kt`, dentro da `LazyColumn` do editor de rota.
 
-```text
-NomadSuggestionCard(draft, suggestion, apply: (Double) -> Unit, actionLabel: String = ...)
-```
+O teste tentava executar `onNodeWithTag("planning-resources-toggle").performScrollTo()` diretamente. Em uma `LazyColumn`, itens fora da viewport podem não estar compostos e, portanto, não aparecem na árvore semântica para serem encontrados dessa forma. O teste falhava antes mesmo de conseguir rolar.
 
-No editor ela era chamada com uma trailing lambda. Como `actionLabel` é o último parâmetro, o compilador tentava associar a trailing lambda à posição final e deixava `apply` sem valor.
+Logo, esta execução **não indicou defeito no botão Recursos opcionais, nos cálculos ou na persistência**; indicou uma estratégia incorreta do teste para localizar item virtualizado.
 
 ## Correção aplicada
 
-- O callback agora é passado explicitamente como `apply = { ... }`.
-- A lógica existente de aplicar `hoursPerDay` ao rascunho foi mantida.
-- Nenhum cálculo, persistência, rota, catálogo de equipamentos ou Backup foi removido ou alterado por esta correção.
-- `versionName`/`versionCode` incrementados para `1.0.60-kotlin-alpha.33` / `100060`.
-- README, CHANGELOG, VALIDACAO, Sobre e `github-manager.json` sincronizados.
+O teste passou a rolar através do contêiner que sempre está composto:
 
-## Resultado real do log anterior
+```kotlin
+compose.onNodeWithTag("planning-list")
+    .performScrollToNode(hasTestTag("planning-resources-toggle"))
+compose.onNodeWithTag("planning-resources-toggle")
+    .assertIsDisplayed()
+    .performClick()
+```
 
-- Verificação de metadados: **PASSOU**.
-- Compilação Kotlin do app durante a etapa de testes: **FALHOU**.
-- Testes unitários: **não concluídos**, pois a compilação falhou primeiro.
-- Compilação final do APK: **não executada**.
-- Testes instrumentados Android 15: **não executados**.
-- Release: **bloqueada corretamente**.
+O mesmo padrão foi aplicado preventivamente ao card de rota usado no teste de duplicação, através de `planning-routes-list.performScrollToNode(...)`.
 
-## Validações desta correção
+Nenhum componente de produção precisou ser alterado para fazer o teste passar. O módulo Backup também não foi alterado.
 
-- Conferência do arquivo e linha apontados pelo compilador: **PASSOU**.
-- Busca por outras chamadas de `NomadSuggestionCard`: a outra chamada já fornece `onUseSuggestion` posicionalmente e `actionLabel` nomeado, portanto não possui o mesmo erro.
+## Verificações desta entrega
+
+- `planning-resources-toggle` confirmado no código de produção: **PASSOU**.
+- Correção do padrão de scroll para `LazyColumn`: **APLICADA**.
+- Busca por outro uso equivalente e correção preventiva no card de rota: **APLICADA**.
 - `python3 scripts/sync-github-manager.py --check`: **PASSOU**.
-- Padrão Kotlin da chamada corrigida reproduzido em teste mínimo com `kotlinc`: **PASSOU**.
-- Arquivo `BackupScreen.kt` comparado com a base `1.0.59-alpha.32`: **inalterado**.
-- Integridade do ZIP final: **PASSOU**.
+- `versionName`/`versionCode`: `1.0.61-kotlin-alpha.34` / `100061`.
+- Integridade do ZIP final: **PASSOU** após empacotamento e teste do arquivo.
 
 ## Validação ainda necessária
 
-Este ambiente não possui Gradle/Gradle Wrapper para executar o build Android completo. A `1.0.60-kotlin-alpha.33` ainda precisa passar pelo GitHub Actions para confirmar compilação, testes unitários, APK e testes instrumentados Android 15.
+Este ambiente não possui Gradle/Gradle Wrapper para executar o conjunto Android completo. A `1.0.61-kotlin-alpha.34` ainda precisa passar pelo GitHub Actions para confirmar novamente testes unitários, APK e os 7 testes instrumentados no Android 15.

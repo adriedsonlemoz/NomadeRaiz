@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.61-kotlin-alpha.34
+
+### Correção do teste Android 15 no Planejar por rotas
+
+- Analisado `Android-Kotlin-APK-33-logs.zip`, correspondente à versão `1.0.60-kotlin-alpha.33`.
+- Testes unitários passaram (`BUILD SUCCESSFUL in 1m 3s`) e o APK compilou (`BUILD SUCCESSFUL in 1m 24s`).
+- No Android 15 foram executados 7 testes; 6 passaram e apenas `savedRouteReturnsToListAndSurvivesActivityRecreation` falhou.
+- Erro real: `performScrollTo() failed` porque o teste procurava diretamente a tag `planning-resources-toggle`, mas o item estava fora da janela composta de uma `LazyColumn`.
+- A tag existe corretamente na UI; a falha era do teste, não do botão Recursos opcionais nem da persistência do Planejar.
+- O teste agora pede à própria `planning-list` para `performScrollToNode(hasTestTag(...))` e só então clica no item já composto/visível.
+- O mesmo padrão foi aplicado preventivamente à abertura de uma rota na lista, evitando a mesma classe de falha com itens virtuais fora da viewport.
+- Nenhuma regra de negócio, layout, rota salva, catálogo, persistência ou módulo Backup foi alterado nesta correção.
+- Versão sincronizada para `1.0.61-kotlin-alpha.34` / `100061`.
+
 ## 1.0.60-kotlin-alpha.33
 
 ### Correção de compilação da Sugestão do Nômade

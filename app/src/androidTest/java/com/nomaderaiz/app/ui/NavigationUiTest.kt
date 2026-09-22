@@ -93,7 +93,8 @@ class NavigationUiTest {
 
         compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-margin-20"))
         compose.onNodeWithTag("planning-margin-20").performClick()
-        compose.onNodeWithTag("planning-resources-toggle").performScrollTo().performClick()
+        compose.onNodeWithTag("planning-list").performScrollToNode(hasTestTag("planning-resources-toggle"))
+        compose.onNodeWithTag("planning-resources-toggle").assertIsDisplayed().performClick()
         enterPlanningField("Alimentação por pessoa/dia","40")
         enterPlanningField("Água por pessoa/dia","3")
         enterPlanningField("Consumo de energia do grupo","25")
@@ -157,7 +158,8 @@ class NavigationUiTest {
         val workspace=repo.loadPlanningWorkspace()
         assertEquals(2,workspace.routes.size)
         val argentina=workspace.routes.first{it.plan.destination=="Argentina"}
-        compose.onNodeWithTag("planning-route-${argentina.id}").performScrollTo().performClick()
+        compose.onNodeWithTag("planning-routes-list").performScrollToNode(hasTestTag("planning-route-${argentina.id}"))
+        compose.onNodeWithTag("planning-route-${argentina.id}").assertIsDisplayed().performClick()
         compose.onNodeWithTag("duplicate-route").performClick()
         compose.waitUntil(5_000){repo.loadPlanningWorkspace().routes.size==3}
         assertEquals(3,repo.loadPlanningWorkspace().routes.size)

@@ -29,8 +29,8 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
-                Text("• Corrigida a falha de compilação da Sugestão do Nômade no editor de rotas; o callback agora é passado explicitamente ao componente.")
-                Text("• Corrigida a sincronização de versão/documentação que bloqueava o GitHub Actions antes do build.")
+                Text("• O Planejar por rotas foi mantido funcional e a validação Android 15 foi ajustada para navegar corretamente pelos itens virtuais da LazyColumn.")
+                Text("• Recursos opcionais e rotas fora da área visível agora são alcançados pelos testes através do contêiner rolável, sem alterar a interface do usuário.")
                 Text("• O Planejar agora mostra os itens da cicloviagem dentro dos detalhes da rota, com status e custo de referência.")
                 Text("• O catálogo recebeu preços econômicos de referência para power bank, bomba, câmaras, ferramentas, iluminação, painel solar e itens de acampamento.")
                 Text("• Foram adicionados ESP32-CAM, câmera de ação, ESP32 DevKit, sensor Hall e sensor de temperatura para o conjunto tecnológico da bike.")
