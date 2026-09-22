@@ -2,9 +2,9 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.58-kotlin-alpha.31`
+**Versão atual:** `1.0.59-kotlin-alpha.32`
 
-**versionCode:** `100058`
+**versionCode:** `100059`
 
 ### Planejar reorganizado por rotas
 
@@ -22,20 +22,13 @@ O planejamento único usado até a alpha.29 é migrado para a nova lista de rota
 
 ## Esta atualização
 
-- Tela principal do Planejar reduzida a **lista de rotas + Criar nova rota**.
-- Novo editor separado para criar e editar viagens.
-- Nova tela de detalhes por rota com **Editar, Duplicar e Excluir**.
-- Recursos de alimentação, água e energia ficam recolhidos por padrão.
-- Opções antigas/avançadas continuam disponíveis, mas deixam de pesar na tela principal.
-- Nova **Sugestão do Nômade**, com cenário calculado e ação para aplicar a ideia.
-- Análise completa de custos/recomendações é calculada apenas quando o usuário abre os detalhes e pede essa seção.
-- Gravações imediatas do Planejar deixaram de executar `SharedPreferences.commit()` na UI thread; o estado visual muda na hora e a escrita é serializada em `Dispatchers.IO`.
-- Persistência passa a armazenar múltiplas rotas em `planning_routes_v1`, mantendo o formato antigo somente para migração.
-- Migração automática preserva o último planejamento e rascunhos antigos relevantes.
-- Testes foram reestruturados para validar múltiplas rotas, margem, persistência, recriação da Activity, duplicação e migração do formato antigo.
-- A tela **Sobre**, README, CHANGELOG, VALIDACAO e metadados foram atualizados. O módulo **Backup** não foi alterado.
+- Correção do bloqueio do GitHub Actions causado por `CHANGELOG.md` fora de sincronia com `app/build.gradle.kts`.
+- O histórico da `1.0.58-kotlin-alpha.31` foi restaurado no CHANGELOG, incluindo o catálogo de equipamentos e preços de referência da cicloviagem.
+- `app/build.gradle.kts`, `github-manager.json`, README, CHANGELOG, VALIDACAO e Sobre foram sincronizados para `1.0.59-kotlin-alpha.32` / `100059`.
+- Nenhuma regra de negócio, rota, inventário, persistência ou módulo Backup foi alterado nesta correção.
+- O workflow continua interrompendo a Release se qualquer verificação de metadados, teste ou build falhar.
 
-**Validação desta entrega:** a lógica Kotlin pura do novo estado de rotas e da Sugestão do Nômade foi compilada e executada localmente. O build Android completo e os testes instrumentados Android 15 ainda precisam do GitHub Actions, pois este ambiente não possui Gradle/Wrapper.
+**Validação desta entrega:** o log `Android-Kotlin-APK-31-logs.zip` mostrou que a execução anterior parou antes dos testes e do build, exclusivamente porque o primeiro cabeçalho de versão do CHANGELOG ainda era `1.0.57-kotlin-alpha.30`. Após a correção, `python3 scripts/sync-github-manager.py --check` passa localmente.
 
 ## Estado funcional atual
 

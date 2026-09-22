@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.0.59-kotlin-alpha.32
+
+### Correção de sincronização da Release
+
+- Analisado `Android-Kotlin-APK-31-logs.zip`, correspondente à versão `1.0.58-kotlin-alpha.31`.
+- O workflow parou em `python3 scripts/sync-github-manager.py --check` antes de executar testes unitários, compilação do APK ou testes instrumentados.
+- Causa exata: `app/build.gradle.kts`, `github-manager.json` e README estavam em `1.0.58-kotlin-alpha.31` / `100058`, mas o primeiro cabeçalho do `CHANGELOG.md` ainda era `1.0.57-kotlin-alpha.30`.
+- O histórico ausente da `1.0.58-kotlin-alpha.31` foi adicionado ao CHANGELOG, preservando o registro dos equipamentos e preços de referência incluídos naquela entrega.
+- A versão foi incrementada e sincronizada para `1.0.59-kotlin-alpha.32` / `100059` em Gradle, GitHub Manager, README, CHANGELOG, VALIDACAO e Sobre.
+- Nenhuma lógica do Planejar, catálogo, persistência, identidade do aplicativo ou módulo Backup foi alterada para corrigir esta falha de metadados.
+- `python3 scripts/sync-github-manager.py --check` passa após a correção.
+
+## 1.0.58-kotlin-alpha.31
+
+### Itens da cicloviagem e preços de referência
+
+- O detalhe de cada rota no Planejar passou a exibir **Itens da cicloviagem**, com quantidade, status e custo estimado, sem tornar a lista principal de rotas mais pesada.
+- O catálogo recebeu referências econômicas editáveis para power bank 20.000 mAh, bomba de ar, câmaras, remendos, multitool, espátulas, elo rápido, painel solar 20 W, iluminação, saco de dormir, lona e fogareiro.
+- Foram adicionados ao inventário tecnológico ESP32-CAM com OV2640, mini câmera de ação 1080p, ESP32 DevKit, sensor Hall e sensor DS18B20.
+- `mergeEquipmentCatalog()` preserva quantidade, status, prioridade, observações e preços já informados; a referência pesquisada só preenche preço quando o valor existente está zerado, e itens ausentes são adicionados.
+- Criado `PRECOS-REFERENCIA.md` com data da pesquisa, valores usados e aviso de que preço, frete, cupom, qualidade e especificação podem variar.
+- Os preços são orçamento inicial e continuam totalmente editáveis no aplicativo.
+- `applicationId` e `namespace` permanecem `com.nomaderaiz.app`; o módulo Backup não foi alterado.
+- A lógica Kotlin pura do catálogo foi validada no ambiente de desenvolvimento, mas a validação Android completa ficou a cargo do GitHub Actions.
+- Versão e metadados previstos para esta entrega: `1.0.58-kotlin-alpha.31` / `100058`.
+
 ## 1.0.57-kotlin-alpha.30
 
 ### Planejar por rotas: lista leve, editor separado e Sugestão do Nômade

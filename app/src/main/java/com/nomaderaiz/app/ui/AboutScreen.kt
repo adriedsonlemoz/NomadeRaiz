@@ -29,6 +29,7 @@ internal fun AboutScreen(back:()->Unit){
         }
         item{
             SectionCard("Novidades desta versão"){
+                Text("• Corrigida a sincronização de versão/documentação que bloqueava o GitHub Actions antes do build.")
                 Text("• O Planejar agora mostra os itens da cicloviagem dentro dos detalhes da rota, com status e custo de referência.")
                 Text("• O catálogo recebeu preços econômicos de referência para power bank, bomba, câmaras, ferramentas, iluminação, painel solar e itens de acampamento.")
                 Text("• Foram adicionados ESP32-CAM, câmera de ação, ESP32 DevKit, sensor Hall e sensor de temperatura para o conjunto tecnológico da bike.")
