@@ -2,9 +2,9 @@
 
 Migração nativa do Nômade Raiz original 1.0.26 (React/Capacitor) para Android em Kotlin + Jetpack Compose, preservando as regras e funções do aplicativo original.
 
-**Versão atual:** `1.0.59-kotlin-alpha.32`
+**Versão atual:** `1.0.60-kotlin-alpha.33`
 
-**versionCode:** `100059`
+**versionCode:** `100060`
 
 ### Planejar reorganizado por rotas
 
@@ -22,13 +22,14 @@ O planejamento único usado até a alpha.29 é migrado para a nova lista de rota
 
 ## Esta atualização
 
-- Correção do bloqueio do GitHub Actions causado por `CHANGELOG.md` fora de sincronia com `app/build.gradle.kts`.
-- O histórico da `1.0.58-kotlin-alpha.31` foi restaurado no CHANGELOG, incluindo o catálogo de equipamentos e preços de referência da cicloviagem.
-- `app/build.gradle.kts`, `github-manager.json`, README, CHANGELOG, VALIDACAO e Sobre foram sincronizados para `1.0.59-kotlin-alpha.32` / `100059`.
-- Nenhuma regra de negócio, rota, inventário, persistência ou módulo Backup foi alterado nesta correção.
-- O workflow continua interrompendo a Release se qualquer verificação de metadados, teste ou build falhar.
+- Corrigido o erro de compilação detectado no `Android-Kotlin-APK-32-logs.zip`.
+- A chamada de `NomadSuggestionCard` no editor de rotas usava uma trailing lambda, mas a função possui o parâmetro opcional `actionLabel` depois do callback `apply`; o compilador interpretava a lambda na posição errada.
+- O callback agora é passado explicitamente como `apply = { ... }`, preservando a Sugestão do Nômade e eliminando o erro `No value passed for parameter 'apply'`.
+- `app/build.gradle.kts`, `github-manager.json`, README, CHANGELOG, VALIDACAO e Sobre foram sincronizados para `1.0.60-kotlin-alpha.33` / `100060`.
+- Nenhuma regra de negócio, rota salva, inventário, persistência ou módulo Backup foi alterado nesta correção.
+- O workflow continua bloqueando a Release se testes ou build falharem.
 
-**Validação desta entrega:** o log `Android-Kotlin-APK-31-logs.zip` mostrou que a execução anterior parou antes dos testes e do build, exclusivamente porque o primeiro cabeçalho de versão do CHANGELOG ainda era `1.0.57-kotlin-alpha.30`. Após a correção, `python3 scripts/sync-github-manager.py --check` passa localmente.
+**Validação desta entrega:** o log `Android-Kotlin-APK-32-logs.zip` mostrou que a checagem de metadados passou, mas a etapa de testes parou durante a compilação Kotlin do código principal. A correção foi aplicada exatamente no arquivo e linha apontados pelo compilador. A nova versão ainda precisa do GitHub Actions para confirmar testes unitários, APK e Android 15.
 
 ## Estado funcional atual
 

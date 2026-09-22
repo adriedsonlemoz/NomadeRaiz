@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.60-kotlin-alpha.33
+
+### Correção de compilação da Sugestão do Nômade
+
+- Analisado `Android-Kotlin-APK-32-logs.zip`, correspondente à versão `1.0.59-kotlin-alpha.32`.
+- A verificação de metadados passou, mas a etapa `Test navigation and business rules` falhou durante `compileDebugKotlin`, antes de concluir os testes.
+- Erro real: `PlanningCalculatorScreens.kt:285:65 No value passed for parameter 'apply'`, acompanhado por `Argument type mismatch` e falha de inferência do parâmetro da lambda.
+- Causa: `NomadSuggestionCard` declara `apply: (Double) -> Unit` antes do parâmetro opcional `actionLabel: String`; a chamada no editor usava trailing lambda, que em Kotlin só pode preencher o último parâmetro.
+- Correção: o callback passou a ser fornecido explicitamente como argumento nomeado `apply = { ... }`.
+- A Sugestão do Nômade, seus cálculos e a ação de aplicar horas/dia foram preservados; nenhuma funcionalidade foi removida.
+- Versão sincronizada para `1.0.60-kotlin-alpha.33` / `100060` em Gradle, GitHub Manager, README, CHANGELOG, VALIDACAO e Sobre.
+- O módulo Backup e os dados persistidos não foram alterados.
+
 ## 1.0.59-kotlin-alpha.32
 
 ### Correção de sincronização da Release

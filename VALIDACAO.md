@@ -1,39 +1,57 @@
-# Validação — 1.0.59-kotlin-alpha.32
+# Validação — 1.0.60-kotlin-alpha.33
 
-Base utilizada: `Nomade-Raiz-Kotlin-v1.0.58-alpha.31`. Fonte principal da versão: `app/build.gradle.kts`; `versionCode`: `100059`.
+Base utilizada: `Nomade-Raiz-Kotlin-v1.0.59-alpha.32`. Fonte principal da versão: `app/build.gradle.kts`; `versionCode`: `100060`.
 
 ## Erro encontrado no GitHub Actions
 
-Foi analisado `Android-Kotlin-APK-31-logs.zip`. A execução referente à `1.0.58-kotlin-alpha.31` foi interrompida na etapa **Verify GitHub Manager metadata**.
+Foi analisado `Android-Kotlin-APK-32-logs.zip`. A checagem de metadados passou e o workflow avançou para **Test navigation and business rules**, mas a compilação Kotlin falhou antes de concluir os testes.
 
-Mensagem real do workflow:
+Mensagens reais do compilador:
 
 ```text
-CHANGELOG.md está fora de sincronia com app/build.gradle.kts.
-Process completed with exit code 1.
+PlanningCalculatorScreens.kt:285:65 No value passed for parameter 'apply'.
+PlanningCalculatorScreens.kt:285:69 Argument type mismatch ... but 'String' was expected.
+PlanningCalculatorScreens.kt:285:71 Cannot infer type for this parameter. Specify it explicitly.
 ```
 
-A causa era objetiva: `app/build.gradle.kts`, `github-manager.json` e README já estavam em `1.0.58-kotlin-alpha.31` / `100058`, enquanto o primeiro cabeçalho de versão do `CHANGELOG.md` ainda era `1.0.57-kotlin-alpha.30`. O script de verificação exige que a primeira versão do CHANGELOG seja exatamente a versão definida no Gradle e bloqueou corretamente a Release.
+O build terminou com `CompilationErrorException` e `BUILD FAILED in 56s`.
+
+## Causa
+
+`NomadSuggestionCard` possui a assinatura:
+
+```text
+NomadSuggestionCard(draft, suggestion, apply: (Double) -> Unit, actionLabel: String = ...)
+```
+
+No editor ela era chamada com uma trailing lambda. Como `actionLabel` é o último parâmetro, o compilador tentava associar a trailing lambda à posição final e deixava `apply` sem valor.
 
 ## Correção aplicada
 
-- Adicionado o histórico que faltava para `1.0.58-kotlin-alpha.31`.
-- Adicionada a entrada desta correção, `1.0.59-kotlin-alpha.32`.
-- Incrementados `versionName` e `versionCode` para `1.0.59-kotlin-alpha.32` / `100059`.
-- Sincronizados `github-manager.json`, README, CHANGELOG, VALIDACAO e a versão exibida pela tela Sobre via `BuildConfig`.
-- Nenhuma lógica do Planejar, equipamentos, persistência, identidade do aplicativo ou módulo Backup foi alterada.
+- O callback agora é passado explicitamente como `apply = { ... }`.
+- A lógica existente de aplicar `hoursPerDay` ao rascunho foi mantida.
+- Nenhum cálculo, persistência, rota, catálogo de equipamentos ou Backup foi removido ou alterado por esta correção.
+- `versionName`/`versionCode` incrementados para `1.0.60-kotlin-alpha.33` / `100060`.
+- README, CHANGELOG, VALIDACAO, Sobre e `github-manager.json` sincronizados.
 
 ## Resultado real do log anterior
 
-A execução anterior **não chegou** a executar testes unitários, compilação do APK ou testes instrumentados Android 15, pois falhou antes deles na checagem de metadados. Portanto não há resultado de build/testes a declarar para a `1.0.58-kotlin-alpha.31` nesse log.
+- Verificação de metadados: **PASSOU**.
+- Compilação Kotlin do app durante a etapa de testes: **FALHOU**.
+- Testes unitários: **não concluídos**, pois a compilação falhou primeiro.
+- Compilação final do APK: **não executada**.
+- Testes instrumentados Android 15: **não executados**.
+- Release: **bloqueada corretamente**.
 
-## Validações executadas nesta correção
+## Validações desta correção
 
-- `python3 scripts/sync-github-manager.py` para regenerar `github-manager.json` a partir de `app/build.gradle.kts`.
+- Conferência do arquivo e linha apontados pelo compilador: **PASSOU**.
+- Busca por outras chamadas de `NomadSuggestionCard`: a outra chamada já fornece `onUseSuggestion` posicionalmente e `actionLabel` nomeado, portanto não possui o mesmo erro.
 - `python3 scripts/sync-github-manager.py --check`: **PASSOU**.
-- Verificação de que o primeiro cabeçalho do CHANGELOG é `1.0.59-kotlin-alpha.32`: **PASSOU**.
-- Verificação de integridade do ZIP final: **PASSOU**.
+- Padrão Kotlin da chamada corrigida reproduzido em teste mínimo com `kotlinc`: **PASSOU**.
+- Arquivo `BackupScreen.kt` comparado com a base `1.0.59-alpha.32`: **inalterado**.
+- Integridade do ZIP final: **PASSOU**.
 
 ## Validação ainda necessária
 
-A nova `1.0.59-kotlin-alpha.32` ainda precisa passar pelo GitHub Actions para confirmar testes unitários, compilação do APK e testes instrumentados Android 15. A Release continua bloqueada automaticamente se qualquer uma dessas etapas falhar.
+Este ambiente não possui Gradle/Gradle Wrapper para executar o build Android completo. A `1.0.60-kotlin-alpha.33` ainda precisa passar pelo GitHub Actions para confirmar compilação, testes unitários, APK e testes instrumentados Android 15.

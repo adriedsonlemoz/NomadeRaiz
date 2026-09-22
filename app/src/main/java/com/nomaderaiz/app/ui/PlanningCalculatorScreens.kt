@@ -282,7 +282,7 @@ private fun PlanningRouteEditor(
                 )
             }
             item { LivePlanCard(draft, estimate) }
-            suggestion?.let { item { NomadSuggestionCard(draft, it) { hours -> changeDraft { current -> current.copy(hoursPerDay = hours.toInt().toString()) } } } }
+            suggestion?.let { item { NomadSuggestionCard(draft, it, apply = { hours -> changeDraft { current -> current.copy(hoursPerDay = hours.toInt().toString()) } }) } }
 
             item {
                 OutlinedButton(
